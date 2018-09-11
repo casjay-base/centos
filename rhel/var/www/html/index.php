@@ -14,10 +14,8 @@ just been setup and the user hasn't<br>
 created a site yet.<br>
 Please come back soon as I'm sure the<br>
 site owner is working on it!<br>
-Powered by a RedHat based system<br>
+Powered by a debian based system<br>
 </div>
-<br><br><br><br>
-<a href="https://CentOS.org"> <img border="0" alt="CentOS Linux" src="/default-icons/poweredby.png"> </a>
 <div class="c5">
 <?php
 echo "Server Name: ".$_SERVER['SERVER_NAME']."<BR>";

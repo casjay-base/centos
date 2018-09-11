@@ -7,5 +7,4 @@ $TTL 1h
 @	IN	NS	localhost.
 
 ; IPv4 PTR entries
-1.0.0       IN  PTR     localhost.
 1           IN  PTR     localhost.

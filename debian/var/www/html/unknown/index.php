@@ -8,9 +8,10 @@
 </head>
 <body>
 <div class="c1">
-<h2>UMMMMM This site doesn't seem to exist<br>
-
-<a href="https://CentOS.org"> <img border="0" alt="CentOS Linux" src="/default-icons/poweredby.png"> </a>
+<h2>UMMMMM<br>
+This site doesn't seem to exist<br>
+<br><br>
+<a href="https://debian.org"> <img border="0" alt="Debian Linux" src="/default-icons/poweredby.png"> </a>
 </div>
 <div class="c5">
 <?php

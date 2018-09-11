@@ -8,13 +8,11 @@
 </head>
 <body>
 <div class="c1">
-<h2>UMMMMM This site doesn't seem to exist<br>
-<br><br><br><br>
-
-<a href="https://CentOS.org"> <img border="0" alt="CentOS Linux" src="/default-icons/poweredby.png"> </a>
+<h2>UMMMMM<br>
+This site doesn't seem to exist<br>
+<br><br>
+<a href="https://centos.org"> <img border="0" alt="CentOS Linux" src="/default-icons/poweredby.png"> </a>
 </div>
-<br><br><br><br>
-
 <div class="c5">
 <?php
 echo "Server Name: ".$_SERVER['SERVER_NAME']."<BR>";
@@ -29,4 +27,3 @@ echo "IP Address: ".$_SERVER['SERVER_ADDR']."<BR>";
 <!-- End Casjays Developments Footer -->
 </body>
 </html>
-
