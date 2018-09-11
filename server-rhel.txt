@@ -1,0 +1,78 @@
+passwd
+yum install -y ftp://ftp.casjay.net/pub/Casjay/RHEL/x86_64/7/rpms/casjay-release-1.0-1.casjay.el7.x86_64.rpm
+yum install -y wget net-tools git nail e2fsprogs http://dl.fedoraproject.org/pub/epel/7/x86_64/Packages/v/vnstat-1.15-2.el7.x86_64.rpm 
+systemctl enable vnstat && systemctl start vnstat 
+rm -Rf /etc/yum.repos.d/* && cd /etc/yum.repos.d/ && wget -q ftp://ftp.casjay.net/pub/Casjay/ZREPO/RHEL/7/*.repo && cd ~
+
+rm -Rf /etc/skel /tmp/dotfiles && git clone https://github.com/CasjaysDev/dotfiles.git /tmp/dotfiles && rm -Rfv /tmp/dotfiles/{LICENSE,README.md,version.txt,.git}
+find /tmp/dotfiles/ -type f -iname "*.sh" -exec chmod 755 -Rfv {} \;
+unalias cp ; cp -Rfv /tmp/dotfiles/* / ; source ~/.bashrc
+
+timedatectl set-timezone America/New_York
+
+yum install -y cronie-noanacron && for rpms in $(echo chrony cronie-anacron sendmail sendmail-cf kernel-tools kernel-tools-libs kernel-headers); do rpm -ev --nodeps $rpms ; done
+yum remove -y chrony libvirt* virt*
+rm -Rf /etc/tuned* /etc/chrony* anaconda-ks.cfg /var/log/anaconda
+reboot
+
+yum clean all && yum update --exclude=kernel* -y 
+yum install kernel-ml -y && grub2-mkconfig -o /boot/grub2/grub.cfg
+reboot
+
+wget https://raw.githubusercontent.com/CasjaysDev/packages/master/any/default.txt -O /root/rpms-default.txt
+yum install -y $(cat rpms-default.txt ) --skip-broken
+yum remove -y kernel-3.*
+
+rm -Rf /etc/named* /var/named/* /etc/ntp* /etc/cron*/0* /etc/cron*/dailyjobs /var/ftp/uploads /etc/httpd/conf.d/ssl.conf
+git clone https://github.com/casjay/configs.git /tmp/default 
+find /tmp/default/ -type f -iname "*.sh" -exec chmod 755 {} \;
+
+find /tmp/default/rhel -type f -exec sed -i "s#myserverdomainname#$(hostname -f)#g" {} \;
+find /tmp/default/rhel -type f -exec sed -i "s#myhostnameshort#$(hostname -s)#g" {} \;
+find /tmp/default/rhel -type f -exec sed -i "s#myrelayhost#yourrelayhostdomain#g" {} \;
+find /tmp/default/rhel -type f -exec sed -i "s#mysecurepassword#yourreallysecurepassword#g" {} \;
+
+cp -Rf /tmp/default/rhel/* /
+mkdir -p /etc/rsync.d /var/log/named && chown -Rf named:named /etc/named* /var/named /var/log/named && chown -Rfv apache:apache /var/www /usr/share/httpd 
+
+sed -i "s#myserverdomainname#$(echo $HOSTNAME)#g" /etc/sysconfig/network
+sed -i "s#mydomain#$(echo $HOSTNAME |awk -F. '{$1="";OFS="." ; print $0}' | sed 's/^.//')#g" /etc/sysconfig/network 
+domainname $(hostname -f |awk -F. '{$1="";OFS="." ; print $0}' | sed 's/^.//') && echo "kernel.domainname=$(domainname)" >> /etc/sysctl.conf
+
+munin-node-configure --shell | sh
+
+git clone https://github.com/CasjaysDev/system-scripts.git /tmp/system-scripts
+rm -Rf /tmp/system-scripts/doc /tmp/system-scripts/CODE_OF_CONDUCT.md /tmp/system-scripts/LICENSE /tmp/system-scripts/README.md /tmp/system-scripts/.git /tmp/system-scripts/version.txt
+find /tmp/system-scripts/ -type f -iname "*.sh" -exec chmod 755 {} \;
+cp -Rf /tmp/system-scripts/* /
+chmod 644 -Rf /etc/cron.d/* /etc/logrotate.d/*
+postmap /etc/postfix/transport /etc/postfix/canonical /etc/postfix/mydomains && newaliases
+
+for s in $(echo munin-node httpd cockpit named postfix uptimed php-fpm fail2ban shorewall shorewall6 dhcpd dhcpd6 radvd proftpd rsyslog ntpd snmpd) ; do systemctl enable $s ; done
+for s in $(echo firewalld auditd kdump iscsid.socket iscsi.service iscsiuio.socket lvm2-lvmetad.socket lvm2-lvmpolld.socket lvm2-monitor.service mdmonitor.service mariadb.service) ; do systemctl disable $s ; done
+
+rpm -e --nodeps subscription-manager subscription-manager-rhsm subscription-manager-rhsm-certificates
+
+rm -Rf /tmp/*.tar /tmp/base /tmp/default 
+ifconfig
+echo "Edit and run /root/bin/changeip.sh"
+#vim /root/bin/changeip.sh
+/root/bin/changeip.sh
+
+#if using letsencrypt
+yum install -y python2-certbot-dns-rfc2136 
+chmod 600 /etc/named/certbot-update.conf
+echo "run certbot certonly --dns-rfc2136 --dns-rfc2136-credentials /etc/named/certbot-update.conf -d $(domainname) -d *.$(domainname)"
+echo "run certbot -a webroot -i apache -w /var/www/html -d $(domainname) -d $(hostname -f)"
+ln -s /etc/letsencrypt/live/$(domainname) /etc/letsencrypt/live/domain
+cat /etc/letsencrypt/live/domain/fullchain.pem > /etc/cockpit/ws-certs.d/1-my-cert.cert
+cat /etc/letsencrypt/live/domain/privkey.pem >> /etc/cockpit/ws-certs.d/1-my-cert.cert
+find /etc/postfix /etc/httpd -type f -exec sed -i 's#/etc/ssl/CA/certs/localhost.crt#/etc/letsencrypt/live/domain/fullchain.pem#g' {} \;
+find /etc/postfix /etc/httpd -type f -exec sed -i 's#/etc/ssl/CA/private/localhost.key#/etc/letsencrypt/live/domain/privkey.pem#g' {} \;
+
+#Otherwise do this
+cat /etc/ssl/CA/certs/ca.crt > /etc/cockpit/ws-certs.d/1-my-cert.cert
+cat /etc/ssl/CA/certs/localhost.crt >> /etc/cockpit/ws-certs.d/1-my-cert.cert
+cat /etc/ssl/CA/private/localhost.key >> /etc/cockpit/ws-certs.d/1-my-cert.cert
+
+systemctl reboot

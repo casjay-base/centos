@@ -1,0 +1,2 @@
+#
+*/5 * * * * munin test -x /usr/bin/munin-cron && /usr/bin/munin-cron > /dev/null 2>&1

@@ -1,0 +1,15 @@
+;   Default zone
+$ORIGIN 					zone.template.
+$TTL 						38400
+;  ***********CHANGE THESE TO MATCH PROVIDER***************
+$INCLUDE					/etc/named/hosted/host.conf
+$INCLUDE					/etc/named/hosted/ip.conf
+;  **********Common Files**********
+$INCLUDE					/etc/named/common/001-soa.inc
+$INCLUDE					/etc/named/common/002-nameservers.inc
+$INCLUDE					/etc/named/common/003-dns.inc
+
+@                        IN  MX          10 mail.zone.template
+*                        IN  MX          10 mail.zone.template
+_dmarc					 IN  TXT         "v=DMARC1; p=none; rua=mailto:postmaster+dmarc@zone.template"
+*._dmarc				 IN  TXT         "v=DMARC1; p=none; rua=mailto:postmaster+dmarc@zone.template"

@@ -1,0 +1,5 @@
+#
+SELINUX=disabled
+SELINUXTYPE=targeted 
+
+

@@ -1,0 +1,2 @@
+#ZONE		INTERFACE		OPTIONS
+net         eth0            detect          dhcp,tcpflags,nosmurfs

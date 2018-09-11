@@ -1,0 +1,12 @@
+;   Default zone
+$ORIGIN 					secondary.template.zone.
+$TTL 						38400
+;  ***********CHANGE THESE TO MATCH PROVIDER***************
+$INCLUDE					/etc/named/hosted/host.conf
+$INCLUDE					/etc/named/hosted/ip.conf
+;  **********Common Files**********
+$INCLUDE					/etc/named/common/001-soa.inc
+$INCLUDE					/etc/named/common/002-nameservers.inc
+
+_dmarc						1800       IN  TXT         "v=DMARC1; p=none; rua=mailto:postmaster+dmarc@secondary.template.zone"
+*._dmarc					1800       IN  TXT         "v=DMARC1; p=none; rua=mailto:postmaster+dmarc@secondary.template.zone"

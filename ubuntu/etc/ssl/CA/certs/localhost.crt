@@ -1,0 +1,152 @@
+Certificate:
+    Data:
+        Version: 3 (0x2)
+        Serial Number: 0 (0x0)
+    Signature Algorithm: sha256WithRSAEncryption
+        Issuer: C=US, ST=New York, L=Cohoes, O=Casjays Developments, OU=Casjays Developments, CN=Casjays Developments/emailAddress=ssl-admin@casjaysdev.com
+        Validity
+            Not Before: Sep  3 09:25:09 2018 GMT
+            Not After : Aug 31 09:25:09 2028 GMT
+        Subject: C=US, ST=New York, L=Amsterdam, O=Casjays Developments, OU=Casjays Developments, CN=casjay.in/emailAddress=ssl-admin@casjay.in
+        Subject Public Key Info:
+            Public Key Algorithm: rsaEncryption
+                Public-Key: (2048 bit)
+                Modulus:
+                    00:9b:84:88:fd:11:f5:e5:54:f7:97:52:1a:f3:60:
+                    d8:f0:31:84:70:81:d3:95:4f:56:7a:49:0c:aa:5f:
+                    6b:ec:bf:e3:8a:0e:2a:95:d9:c4:1d:ad:78:9f:d7:
+                    a3:39:06:22:dd:05:76:48:41:44:3e:fb:2a:ed:b7:
+                    1f:1b:06:5a:3a:1a:7a:d7:25:4e:7d:ae:e2:14:69:
+                    27:35:30:41:39:96:68:6e:94:e0:ac:97:8a:40:c4:
+                    b2:66:bf:96:00:2a:06:86:87:6c:a9:b5:58:88:2d:
+                    e4:ad:44:cf:48:b8:1b:81:01:94:e6:92:a2:c0:45:
+                    ca:8a:ab:e8:d0:f2:e9:5a:7d:0d:3b:ba:0d:36:e5:
+                    4e:84:4f:99:96:6d:40:cc:79:30:ac:43:ca:6b:cc:
+                    f7:ee:13:d4:71:4a:8f:59:fd:3e:21:5c:64:ca:de:
+                    cb:b1:eb:4a:04:54:95:6b:13:ef:8e:63:2d:6b:b4:
+                    b2:c8:9b:91:e6:d7:83:ae:46:37:43:9e:0e:37:d2:
+                    5c:5f:60:25:90:d0:6d:44:fb:53:fc:9d:91:46:87:
+                    06:39:b5:0c:3b:23:27:fa:3b:78:13:1a:ed:ff:7b:
+                    07:ea:99:bf:b0:95:b0:8f:91:d1:a3:a5:6a:41:5d:
+                    a7:83:e8:45:59:46:1d:92:9c:5c:d5:c2:b8:89:38:
+                    ac:5d
+                Exponent: 65537 (0x10001)
+        X509v3 extensions:
+            X509v3 Subject Alternative Name: 
+                DNS:apmpproject.org, DNS:bugs.one, DNS:cachetagalong.com, DNS:casjay.cloud, DNS:casjay.com, DNS:casjaydns.com, DNS:casjay.email, DNS:casjaygames.com, DNS:casjayhak.com, DNS:casjay.help, DNS:casjay.info, DNS:casjay.net, DNS:casjay.one, DNS:casjay.org, DNS:casjay.recipes, DNS:casjaysdev.com, DNS:casjay.shop, DNS:casjay.tel, DNS:casjay.us, DNS:casjay.xyz, DNS:casj.biz, DNS:chmweb.info, DNS:kellymalak.us, DNS:malaks.us, DNS:masonmalak.us, DNS:mileymalak.us, DNS:mmmalak.us, DNS:mpmalak.com, DNS:paranormal.one, DNS:secureit.blog, DNS:sqldb.us, DNS:whatknots404.com, DNS:*.apmpproject.org, DNS:*.bugs.one, DNS:*.cachetagalong.com, DNS:*.casjay.cloud, DNS:*.casjay.com, DNS:*.casjaydns.com, DNS:*.casjay.email, DNS:*.casjaygames.com, DNS:*.casjayhak.com, DNS:*.casjay.help, DNS:*.casjay.in, DNS:*.casjay.info, DNS:*.casjay.net, DNS:*.casjay.one, DNS:*.casjay.org, DNS:*.casjay.recipes, DNS:*.casjaysdev.com, DNS:*.casjay.shop, DNS:*.casjay.tel, DNS:*.casjay.us, DNS:*.casjay.xyz, DNS:*.casj.biz, DNS:*.chmweb.info, DNS:*.kellymalak.us, DNS:*.malaks.us, DNS:*.masonmalak.us, DNS:*.mileymalak.us, DNS:*.mmmalak.us, DNS:*.mpmalak.com, DNS:*.paranormal.one, DNS:*.secureit.blog, DNS:*.sqldb.us, DNS:*.whatknots404.com, DNS:localhost
+            X509v3 Basic Constraints: 
+                CA:FALSE
+            Netscape Cert Type: 
+                SSL Client, SSL Server, S/MIME, Object Signing
+            Netscape Comment: 
+                Casjays Developments CA
+            X509v3 Subject Key Identifier: 
+                A7:B2:E1:51:DC:6B:3D:8E:36:4F:7D:79:A9:26:3D:3F:DA:C7:8C:27
+            X509v3 Authority Key Identifier: 
+                keyid:CE:62:A0:43:94:60:69:7D:0F:1F:1B:54:5C:60:E6:64:DE:23:2F:BB
+                DirName:/C=US/ST=New York/L=Cohoes/O=Casjays Developments/OU=Casjays Developments/CN=Casjays Developments/emailAddress=ssl-admin@casjaysdev.com
+                serial:FD:B9:01:B8:48:2A:EA:E3
+
+            Netscape Base Url: 
+                http://ca.casjay.net/
+            Netscape Revocation Url: 
+                http://ca.casjay.net/revoke.crl
+            Netscape Renewal Url: 
+                http://ca.casjay.net/renewel.php
+            Netscape CA Revocation Url: 
+                http://ca.casjay.net/ca-revoke.crl
+            Netscape CA Policy Url: 
+                http://ca.casjay.net/ca-renewel.php
+            X509v3 Key Usage: 
+                Digital Signature, Non Repudiation, Key Encipherment
+    Signature Algorithm: sha256WithRSAEncryption
+         99:60:6e:cb:75:e5:6c:fb:ce:ba:a9:42:58:1a:98:8b:9c:77:
+         61:8d:ee:ec:c9:9a:2c:e3:ee:3e:96:9c:fa:35:0d:38:05:96:
+         df:9b:b1:d6:3a:e2:5c:29:c7:a6:e1:7e:69:79:d7:3b:d7:27:
+         e3:ef:2c:9d:21:84:32:5e:f1:0d:21:e2:9b:e6:69:99:93:38:
+         28:0e:c9:0d:5f:40:ad:38:b2:6f:8c:51:05:3a:06:f6:a1:91:
+         53:1f:ff:e9:5c:61:9d:e7:45:eb:d1:b3:22:b5:90:af:08:aa:
+         51:2f:b1:1a:22:68:ef:8a:85:22:f5:e1:cf:43:90:4e:e4:1e:
+         27:38:1d:11:78:26:bc:75:de:75:38:6f:6a:a4:d9:ac:f4:ce:
+         7f:8d:d6:a9:ae:f9:23:68:6b:05:33:7f:39:bb:60:d8:75:f5:
+         9e:38:4a:29:ff:e2:e4:52:08:40:2c:de:97:f7:3e:13:22:83:
+         fd:39:ac:c5:a6:4e:5b:03:da:9f:3a:16:d5:d9:69:5e:1f:e2:
+         8b:b9:8d:f4:b4:fe:54:c8:d9:e8:f7:16:9e:1a:91:9f:5e:cf:
+         0a:09:4e:c4:9f:bb:72:a1:44:f2:df:b5:f4:2c:47:82:4f:83:
+         f8:4a:f3:4a:4e:bc:76:d3:8c:9f:f0:9b:7f:e6:17:c0:67:4c:
+         38:2f:18:72:13:64:58:48:32:5e:cc:67:e6:ac:8c:0c:9f:32:
+         3a:19:87:7d:de:38:fa:ef:21:1f:7f:85:d7:4b:2f:06:5e:c8:
+         6c:58:32:fa:99:5f:7d:00:5a:24:04:f9:7c:fd:da:32:28:b0:
+         47:0a:e8:7d:f9:f4:80:e2:89:7e:86:e4:67:18:ab:86:e2:7c:
+         fe:5e:7f:51:54:76:55:17:2d:7f:ee:62:dd:d6:74:ec:9c:77:
+         20:03:79:0d:9c:89:c4:20:2c:43:ce:bb:c0:fb:3d:1d:2f:74:
+         0e:4f:6e:c4:9a:8d:9a:a1:e7:05:c6:48:e0:e7:c6:a6:51:cc:
+         05:8b:89:2c:ed:c2:66:9d:64:9d:41:5b:15:87:26:e4:02:a8:
+         bc:b0:6a:f3:36:67:98:00:17:20:fb:db:73:f3:4e:e4:0b:84:
+         cd:3b:16:6d:a5:8c:ed:c4:93:18:2c:9b:cd:69:59:75:89:04:
+         f0:e9:6e:42:a0:2a:b9:af:87:7e:7b:8e:8e:5b:73:a3:a1:24:
+         81:54:47:9f:ee:69:47:50:59:0b:4c:a3:b6:3d:80:a3:62:49:
+         30:bf:3f:3c:ee:7f:20:2b:01:92:e4:78:52:a3:99:2a:17:86:
+         8b:6f:bf:ec:a5:6b:84:a8:21:1e:9e:e6:ce:21:9c:72:dc:c9:
+         5f:f5:8f:c6:18:0a:d5:79
+-----BEGIN CERTIFICATE-----
+MIILCDCCCPCgAwIBAgIBADANBgkqhkiG9w0BAQsFADCBtzELMAkGA1UEBhMCVVMx
+ETAPBgNVBAgTCE5ldyBZb3JrMQ8wDQYDVQQHEwZDb2hvZXMxHTAbBgNVBAoTFENh
+c2pheXMgRGV2ZWxvcG1lbnRzMR0wGwYDVQQLExRDYXNqYXlzIERldmVsb3BtZW50
+czEdMBsGA1UEAxMUQ2FzamF5cyBEZXZlbG9wbWVudHMxJzAlBgkqhkiG9w0BCQEW
+GHNzbC1hZG1pbkBjYXNqYXlzZGV2LmNvbTAeFw0xODA5MDMwOTI1MDlaFw0yODA4
+MzEwOTI1MDlaMIGqMQswCQYDVQQGEwJVUzERMA8GA1UECBMITmV3IFlvcmsxEjAQ
+BgNVBAcTCUFtc3RlcmRhbTEdMBsGA1UEChMUQ2FzamF5cyBEZXZlbG9wbWVudHMx
+HTAbBgNVBAsTFENhc2pheXMgRGV2ZWxvcG1lbnRzMRIwEAYDVQQDEwljYXNqYXku
+aW4xIjAgBgkqhkiG9w0BCQEWE3NzbC1hZG1pbkBjYXNqYXkuaW4wggEiMA0GCSqG
+SIb3DQEBAQUAA4IBDwAwggEKAoIBAQCbhIj9EfXlVPeXUhrzYNjwMYRwgdOVT1Z6
+SQyqX2vsv+OKDiqV2cQdrXif16M5BiLdBXZIQUQ++yrttx8bBlo6GnrXJU59ruIU
+aSc1MEE5lmhulOCsl4pAxLJmv5YAKgaGh2yptViILeStRM9IuBuBAZTmkqLARcqK
+q+jQ8ulafQ07ug025U6ET5mWbUDMeTCsQ8przPfuE9RxSo9Z/T4hXGTK3sux60oE
+VJVrE++OYy1rtLLIm5Hm14OuRjdDng430lxfYCWQ0G1E+1P8nZFGhwY5tQw7Iyf6
+O3gTGu3/ewfqmb+wlbCPkdGjpWpBXaeD6EVZRh2SnFzVwriJOKxdAgMBAAGjggYo
+MIIGJDCCA9EGA1UdEQSCA8gwggPEgg9hcG1wcHJvamVjdC5vcmeCCGJ1Z3Mub25l
+ghFjYWNoZXRhZ2Fsb25nLmNvbYIMY2FzamF5LmNsb3VkggpjYXNqYXkuY29tgg1j
+YXNqYXlkbnMuY29tggxjYXNqYXkuZW1haWyCD2Nhc2pheWdhbWVzLmNvbYINY2Fz
+amF5aGFrLmNvbYILY2FzamF5LmhlbHCCC2Nhc2pheS5pbmZvggpjYXNqYXkubmV0
+ggpjYXNqYXkub25lggpjYXNqYXkub3Jngg5jYXNqYXkucmVjaXBlc4IOY2FzamF5
+c2Rldi5jb22CC2Nhc2pheS5zaG9wggpjYXNqYXkudGVsggljYXNqYXkudXOCCmNh
+c2pheS54eXqCCGNhc2ouYml6ggtjaG13ZWIuaW5mb4INa2VsbHltYWxhay51c4IJ
+bWFsYWtzLnVzgg1tYXNvbm1hbGFrLnVzgg1taWxleW1hbGFrLnVzggptbW1hbGFr
+LnVzggttcG1hbGFrLmNvbYIOcGFyYW5vcm1hbC5vbmWCDXNlY3VyZWl0LmJsb2eC
+CHNxbGRiLnVzghB3aGF0a25vdHM0MDQuY29tghEqLmFwbXBwcm9qZWN0Lm9yZ4IK
+Ki5idWdzLm9uZYITKi5jYWNoZXRhZ2Fsb25nLmNvbYIOKi5jYXNqYXkuY2xvdWSC
+DCouY2FzamF5LmNvbYIPKi5jYXNqYXlkbnMuY29tgg4qLmNhc2pheS5lbWFpbIIR
+Ki5jYXNqYXlnYW1lcy5jb22CDyouY2FzamF5aGFrLmNvbYINKi5jYXNqYXkuaGVs
+cIILKi5jYXNqYXkuaW6CDSouY2FzamF5LmluZm+CDCouY2FzamF5Lm5ldIIMKi5j
+YXNqYXkub25lggwqLmNhc2pheS5vcmeCECouY2FzamF5LnJlY2lwZXOCECouY2Fz
+amF5c2Rldi5jb22CDSouY2FzamF5LnNob3CCDCouY2FzamF5LnRlbIILKi5jYXNq
+YXkudXOCDCouY2FzamF5Lnh5eoIKKi5jYXNqLmJpeoINKi5jaG13ZWIuaW5mb4IP
+Ki5rZWxseW1hbGFrLnVzggsqLm1hbGFrcy51c4IPKi5tYXNvbm1hbGFrLnVzgg8q
+Lm1pbGV5bWFsYWsudXOCDCoubW1tYWxhay51c4INKi5tcG1hbGFrLmNvbYIQKi5w
+YXJhbm9ybWFsLm9uZYIPKi5zZWN1cmVpdC5ibG9nggoqLnNxbGRiLnVzghIqLndo
+YXRrbm90czQwNC5jb22CCWxvY2FsaG9zdDAJBgNVHRMEAjAAMBEGCWCGSAGG+EIB
+AQQEAwIE8DAmBglghkgBhvhCAQ0EGRYXQ2FzamF5cyBEZXZlbG9wbWVudHMgQ0Ew
+HQYDVR0OBBYEFKey4VHcaz2ONk99eakmPT/ax4wnMIHsBgNVHSMEgeQwgeGAFM5i
+oEOUYGl9Dx8bVFxg5mTeIy+7oYG9pIG6MIG3MQswCQYDVQQGEwJVUzERMA8GA1UE
+CBMITmV3IFlvcmsxDzANBgNVBAcTBkNvaG9lczEdMBsGA1UEChMUQ2FzamF5cyBE
+ZXZlbG9wbWVudHMxHTAbBgNVBAsTFENhc2pheXMgRGV2ZWxvcG1lbnRzMR0wGwYD
+VQQDExRDYXNqYXlzIERldmVsb3BtZW50czEnMCUGCSqGSIb3DQEJARYYc3NsLWFk
+bWluQGNhc2pheXNkZXYuY29tggkA/bkBuEgq6uMwJAYJYIZIAYb4QgECBBcWFWh0
+dHA6Ly9jYS5jYXNqYXkubmV0LzAuBglghkgBhvhCAQMEIRYfaHR0cDovL2NhLmNh
+c2pheS5uZXQvcmV2b2tlLmNybDAvBglghkgBhvhCAQcEIhYgaHR0cDovL2NhLmNh
+c2pheS5uZXQvcmVuZXdlbC5waHAwMQYJYIZIAYb4QgEEBCQWImh0dHA6Ly9jYS5j
+YXNqYXkubmV0L2NhLXJldm9rZS5jcmwwMgYJYIZIAYb4QgEIBCUWI2h0dHA6Ly9j
+YS5jYXNqYXkubmV0L2NhLXJlbmV3ZWwucGhwMAsGA1UdDwQEAwIF4DANBgkqhkiG
+9w0BAQsFAAOCAgEAmWBuy3XlbPvOuqlCWBqYi5x3YY3u7MmaLOPuPpac+jUNOAWW
+35ux1jriXCnHpuF+aXnXO9cn4+8snSGEMl7xDSHim+ZpmZM4KA7JDV9ArTiyb4xR
+BToG9qGRUx//6VxhnedF69GzIrWQrwiqUS+xGiJo74qFIvXhz0OQTuQeJzgdEXgm
+vHXedThvaqTZrPTOf43Wqa75I2hrBTN/Obtg2HX1njhKKf/i5FIIQCzel/c+EyKD
+/TmsxaZOWwPanzoW1dlpXh/ii7mN9LT+VMjZ6PcWnhqRn17PCglOxJ+7cqFE8t+1
+9CxHgk+D+ErzSk68dtOMn/Cbf+YXwGdMOC8YchNkWEgyXsxn5qyMDJ8yOhmHfd44
++u8hH3+F10svBl7IbFgy+plffQBaJAT5fP3aMiiwRwroffn0gOKJfobkZxirhuJ8
+/l5/UVR2VRctf+5i3dZ07Jx3IAN5DZyJxCAsQ867wPs9HS90Dk9uxJqNmqHnBcZI
+4OfGplHMBYuJLO3CZp1knUFbFYcm5AKovLBq8zZnmAAXIPvbc/NO5AuEzTsWbaWM
+7cSTGCybzWlZdYkE8OluQqAqua+HfnuOjltzo6EkgVRHn+5pR1BZC0yjtj2Ao2JJ
+ML8/PO5/ICsBkuR4UqOZKheGi2+/7KVrhKghHp7mziGcctzJX/WPxhgK1Xk=
+-----END CERTIFICATE-----

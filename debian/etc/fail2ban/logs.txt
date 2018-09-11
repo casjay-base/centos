@@ -1,0 +1,9 @@
+var/log/secure
+var/log/proftpd/auth.log
+var/log/maillog
+var/log/httpd/*error_log
+var/log/named/security.log
+var/log/named/security.log
+var/log/httpd/webmail_log
+var/log/maillog
+var/log/fail2ban.log

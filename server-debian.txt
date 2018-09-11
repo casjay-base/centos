@@ -1,0 +1,70 @@
+##
+wget https://github.com/casjay/configs/raw/master/debian/etc/apt/sources.list.d/others.list -O /etc/apt/sources.list.d/others.list
+#needed apps
+apt install -y git sudo lsb-release
+#set root password locale and time keyboard ssh
+sudo passwd root
+dpkg-reconfigure keyboard-configuration
+dpkg-reconfigure locales
+dpkg-reconfigure tzdata
+dpkg-reconfigure dash
+reboot
+
+apt update && apt upgrade -y && apt dist-upgrade -y
+apt install -y ssh postfix php apache2 libapache2-mod-php libapache2-mod-geoip
+apt install -y munin munin-node shorewall shorewall6 fail2ban logrotate php-fpm postfix mailutils openssh-server geoip-database bind9 ntp proftpd-basic rsyslog uptimed downtimed vnstat webalizer awffull libapache2-mod-fcgid
+apt install -y php-curl php-gd php-intl php-pear php-imagick php-imap  php-memcache php-pspell php-recode php-snmp php-tidy php-xmlrpc php-xsl 
+apt install -y vim snmpd samba uptimed downtimed bash-completion vnstat cockpit bind9 geoip-database geoip-database-extra geoipupdate mlocate proftpd-mod-geoip
+apt-get -y install python-certbot-apache -t stretch-backports
+
+rm -Rfv /etc/bind /etc/named* /var/named/* /etc/ntp* /etc/cron*/0* /etc/cron*/dailyjobs /var/ftp/uploads /etc/httpd/conf.d/ssl.conf
+rm -Rfv /etc/skel /tmp/dotfiles
+git clone https://github.com/casjay/dotfiles.git /tmp/dotfiles
+rm -Rfv /tmp/dotfiles/{LICENSE,README.md,version.txt,.git}
+find /tmp/dotfiles/ -type f -iname "*.sh" -exec chmod 755 -Rfv {} \;
+unalias cp ; cp -Rfv /tmp/dotfiles/* / ; source ~/.bashrc
+
+#copy over configuration files and configure
+rm -Rf /var/www/html/index.html /tmp/default /etc/bind /var/named
+git clone https://github.com/casjay/configs.git /tmp/default
+
+find /tmp/default/debian -type f -exec sed -i "s#myserverdomainname#$(hostname -f)#g" {} \;
+find /tmp/default/debian -type f -exec sed -i "s#myhostnameshort#$(hostname -s)#g" {} \;
+find /tmp/default/debian -type f -exec sed -i "s#myrelayhost#yourrelayhostdomain#g" {} \;
+find /tmp/default/debian -type f -exec sed -i "s#mysecurepassword#yourreallysecurepassword#g" {} \;
+
+cp -Rfv --no-preserve=mode,ownership /tmp/default/debian/* /
+postmap /etc/postfix/transport /etc/postfix/canonical /etc/postfix/mydomains && newaliases
+cp -Rfv /etc/skel/.{bash*,profile} /root/
+chown -Rfv www-data:www-data /var/www /usr/share/apache2 
+mkdir -p /var/log/named && chown -Rfv bind:bind /etc/bind /etc/named* /var/named /var/log/named
+
+
+#Configure Apache
+a2enmod ssl access_compat actions alias allowmethods asis auth_basic auth_digest auth_form authn_anon authn_core authn_dbd authn_dbm authn_file autoindex buffer cgi cgid charset_lite data dav dav_fs dav_lock deflate dir env expires filter geoip headers include info lbmethod_bybusyness lbmethod_byrequests lbmethod_bytraffic lbmethod_heartbeat mime mime_magic negotiation php proxy proxy_ajp proxy_balancer proxy_connect proxy_express proxy_fcgi proxy_fdpass proxy_ftp proxy_html proxy_http proxy_scgi proxy_wstunnel ratelimit reflector remoteip reqtimeout request rewrite sed session session_cookie session_crypto session_dbd setenvif speling status usertrack xml2enc userdir
+
+#Configure PHP
+phpenmod calendar ctype curl dom exif fileinfo ftp gd gettext iconv imagick imap intl json memcache opcache pdo phar posix pspell readline recode shmop simplexml snmp sockets sysvmsg sysvsem sysvshm tidy tokenizer wddx xml xmlreader xmlrpc xmlwriter xsl
+
+#Enable services
+systemctl enable vnstat postfix apache2 smbd nmbd snmpd uptimed downtimed php7.0-fpm
+
+#if using letsencrypt
+apt install -y python3-certbot-dns-rfc2136
+chmod 600 /etc/named/certbot-update.conf
+echo "run certbot certonly --dns-rfc2136 --dns-rfc2136-credentials /etc/named/certbot-update.conf -d $(domainname) -d *.$(domainname)"
+echo "run certbot -a webroot -i apache -w /var/www/html -d $(domainname) -d $(hostname -f)"
+ln -s /etc/letsencrypt/live/$(domainname) /etc/letsencrypt/live/domain
+cat /etc/letsencrypt/live/domain/fullchain.pem > /etc/cockpit/ws-certs.d/1-my-cert.cert
+cat /etc/letsencrypt/live/domain/privkey.pem >> /etc/cockpit/ws-certs.d/1-my-cert.cert
+find /etc/postfix /etc/httpd -type f -exec sed -i 's#/etc/ssl/CA/certs/localhost.crt#/etc/letsencrypt/live/domain/fullchain.pem#g' {} \;
+find /etc/postfix /etc/httpd -type f -exec sed -i 's#/etc/ssl/CA/private/localhost.key#/etc/letsencrypt/live/domain/privkey.pem#g' {} \;
+
+#Otherwise do this
+cat /etc/ssl/CA/certs/ca.crt > /etc/cockpit/ws-certs.d/1-my-cert.cert
+cat /etc/ssl/CA/certs/localhost.crt >> /etc/cockpit/ws-certs.d/1-my-cert.cert
+cat /etc/ssl/CA/private/localhost.key >> /etc/cockpit/ws-certs.d/1-my-cert.cert
+
+grub-mkconfig -o /boot/grub/grub.cfg
+
+reboot

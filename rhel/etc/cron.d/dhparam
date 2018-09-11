@@ -1,0 +1,5 @@
+1 1 * * * root openssl dhparam -out dhparams.pem 1024 > /etc/ssl/dhparam/1024.pem
+4 1 * * * root openssl dhparam -out dhparams.pem 2048 > /etc/ssl/dhparam/2048.pem 
+10 1 * * * root openssl dhparam -out dhparams.pem 4096 > /etc/ssl/dhparam/4096.pem 
+20 1 * * * root cat /etc/ssl/dhparam/1024.pem /etc/ssl/dhparam/2048.pem /etc/ssl/dhparam/4096.pem > /etc/ssl/dhparam/proftpd.pem
+20 1 * * * root cat /etc/ssl/dhparam/1024.pem /etc/ssl/dhparam/2048.pem /etc/ssl/dhparam/4096.pem > /etc/ssl/dhparam/httpd.pem
