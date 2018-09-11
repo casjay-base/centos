@@ -1,32 +1,29 @@
-<!DOCTYPE html>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
-<link rel="stylesheet" type="text/css" href="https://static.casjay.net/default-css/casjaysdev.css">
-<meta name="generator" content="CasjaysDev">
-<title>Welcome</title>
-
+<?php include "https://static.casjay.net/casjays-header.php"; ?>
+<title>Site Configured</title>
 </head>
 <body>
 <div class="c1">
+<center>
+<div class="c1">
 <h2>Welcome to your new site<br>
-The site you have visited has<br>
+The site you have visited has<br><br>
 just been setup and the user hasn't<br>
 created a site yet.<br>
 Please come back soon as I'm sure the<br>
 site owner is working on it!<br>
-Powered by a debian based system<br>
+<br>
+Server Admin you can now upload your site to<br>
+<?php echo $_SERVER['DOCUMENT_ROOT']; ?><br><br>
+<a href="https://centos.org"> <img border="0" alt="CentOS Linux" src="https://static.casjay.net/default-icons/powered_by_centos.png"> </a>
 </div>
-<div class="c5">
-<?php
-echo "Server Name: ".$_SERVER['SERVER_NAME']."<BR>";
-echo "IP Address: ".$_SERVER['SERVER_ADDR']."<BR>";
-?>
-<br><br><br><br><br>
-</div>
-<!-- Begin Casjays Developments Footer -->
-<center>
+<br>
 <?php include "https://static.casjay.net/casjays-footer.php"; ?>
+
+</div>
 </center>
-<!-- End Casjays Developments Footer -->
 </body>
 </html>

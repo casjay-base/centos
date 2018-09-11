@@ -1,8 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<link rel="stylesheet" type="text/css" href="https://static.casjay.net/default-css/casjaysdev.css">
-<meta name="generator" content="CasjaysDev">
+<?php include "https://static.casjay.net/casjays-header.php"; ?>
 <title>Domain Doesn't Exist</title>
 
 </head>
@@ -11,7 +10,7 @@
 <h2>UMMMMM<br>
 This site doesn't seem to exist<br>
 <br><br>
-<a href="https://centos.org"> <img border="0" alt="CentOS Linux" src="/default-icons/poweredby.png"> </a>
+<a href="https://debian.org"> <img border="0" alt="Debian Linux" src="/default-icons/poweredby.png"> </a>
 </div>
 <div class="c5">
 <?php

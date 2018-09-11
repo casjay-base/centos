@@ -11,7 +11,7 @@
 <h2>UMMMMM<br>
 This site doesn't seem to exist<br>
 <br><br>
-<a href="https://ubuntu.com"> <img border="0" alt="Ubuntu Linux" src="/default-icons/poweredby.png"> </a>
+<a href="https://ubuntu.com"> <img border="0" alt="Ubuntu Linux" src="https://static.casjay.net/default-icons/powered_by_ubuntu.jpg"> </a>
 </div>
 <div class="c5">
 <?php

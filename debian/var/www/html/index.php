@@ -18,7 +18,7 @@ site owner is working on it!<br>
 <br>
 Server Admin you can now upload your site to<br>
 <?php echo $_SERVER['DOCUMENT_ROOT']; ?><br><br>
-<a href="https://debian.org"> <img border="0" alt="Debian Linux" src="https://static.casjay.net/default-icons/poweredby.png"> </a>
+<a href="https://debian.org"> <img border="0" alt="Debian Linux" src="https://static.casjay.net/default-icons/powered_by_debian.jpg"> </a>
 </div>
 <br>
 <?php include "https://static.casjay.net/casjays-footer.php"; ?>
