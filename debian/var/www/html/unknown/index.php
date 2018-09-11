@@ -1,8 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<link rel="stylesheet" type="text/css" href="https://static.casjay.net/default-css/casjaysdev.css">
-<meta name="generator" content="CasjaysDev">
+<?php include "https://static.casjay.net/casjays-header.php"; ?>
 <title>Domain Doesn't Exist</title>
 
 </head>
