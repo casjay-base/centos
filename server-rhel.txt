@@ -49,7 +49,7 @@ chmod 644 -Rf /etc/cron.d/* /etc/logrotate.d/*
 postmap /etc/postfix/transport /etc/postfix/canonical /etc/postfix/mydomains && newaliases
 
 for s in $(echo munin-node httpd cockpit named postfix uptimed php-fpm fail2ban shorewall shorewall6 dhcpd dhcpd6 radvd proftpd rsyslog ntpd snmpd) ; do systemctl enable $s ; done
-for s in $(echo firewalld auditd kdump iscsid.socket iscsi.service iscsiuio.socket lvm2-lvmetad.socket lvm2-lvmpolld.socket lvm2-monitor.service mdmonitor.service mariadb.service) ; do systemctl disable $s ; done
+for s in $(echo firewalld auditd kdump iscsid.socket iscsi.service iscsiuio.socket lvm2-lvmetad.socket lvm2-lvmpolld.socket lvm2-monitor.service mdmonitor.service mariadb.service nginx.service) ; do systemctl disable $s ; done
 
 rpm -e --nodeps subscription-manager subscription-manager-rhsm subscription-manager-rhsm-certificates
 
