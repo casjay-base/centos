@@ -18,10 +18,10 @@ rm -Rf /etc/yum.repos.d/*
 curl -sSL https://rpm-devel.sourceforge.io/ZREPO/RHEL/7/casjay.repo -o /etc/yum.repos.d/casjay.repo
 
 yum clean all && yum update -y
-yum install -y vnstat
+yum install -y vnstat  
 systemctl enable --now vnstat
 
-yum install -y net-tools git nail e2fsprogs redhat-lsb neovim wget unzip
+yum install -y net-tools wget curl git nail e2fsprogs redhat-lsb neovim wget unzip
 
 rm -Rf /tmp/dotfiles
 
