@@ -36,8 +36,6 @@ rm -Rf /etc/yum.repos.d/*
 curl -sSL https://rpm-devel.sourceforge.io/ZREPO/RHEL/7/casjay.repo -o /etc/yum.repos.d/casjay.repo
 yum clean all && yum update -q -y --skip-broken
 
-bash -c "$(curl -LSs https://raw.githubusercontent.com/casjay-dotfiles/minimal/master/install.sh)"
-
 rm -Rf /boot/*rescue*
 grub2-mkconfig -o /boot/grub2/grub.cfg
 
