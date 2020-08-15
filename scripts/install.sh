@@ -59,7 +59,7 @@ find /tmp/configs -type f -exec sed -i "s#myserverdomainname#$(hostname -f)#g" {
 find /tmp/configs -type f -exec sed -i "s#myhostnameshort#$(hostname -s)#g" {} \;
 find /tmp/configs -type f -exec sed -i "s#mydomainname#$(hostname -f | awk -F. '{$1="";OFS="." ; print $0}' | sed 's/^.//')#g" {} \;
 
-rm -Rf /tmp/configs/etc/{fail2ban,shorewall,shorewall6}
+#rm -Rf /tmp/configs/etc/{fail2ban,shorewall,shorewall6}
 cp -Rf /tmp/configs/{etc,root,usr,var}* /
 
 mkdir -p /etc/rsync.d /var/log/named && chown -Rf named:named /etc/named* /var/named /var/log/named
@@ -75,7 +75,7 @@ postmap /etc/postfix/transport /etc/postfix/canonical /etc/postfix/virtual /etc/
 chattr +i /etc/resolv.conf
 
 for s in $(echo sshd tor munin-node cockpit postfix uptimed php-fpm proftpd rsyslog ntpd snmpd cockpit.socket named); do systemctl enable $s; done
-for s in $(echo firewalld auditd kdump iscsid.socket iscsi iscsiuio.socket lvm2-lvmetad.socket lvm2-lvmpolld.socket lvm2-monitor mdmonitor fail2ban shorewall shorewall6 dhcpd dhcpd6 radvd); do systemctl disable $s; done
+for s in $(echo firewalld chrony auditd kdump iscsid.socket iscsi iscsiuio.socket lvm2-lvmetad.socket lvm2-lvmpolld.socket lvm2-monitor mdmonitor fail2ban shorewall shorewall6 dhcpd dhcpd6 radvd); do systemctl disable $s; done
 
 #enable web server
 systemctl enable httpd nginx
