@@ -1,7 +1,5 @@
 #!/bin/bash
 
-rm -f "/root/-Rf"
-
 VERSION="$(echo $(curl -sSL https://github.com/casjay-base/centos/raw/master/version.txt))"
 echo -e "\nThis is version $VERSION"
 echo -e "Running the automatic update script\nYour system will restart when done"
