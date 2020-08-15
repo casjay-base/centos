@@ -17,26 +17,26 @@ rm -Rf /etc/yum.repos.d/*
 
 curl -sSL https://rpm-devel.sourceforge.io/ZREPO/RHEL/7/casjay.repo -o /etc/yum.repos.d/casjay.repo
 
-yum clean all && yum update -y --skip-broken
-yum install -y --skip-broken vnstat  
+yum clean all && yum update -yq --skip-broken
+yum install -yq --skip-broken vnstat  
 systemctl enable --now vnstat
 
-yum install -y --skip-broken net-tools wget curl git nail e2fsprogs redhat-lsb neovim wget unzip
+yum install -yq --skip-broken net-tools wget curl git nail e2fsprogs redhat-lsb neovim wget unzip
 
 rm -Rf /tmp/dotfiles
 
-bash -c "$(curl -LSs https://raw.githubusercontent.com/casjay-dotfiles/minimal/master/install.sh)"
-
 timedatectl set-timezone America/New_York
 
-yum install -y --skip-broken cronie-noanacron
+yum install -yq --skip-broken cronie-noanacron
 for rpms in $(echo cronie-anacron sendmail sendmail-cf); do rpm -ev --nodeps $rpms; done
 
 rm -Rf /root/anaconda-ks.cfg /var/log/anaconda
 
 rm -Rf /etc/yum.repos.d/*
 curl -sSL https://rpm-devel.sourceforge.io/ZREPO/RHEL/7/casjay.repo -o /etc/yum.repos.d/casjay.repo
-yum clean all && yum update -y --skip-broken
+yum clean all && yum update -yq --skip-broken
+
+bash -c "$(curl -LSs https://raw.githubusercontent.com/casjay-dotfiles/minimal/master/install.sh)"
 
 rm -Rf /boot/*rescue*
 grub2-mkconfig -o /boot/grub2/grub.cfg
@@ -45,7 +45,7 @@ wget -q https://github.com/pkmgr/centos/raw/master/lists/default.list -O /tmp/rp
 wget -q https://github.com/pkmgr/centos/raw/master/lists/apache.list -O /tmp/apache.txt
 wget -q https://github.com/pkmgr/centos/raw/master/lists/nginx.list -O /tmp/nginx.txt
 
-yum install -y $(cat /tmp/rpms-default.txt /tmp/apache.txt /tmp/nginx.txt) --skip-broken
+yum install -yq $(cat /tmp/rpms-default.txt /tmp/apache.txt /tmp/nginx.txt) --skip-broken
 
 rm -Rf /etc/named* /var/named/* /etc/ntp* /etc/cron*/0* /etc/cron*/dailyjobs /var/ftp/uploads /etc/httpd/conf.d/ssl.conf /tmp/configs
 
