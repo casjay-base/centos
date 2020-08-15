@@ -1,0 +1,93 @@
+127.0.0.1       localhost
+::1             localhost
+
+192.168.1.1     gateway
+
+10.0.0.1        server
+
+10.0.0.2        dc
+10.0.0.3        exchange
+
+10.0.0.100      nfs
+10.0.0.101      ftp
+10.0.0.102      tftp
+
+10.0.0.254      sso
+
+10.0.1.1        vcenter
+10.0.1.11       vmhost01
+10.0.1.12       vmhost02
+10.0.1.13       vmhost03
+10.0.1.14       vmhost04
+10.0.1.15       vmhost05
+10.0.1.16       vmhost06
+10.0.1.17       vmhost07
+
+10.0.2.1        mssql
+10.0.2.2        mysql
+10.0.2.3        pgsql
+10.0.2.10       ssh
+
+10.0.20.1       git
+10.0.20.2       build
+10.0.20.3       build-test
+10.0.20.4       el7-x32
+10.0.20.5       el7-x64
+10.0.20.6       fc27-x64
+10.0.20.7       fc28-x64
+10.0.20.8       fc29-x64
+10.0.20.254     docker
+
+10.0.22.254     c2
+
+10.0.90.1       jasons-desktop
+10.0.90.2       jasons-chromebook
+10.0.90.3       jasons-androidwear
+10.0.90.4       jasons-phone
+10.0.90.5       jasons-tablet
+
+10.0.94.1       homehub
+10.0.94.2       huehub
+10.0.94.3       winkhub
+10.0.94.10      broadcast
+10.0.94.11      couchpotato
+10.0.94.12      headphones
+10.0.94.13      sickrage
+10.0.94.14      plex
+10.0.94.15      emby
+10.0.94.16      music
+10.0.94.17      downloads
+10.0.94.18      videos
+
+10.0.94.100     issabove
+10.0.94.248     eggbert
+10.0.94.250     aria1
+
+10.0.95.10      roku-livingroom
+10.0.95.12      home-masterbedroom
+10.0.95.13      roku-office
+10.0.95.102     xbox-livingroom
+10.0.95.130     alexa-kitchen
+10.0.95.125     chromecast-livingroom
+10.0.95.126     chromecast-jobrocker
+10.0.95.140     home-kitchen
+10.0.95.142     home-bathroom
+10.0.95.253     mfc-j5720dw
+
+10.0.96.1       pbx
+10.0.96.2       3cx
+10.0.96.240     spa508g
+10.0.96.250     magicjack-1
+
+10.0.254.1      freenas
+10.0.254.2      vmnas
+
+10.0.255.230    unifi
+10.0.255.240    homewifi
+10.0.255.241    freewifi
+10.0.255.242    lab
+10.0.255.243    gethacked
+10.0.255.250    router0
+10.0.255.251    router1
+10.0.255.252    router2
+10.0.255.254    monitor

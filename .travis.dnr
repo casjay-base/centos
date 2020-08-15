@@ -1,0 +1,29 @@
+# For more information about the configurations used
+# in this file, please see the Travis CI documentation.
+# .travis.yml
+# https://docs.travis-ci.com
+sudo: required
+env:
+  matrix:
+  - OS_TYPE=centos OS_VERSION=7
+  
+services:
+  - docker
+  
+before_install:
+  - sudo apt-get update -q
+  - echo 'DOCKER_OPTS="-H tcp://127.0.0.1:2375 -H unix:///var/run/docker.sock -s devicemapper"' | sudo tee /etc/default/docker > /dev/null
+  - sudo service docker restart
+  - sleep 5
+  - sudo docker run -it -d --name=centos7 -e TZ=America/New_York -e PATH=$PATH --restart always --entrypoint /sbin/init centos:7
+  
+script:
+  - sudo docker exec -it centos7 bash -c "yum update -q -yy && yum install -q -yy @base && yum install -q -yy curl git net-tools" ; sleep 30
+  - sudo docker exec -it centos7 bash -c "$(curl -LSs https://github.com/casjay-base/centos/raw/master/scripts/install.sh)" ; sleep 30
+  - sudo docker exec -it centos7 bash -c "chattr -i /etc/resolv.conf"
+  - sudo docker rm -f centos7
+
+notifications:
+  email:
+    on_failure: never
+    on_success: never

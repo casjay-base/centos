@@ -1,0 +1,1 @@
+5 */12 * * * cp -Rf /var/lib/tor/hidden_service/hostname /var/www/html/tor_hostname >/dev/null 2>&1
