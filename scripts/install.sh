@@ -17,11 +17,11 @@ rm -Rf /etc/yum.repos.d/*
 
 curl -sSL https://rpm-devel.sourceforge.io/ZREPO/RHEL/7/casjay.repo -o /etc/yum.repos.d/casjay.repo
 
-yum clean all && yum update -y
-yum install -y vnstat  
+yum clean all && yum update -y --skip-broken
+yum install -y --skip-broken vnstat  
 systemctl enable --now vnstat
 
-yum install -y net-tools wget curl git nail e2fsprogs redhat-lsb neovim wget unzip
+yum install -y --skip-broken net-tools wget curl git nail e2fsprogs redhat-lsb neovim wget unzip
 
 rm -Rf /tmp/dotfiles
 
@@ -29,14 +29,14 @@ bash -c "$(curl -LSs https://raw.githubusercontent.com/casjay-dotfiles/minimal/m
 
 timedatectl set-timezone America/New_York
 
-yum install -y cronie-noanacron
+yum install -y --skip-broken cronie-noanacron
 for rpms in $(echo cronie-anacron sendmail sendmail-cf); do rpm -ev --nodeps $rpms; done
 
 rm -Rf /root/anaconda-ks.cfg /var/log/anaconda
 
 rm -Rf /etc/yum.repos.d/*
 curl -sSL https://rpm-devel.sourceforge.io/ZREPO/RHEL/7/casjay.repo -o /etc/yum.repos.d/casjay.repo
-yum clean all && yum update -y
+yum clean all && yum update -y --skip-broken
 
 rm -Rf /boot/*rescue*
 grub2-mkconfig -o /boot/grub2/grub.cfg
