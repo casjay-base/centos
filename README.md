@@ -3,13 +3,7 @@
 ### Automated Install  
   
 ```shell
-bash -c "$(curl -sSL https://github.com/casjay-base/centos/raw/master/scripts/install.sh)"
-```
-  
-### Automated update  
-  
-```shell
-bash -c "$(curl -sSL https://github.com/casjay-base/centos/raw/master/scripts/update.sh)"
+bash -c "$(curl -sSL https://github.com/pkmgr/centos/raw/master/scripts/default.sh)"
 ```
   
 [![Patreon](https://img.shields.io/badge/patreon-donate-orange.svg)](https://www.patreon.com/casjay)
