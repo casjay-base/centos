@@ -9,12 +9,13 @@
 <br><br>
 
   <div class="c1">
-<h2>Welcome to your new site  <br>
-The site you have visited has  <br>
+    <h2>Welcome to your new site</h2>  <br>
+<h5>The site you have visited has  <br>
 just been setup and the user  <br>
 hasn't created a site yet. <br><br>
 Please come back soon as I'm sure the <br>
-site owner is working on it!  <br><br><br><br>
+  site owner is working on it!</h5> 
+    <br><br><br><br>
   </div>
 
   <div class="c3">
