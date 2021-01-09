@@ -3,6 +3,8 @@
 # .travis.yml
 # https://docs.travis-ci.com
 sudo: required
+language: bash
+
 env:
   matrix:
   - OS_TYPE=centos OS_VERSION=7
@@ -13,13 +15,12 @@ services:
 before_install:
   - sudo apt-get update -q
   - echo 'DOCKER_OPTS="-H tcp://127.0.0.1:2375 -H unix:///var/run/docker.sock -s devicemapper"' | sudo tee /etc/default/docker > /dev/null
-  - sudo service docker restart
-  - sleep 5
+  - sudo service docker restart; sleep 5
   - sudo docker run --privileged -it -v /sys/fs/cgroup:/sys/fs/cgroup -d --name=centos7 -e TZ=America/New_York -e PATH=$PATH --restart always --entrypoint /sbin/init centos:7
   
 script:
-  - sudo docker exec -it centos7 bash -c "yum update -q -yy && yum install -q -yy @base && yum install -q -yy curl git net-tools" ; sleep 30
-  - sudo docker exec -it centos7 bash -c "$(curl -LSs https://github.com/casjay-base/centos/raw/master/scripts/install.sh)" ; sleep 30
+  - sudo docker exec -it centos7 bash -c "yum install -q -yy @base; yum update -q -yy; yum install -q -yy curl git net-tools"
+  - sudo docker exec -it centos7 bash -c "$(curl -LSs https://github.com/pkmgr/centos/raw/master/scripts/default.sh)"
   - sudo docker rm -f centos7
 
 notifications:
