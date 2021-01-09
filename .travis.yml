@@ -20,7 +20,6 @@ before_install:
 script:
   - sudo docker exec -it centos7 bash -c "yum update -q -yy && yum install -q -yy @base && yum install -q -yy curl git net-tools" ; sleep 30
   - sudo docker exec -it centos7 bash -c "$(curl -LSs https://github.com/casjay-base/centos/raw/master/scripts/install.sh)" ; sleep 30
-  - sudo docker exec -it centos7 bash -c "chattr -i /etc/resolv.conf"
   - sudo docker rm -f centos7
 
 notifications:
