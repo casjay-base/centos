@@ -15,7 +15,7 @@ before_install:
   - echo 'DOCKER_OPTS="-H tcp://127.0.0.1:2375 -H unix:///var/run/docker.sock -s devicemapper"' | sudo tee /etc/default/docker > /dev/null
   - sudo service docker restart
   - sleep 5
-  - sudo docker run --privileged -it -d --name=centos7 -e TZ=America/New_York -e PATH=$PATH --restart always --entrypoint /sbin/init centos:7
+  - sudo docker run --privileged -it -v /sys/fs/cgroup:/sys/fs/cgroup -d --name=centos7 -e TZ=America/New_York -e PATH=$PATH --restart always --entrypoint /sbin/init centos:7
   
 script:
   - sudo docker exec -it centos7 bash -c "yum update -q -yy && yum install -q -yy @base && yum install -q -yy curl git net-tools" ; sleep 30
