@@ -20,7 +20,7 @@ before_install:
   
 script:
   - sudo docker exec -it centos7 bash -c "yum install -q -yy @base; yum update -q -yy; yum install -q -yy curl git net-tools"
-  - sudo docker exec -it centos7 bash -c "$(curl -LSs https://github.com/pkmgr/centos/raw/master/scripts/default.sh)"
+  - sudo docker exec -it centos7 bash -c "$(bash -c $(curl -LSs https://github.com/pkmgr/centos/raw/master/scripts/default.sh))"
 
 notifications:
   email:
