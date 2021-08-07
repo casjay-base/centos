@@ -1,1 +1,2 @@
-30 1 * * 1 root /usr/bin/certbot renew -a webroot -w /var/www/html >> /var/log/le-renew.log > /dev/null 2>&1
+# Automatic certificate renewal using certbot
+30 1 * * 1 root [ -f "$HOME/dns/certbot.sh" ] && "$HOME/dns/certbot.sh" --renew &>> /var/log/le-renew.log || /usr/bin/certbot renew -a webroot -w /var/www/html &>> /var/log/le-renew.log
