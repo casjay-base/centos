@@ -3,7 +3,7 @@
 ### Automated Install  
   
 ```shell
-bash -c "$(curl -sSL https://github.com/pkmgr/centos/raw/main/scripts/default.sh)"
+sudo bash -c "$(curl -sSL https://github.com/pkmgr/centos/raw/main/scripts/default.sh)"
 ```
   
 [![Patreon](https://img.shields.io/badge/patreon-donate-orange.svg)](https://www.patreon.com/casjay)
