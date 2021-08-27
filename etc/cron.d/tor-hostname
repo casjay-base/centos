@@ -1,1 +1,1 @@
-5 */12 * * * root cat /var/lib/tor/hidden_service/*/hostname > /var/www/html/tor_hostname 2>&1
+5 */12 * * * root cat /var/lib/tor/hidden_service/*/hostname > /var/www/html/tor_hostname 2>/dev/null
