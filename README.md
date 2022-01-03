@@ -1,6 +1,6 @@
 # RHEL & Fedora Configuration  
   
-### Automated Install  
+## Automated Install  
   
 ```shell
 sudo bash -c "$(curl -sSL https://github.com/pkmgr/centos/raw/main/scripts/default.sh)"
