@@ -1,2 +1,2 @@
-# Clean old System logs
+# Clean old System logs - runs at At 04:15
 15 04 * * * root /usr/local/bin/clean-system >/dev/null 2>&1

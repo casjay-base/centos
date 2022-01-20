@@ -1,12 +1,12 @@
-#	$OpenBSD: ssh_config,v 1.30 2016/02/20 23:06:23 sobrado Exp $
- Host *
+# $OpenBSD: ssh_config,v 1.30 2016/02/20 23:06:23 sobrado Exp $
+Host *
     Port 22
 #   Protocol 2
 #   RhostsRSAAuthentication no
 #   RSAAuthentication yes
 #   PasswordAuthentication yes
 #   HostbasedAuthentication no
-	GSSAPIAuthentication yes
+    GSSAPIAuthentication yes
 #   GSSAPIDelegateCredentials no
 #   GSSAPIKeyExchange no
 #   GSSAPITrustDNS no
@@ -30,10 +30,10 @@
 #   VisualHostKey no
 #   ProxyCommand ssh -q -W %h:%p gateway.example.com
 #   RekeyLimit 1G 1h
-	ForwardX11Trusted yes
+    ForwardX11Trusted yes
 #   ForwardAgent no
 #   ForwardX11 no
-	SendEnv LANG LC_CTYPE LC_NUMERIC LC_TIME LC_COLLATE LC_MONETARY LC_MESSAGES
-	SendEnv LC_PAPER LC_NAME LC_ADDRESS LC_TELEPHONE LC_MEASUREMENT
-	SendEnv LC_IDENTIFICATION LC_ALL LANGUAGE
-	SendEnv XMODIFIERS
+    SendEnv LANG LC_CTYPE LC_NUMERIC LC_TIME LC_COLLATE LC_MONETARY LC_MESSAGES
+    SendEnv LC_PAPER LC_NAME LC_ADDRESS LC_TELEPHONE LC_MEASUREMENT
+    SendEnv LC_IDENTIFICATION LC_ALL LANGUAGE
+    SendEnv XMODIFIERS

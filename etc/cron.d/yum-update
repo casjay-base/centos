@@ -1,1 +1,2 @@
+# run yum update - runs daily at 2 am
 0 2 * * * root yum update -y > /dev/null 2>&1

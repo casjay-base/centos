@@ -1,5 +1,2 @@
-0 12 * * 2 root openssl dhparam -out /tmp/dhparams1024.pem 1024 > /dev/null 2>&1 && mv -f /tmp/dhparams1024.pem /etc/ssl/dhparam/1024.pem
-30 12 * * 2 root openssl dhparam -out /tmp/dhparams2048.pem 2048 > /dev/null 2>&1 && mv -f /tmp/dhparams2048.pem /etc/ssl/dhparam/2048.pem
-0 1 * * 2 root openssl dhparam -out /tmp/dhparams4096.pem 4096 > /dev/null 2>&1 && mv -f /tmp/dhparams4096.pem /etc/ssl/dhparam/4096.pem
-0 2 * * 2 root cat /etc/ssl/dhparam/1024.pem /etc/ssl/dhparam/2048.pem /etc/ssl/dhparam/4096.pem > /etc/ssl/dhparam/proftpd.pem
-0 2 * * 2 root cat /etc/ssl/dhparam/1024.pem /etc/ssl/dhparam/2048.pem /etc/ssl/dhparam/4096.pem > /etc/ssl/dhparam/httpd.pem
+# create/update dhparam - runs Tuesday at 12
+0 12 * * 2 root [ -f "/root/.local/bin/root_dhparams.sh" ] && root/.local/bin/root_dhparams.sh

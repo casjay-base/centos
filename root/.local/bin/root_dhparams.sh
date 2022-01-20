@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+
+TMP="${TMP:-/tmp}"
+
+if [ -d "/etc/ssl/CA/CasjaysDev/dhparam" ]; then
+  DHDIR="${DHDIR:-/etc/ssl/CA/CasjaysDev/dhparam}"
+elif [ -d "/etc/ssl/CA/dh" ]; then
+  DHDIR="/etc/ssl/CA/dh/"
+elif [ ! -e "/etc/ssl/dhparam" ]; then
+  DHDIR="/etc/ssl/dhparam"
+fi
+
+openssl dhparam -out "$TMP/dhparams1024.pem" 1024 >/dev/null 2>&1 && mv -f "$TMP/dhparams1024.pem" "$DHDIR/1024.pem"
+openssl dhparam -out "$TMP/dhparams2048.pem" 2048 >/dev/null 2>&1 && mv -f "$TMP/dhparams2048.pem" "$DHDIR/2048.pem"
+openssl dhparam -out "$TMP/dhparams4096.pem" 4096 >/dev/null 2>&1 && mv -f "$TMP/dhparams4096.pem" "$DHDIR/4096.pem"
+cat "$DHDIR/1024.pem" "$DHDIR/2048.pem" "$DHDIR/4096.pem" >"$DHDIR/apache.pem"
+cat "$DHDIR/1024.pem" "$DHDIR/2048.pem" "$DHDIR/4096.pem" >"$DHDIR/nginx.pem"
+cat "$DHDIR/1024.pem" "$DHDIR/2048.pem" "$DHDIR/4096.pem" >"$DHDIR/postfix.pem"
+cat "$DHDIR/1024.pem" "$DHDIR/2048.pem" "$DHDIR/4096.pem" >"$DHDIR/proftpd.pem"
+cat "$DHDIR/1024.pem" "$DHDIR/2048.pem" "$DHDIR/4096.pem" >"$DHDIR/httpd.pem"

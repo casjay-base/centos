@@ -81,7 +81,7 @@ else
   find /tmp/configs -type f -exec sed -i "s#myhostnameshort#$(hostname -s)#g" {} \;
   find /tmp/configs -type f -exec sed -i "s#mydomainname#$(hostname -f | awk -F. '{$1="";OFS="." ; print $0}' | sed 's/^.//')#g" {} \;
 
-  rm -Rf /tmp/configs/etc/{fail2ban,shorewall,shorewall6,samba,postfix,named*}
+  rm -Rf /tmp/configs/etc/{tor,cockpit,fail2ban,shorewall,shorewall6,samba,postfix,named*}
   rm -Rf /tmp/configs/var/named*
 
   cp -Rf /tmp/configs/{etc,root,usr,var}* / 2>/dev/null
@@ -127,6 +127,10 @@ else
   for s in $SERVICES_ENABLE; do systemctl enable $s >/dev/null 2>&1; done
   for s in $SERVICES_DISABLE; do systemctl disable $s >/dev/null 2>&1; done
   echo -e "Done setting up the services\n"
+
+  echo -n "Updating systemmgr config"
+  systemmgr update script ssl &>/dev/null
+  echo -n "Done updating systemmgr config\n"
 
   echo -e "Cleaning up files and history"
   type -P update-motd &>/dev/null && update-motd

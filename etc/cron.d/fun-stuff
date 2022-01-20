@@ -1,2 +1,3 @@
-# Lets have fortune and cowsay create an motd file every hour
-05 * * * * root /usr/local/bin/update-motd >/dev/null 2>&1
+# Lets have fortune and cowsay create an motd file - runs every hour and at reboot
+@reboot root /usr/local/bin/update-motd &>/dev/null
+05 * * * * root /usr/local/bin/update-motd &>/dev/null
