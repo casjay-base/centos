@@ -19,11 +19,12 @@ if [ -z "$FORCE_INST" ] && [ "$VERSION" = "$CURR_VERSION" ]; then
   exit 0
 else
   echo -e "\nThis is version $VERSION"
-  echo -e "Running the automatic update script\nYour system will restart when done"
+  echo -e "Running the automatic update script"
+  echo -e "Your system will restart when done"
   echo -e "Press control+c now to cancel update"
   sleep 10
-  echo -e "\nUpdating the system!\nSetting up packages\nThis may take some time!\n"
-
+  echo -e "\nUpdating the system!"
+  echo -e "Setting up packages - this may take some time!"
   mkdir -p /etc/casjaysdev/updates/versions
   echo "$VERSION" >/etc/casjaysdev/updates/versions/configs.txt
   chmod -Rf 664 /etc/casjaysdev/updates/versions/configs.txt
@@ -38,29 +39,36 @@ else
 
   # wget -q "https://github.com/pkmgr/centos/raw/main/lists/default.list" -O /tmp/default-packages.txt
   # yum install -y --quiet $(cat /tmp/default-packages.txt) --skip-broken >/dev/null 2>&1
-  echo -e "Done with package installation\n"
+  echo -e "Done with package installation"
 
   if [ -d /tmp/dotfiles ]; then
-    echo -e "Updating the dotfiles\n"
+    echo -e "Updating the dotfiles"
     rm -Rf /tmp/dotfiles
-    echo -e "dotfiles have been updated\n"
+    echo -e "dotfiles have been updated"
   fi
 
-  echo -e "Now updating the system files\n"
+  echo -e "\nNow updating the system files"
   rm -Rf /etc/named* /var/named/* /etc/ntp* /etc/cron*/0* /etc/cron*/dailyjobs /var/ftp/uploads /etc/httpd/conf.d/ssl.conf /tmp/configs /etc/samba/*.example >/dev/null 2>&1
+  echo -e "Setting up phpsysinfo"
   if [ -d "/var/www/html/sysinfo/.git" ]; then
     git -C "/var/www/html/sysinfo" pull -q
   else
     rm -Rf "/var/www/html/sysinfo"
     git clone "https://github.com/phpsysinfo/phpsysinfo" "/var/www/html/sysinfo"
   fi
+  echo -e "Done setting up phpsysinfo"
 
+  echo -e "Setting up configs"
   rm -Rf /tmp/configs
   git clone -q "https://github.com/casjay-base/centos" /tmp/configs
+  echo -e "Done Setting up configs"
 
+  echo -e "Setting up Timezone"
   [ -f "/etc/timezone" ] || echo "$TIME_ZONE" >/etc/timezone
-  [ -f "/etc/localtime" ] || ln -sf "/usr/share/zoneinfo/$(cat /etc/timezone)" /etc/localtime
+  [ -f "/etc/localtime" ] || ln -sf "/usr/share/zoneinfo/$TIME_ZONE" /etc/localtime
+  echo -e "Dome Setting up Timezone"
 
+  echo -e "Configuring files"
   find /tmp/configs -type f -iname "*.sh" -exec chmod 755 {} \;
   find /tmp/configs -type f -iname "*.pl" -exec chmod 755 {} \;
   find /tmp/configs -type f -iname "*.cgi" -exec chmod 755 {} \;
@@ -89,26 +97,32 @@ else
 
   root_changeip.sh >/dev/null 2>&1
 
+  if [ -f "/var/lib/tor/hidden_service/hostname" ]; then
+    cp -Rf "/var/lib/tor/hidden_service/hostname" "/var/www/html/tor_hostname"
+  fi
+  chown -Rf apache:apache "/var/www"
+
+  echo -e "Done configuring files"
+
+  echo -e "Setting up the ssl certs"
   [ -f "/etc/named/certbot-update.conf" ] && chmod 600 /etc/named/certbot-update.conf
   if [[ -d /etc/letsencrypt/live/domain ]]; then
     cat /etc/letsencrypt/live/domain/fullchain.pem >/etc/cockpit/ws-certs.d/1-my-cert.cert
     cat /etc/letsencrypt/live/domain/privkey.pem >>/etc/cockpit/ws-certs.d/1-my-cert.cert
   fi
-
   update-ca-trust && update-ca-trust extract
+  echo -e "Setting up the ssl certs"
 
-  echo -e "System Files have been updated\n"
+  echo -e "\nSystem Files have been updated\n"
 
+  echo -e "Setting up the services"
   for s in $SERVICES_ENABLE; do systemctl enable $s >/dev/null 2>&1; done
   for s in $SERVICES_DISABLE; do systemctl disable $s >/dev/null 2>&1; done
+  echo -e "Done setting up the services"
 
-  if [ -f "/var/lib/tor/hidden_service/hostname" ]; then
-    cp -Rf "/var/lib/tor/hidden_service/hostname" "/var/www/html/tor_hostname"
-  fi
-  chown -Rf apache:apache "/var/www"
+  echo -e "Cleaning up and restarting system"
+  sleep 3 && history -c && history -w && root_clean.sh &
   echo -e "\nUpdate Complete and now restarting your system!!!\n"
-  sleep 10
-  history -c && history -w && root_clean.sh
 fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # end
