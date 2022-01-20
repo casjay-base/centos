@@ -26,7 +26,8 @@ else
   echo -e "Your system will restart when done"
   echo -e "Press control+c now to cancel update"
   sleep 10
-  echo -e "\nUpdating the system!"
+  echo -e "\n\nUpdating the system!\n\n"
+  sleep 1
   echo -e "Setting up packages - this may take some time!"
   mkdir -p /etc/casjaysdev/updates/versions
   echo "$VERSION" >/etc/casjaysdev/updates/versions/configs.txt
