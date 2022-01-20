@@ -121,6 +121,7 @@ else
   echo -e "Done setting up the services"
 
   echo -e "Cleaning up and restarting system"
+  type -P update-motd &>/dev/null && update-motd
   sleep 3 && history -c && history -w && root_clean.sh &
   echo -e "\nUpdate Complete and now restarting your system!!!\n"
 fi
