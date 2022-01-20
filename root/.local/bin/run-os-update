@@ -5,8 +5,14 @@ echo "$PATH" | grep -q "/root/.local/bin" || export PATH="/root/.local/bin:$PATH
 TIME_ZONE="${TZ:-America/New_York}"
 VERSION="$(curl -q -LSsf https://github.com/casjay-base/centos/raw/main/version.txt)"
 CURR_VERSION="$(cat /etc/casjaysdev/updates/versions/configs.txt 2>/dev/null)"
+SERVICES_ENABLE="tor httpd nginx smb nmb munin-node cockpit postfix "
+SERVICES_ENABLE+="uptimed downtimed php-fpm proftpd rsyslog "
+SERVICES_ENABLE+="chronyd snmpd cockpit.socket "
+SERVICES_DISABLE="firewalld auditd kdump iscsid.socket lvm2-lvmpolld.socket lvm2-monitor mdmonitor "
+SERVICES_DISABLE+="iscsi.service iscsiuio.socket lvm2-lvmetad.socket radvd "
+SERVICES_DISABLE+="fail2ban shorewall shorewall6 named dhcpd dhcpd6 "
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-if [ -z "$FORCE_INST" ] || [ "$1" != "--force" ] || [ "$VERSION" = "$CURR_VERSION" ]; then
+if [ "$1" != "--force" ] || [ -z "$FORCE_INST" ] || [ "$VERSION" = "$CURR_VERSION" ]; then
   echo "There is no update available: $VERSION"
   exit 0
 else
@@ -86,17 +92,18 @@ else
     cat /etc/letsencrypt/live/domain/fullchain.pem >/etc/cockpit/ws-certs.d/1-my-cert.cert
     cat /etc/letsencrypt/live/domain/privkey.pem >>/etc/cockpit/ws-certs.d/1-my-cert.cert
   fi
-  echo -e "System Files have been updated\n"
-
-  for s in $(echo tor httpd nginx smb nmb munin-node cockpit postfix uptimed downtimed php-fpm proftpd rsyslog chronyd snmpd cockpit.socket); do systemctl enable $s >/dev/null 2>&1; done
-  for s in $(echo firewalld auditd kdump iscsid.socket iscsi.service iscsiuio.socket lvm2-lvmetad.socket lvm2-lvmpolld.socket lvm2-monitor mdmonitor fail2ban shorewall shorewall6 named dhcpd dhcpd6 radvd); do systemctl disable $s >/dev/null 2>&1; done
 
   update-ca-trust && update-ca-trust extract
 
-  if [ -f /var/lib/tor/hidden_service/hostname ]; then
-    cp -Rf /var/lib/tor/hidden_service/hostname /var/www/html/tor_hostname
+  echo -e "System Files have been updated\n"
+
+  for s in $SERVICES_ENABLE; do systemctl enable $s >/dev/null 2>&1; done
+  for s in $SERVICES_DISABLE; do systemctl disable $s >/dev/null 2>&1; done
+
+  if [ -f "/var/lib/tor/hidden_service/hostname" ]; then
+    cp -Rf "/var/lib/tor/hidden_service/hostname" "/var/www/html/tor_hostname"
   fi
-  chown -Rf apache:apache /var/www
+  chown -Rf apache:apache "/var/www"
   echo -e "\nUpdate Complete and now restarting your system!!!\n"
   sleep 10
   history -c && history -w && root_clean.sh
