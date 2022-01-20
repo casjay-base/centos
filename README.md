@@ -9,7 +9,7 @@ sudo bash -c "$(curl -sSL https://github.com/pkmgr/centos/raw/main/scripts/defau
 ## Automated Update  
 
 ```shell
-bash -c "https://github.com/casjay-base/centos/raw/main/root/.local/bin/run-os-update"
+sudo bash -c "$(curl -sSL https://github.com/pkmgr/centos/raw/main/root/.local/bin/run-os-update)"
 ```
 
   
