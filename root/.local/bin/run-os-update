@@ -1,9 +1,11 @@
 #!/usr/bin/env bash
-
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+echo "$PATH" | grep -q "/root/.local/bin" || export PATH="/root/.local/bin:$PATH"
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 TIME_ZONE="${TZ:-America/New_York}"
 VERSION="$(curl -q -LSsf https://github.com/casjay-base/centos/raw/main/version.txt)"
 CURR_VERSION="$(cat /etc/casjaysdev/updates/versions/configs.txt 2>/dev/null)"
-
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 if [ -z "$FORCE_INST" ] || [ "$1" != "--force" ] || [ "$VERSION" = "$CURR_VERSION" ]; then
   echo "There is no update available: $VERSION"
   exit 0
@@ -77,7 +79,7 @@ else
 
   rm -Rf /tmp/*.tar /tmp/dotfiles /tmp/configs /root/bin/linuxcounter.sh
 
-  /root/bin/root_changeip.sh >/dev/null 2>&1
+  root_changeip.sh >/dev/null 2>&1
 
   [ -f "/etc/named/certbot-update.conf" ] && chmod 600 /etc/named/certbot-update.conf
   if [[ -d /etc/letsencrypt/live/domain ]]; then
@@ -97,5 +99,7 @@ else
   chown -Rf apache:apache /var/www
   echo -e "\nUpdate Complete and now restarting your system!!!\n"
   sleep 10
-  history -c && history -w && /root/bin/root_clean.sh
+  history -c && history -w && root_clean.sh
 fi
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# end
