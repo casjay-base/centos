@@ -12,7 +12,9 @@ SERVICES_DISABLE="firewalld auditd kdump iscsid.socket lvm2-lvmpolld.socket lvm2
 SERVICES_DISABLE+="iscsi.service iscsiuio.socket lvm2-lvmetad.socket radvd "
 SERVICES_DISABLE+="fail2ban shorewall shorewall6 named dhcpd dhcpd6 "
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-if [ "$1" != "--force" ] || [ -z "$FORCE_INST" ] || [ "$VERSION" = "$CURR_VERSION" ]; then
+{ [ "$1" = "--force" ] || [ -n "$FORCE_INST" ]; } && FORCE_INST="true" || FORCE_INST=""
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+if [ -z "$FORCE_INST" ] && [ "$VERSION" = "$CURR_VERSION" ]; then
   echo "There is no update available: $VERSION"
   exit 0
 else
