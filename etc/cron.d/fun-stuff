@@ -1,0 +1,2 @@
+# Lets have fortune and cowsay create an motd file every hour
+05 * * * * root /usr/local/bin/update-motd >/dev/null 2>&1
