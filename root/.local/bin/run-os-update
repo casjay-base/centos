@@ -12,6 +12,7 @@ export SERVICES_ENABLE+="chronyd snmpd cockpit.socket "
 export SERVICES_DISABLE="firewalld auditd kdump iscsid.socket lvm2-lvmpolld.socket lvm2-monitor "
 export SERVICES_DISABLE+="iscsi.service iscsiuio.socket lvm2-lvmetad.socket radvd "
 export SERVICES_DISABLE+="fail2ban shorewall shorewall6 named dhcpd dhcpd6 mdmonitor "
+export FORCE_INST="${FORCE_INST:-}"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export CURR_VERSION="$(cat "/etc/casjaysdev/updates/versions/configs.txt" 2>/dev/null)"
 export VERSION="$(curl -q -LSsf "https://github.com/casjay-base/centos/raw/main/version.txt")"
