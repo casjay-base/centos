@@ -66,7 +66,7 @@ else
   echo -e "Setting up Timezone"
   [ -f "/etc/timezone" ] || echo "$TIME_ZONE" >/etc/timezone
   [ -f "/etc/localtime" ] || ln -sf "/usr/share/zoneinfo/$TIME_ZONE" /etc/localtime
-  echo -e "Dome Setting up Timezone"
+  echo -e "Done Setting up Timezone"
 
   echo -e "Configuring files"
   find /tmp/configs -type f -iname "*.sh" -exec chmod 755 {} \;
@@ -95,12 +95,14 @@ else
 
   rm -Rf /tmp/*.tar /tmp/dotfiles /tmp/configs /root/bin/linuxcounter.sh
 
-  root_changeip.sh >/dev/null 2>&1
-
   if [ -f "/var/lib/tor/hidden_service/hostname" ]; then
     cp -Rf "/var/lib/tor/hidden_service/hostname" "/var/www/html/tor_hostname"
   fi
   chown -Rf apache:apache "/var/www"
+
+  echo -e "Setting up ip addresses"
+  root_changeip.sh >/dev/null 2>&1
+  echo -e "Done setting up ip addresses\n"
 
   echo -e "Done configuring files\n"
 
