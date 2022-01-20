@@ -5,6 +5,7 @@ echo "$PATH" | grep -q "/root/.local/bin" || export PATH="/root/.local/bin:$PATH
 TIME_ZONE="${TZ:-America/New_York}"
 VERSION="$(curl -q -LSsf https://github.com/casjay-base/centos/raw/main/version.txt)"
 CURR_VERSION="$(cat /etc/casjaysdev/updates/versions/configs.txt 2>/dev/null)"
+STATICSITE="${STATICSITE:-(hostnamecli -f)}"
 SERVICES_ENABLE="tor httpd nginx smb nmb munin-node cockpit postfix "
 SERVICES_ENABLE+="uptimed downtimed php-fpm proftpd rsyslog "
 SERVICES_ENABLE+="chronyd snmpd cockpit.socket "
@@ -82,7 +83,6 @@ else
   cp -Rf /tmp/configs/{etc,root,usr,var}* / 2>/dev/null
 
   mkdir -p /etc/rsync.d /var/log/named && chown -Rf named:named /etc/named* /var/named /var/log/named
-  chown -Rf apache:apache /var/www /usr/share/httpd
 
   sed -i "s#myserverdomainname#$(echo $HOSTNAME)#g" /etc/sysconfig/network
   sed -i "s#mydomain#$(echo $HOSTNAME | awk -F. '{$1="";OFS="." ; print $0}' | sed 's/^.//')#g" /etc/sysconfig/network
@@ -95,10 +95,13 @@ else
 
   rm -Rf /tmp/*.tar /tmp/dotfiles /tmp/configs /root/bin/linuxcounter.sh
 
+  echo -e "Setting up web server"
+  bash -c "$(curl -LSs https://github.com/casjay-templates/default-web-assets/raw/main/setup.sh)"
   if [ -f "/var/lib/tor/hidden_service/hostname" ]; then
     cp -Rf "/var/lib/tor/hidden_service/hostname" "/var/www/html/tor_hostname"
   fi
-  chown -Rf apache:apache "/var/www"
+  chown -Rf apache:apache /var/www /usr/share/httpd
+  echo -e "Done setting up web server"
 
   echo -e "Setting up ip addresses"
   root_changeip.sh >/dev/null 2>&1
