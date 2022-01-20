@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+[[ $USER == "root" ]] || [[ $EUID == 0 ]] || exit 1
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 echo "$PATH" | grep -q "/root/.local/bin" || export PATH="/root/.local/bin:$PATH"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 TIME_ZONE="${TZ:-America/New_York}"
@@ -67,7 +69,7 @@ else
   echo -e "Setting up Timezone"
   [ -f "/etc/timezone" ] || echo "$TIME_ZONE" >/etc/timezone
   [ -f "/etc/localtime" ] || ln -sf "/usr/share/zoneinfo/$TIME_ZONE" /etc/localtime
-  echo -e "Done Setting up Timezone"
+  echo -e "Done Setting up Timezone\n"
 
   echo -e "Configuring files"
   find /tmp/configs -type f -iname "*.sh" -exec chmod 755 {} \;
@@ -94,6 +96,7 @@ else
   chattr +i /etc/resolv.conf
 
   rm -Rf /tmp/*.tar /tmp/dotfiles /tmp/configs /root/bin/linuxcounter.sh
+  echo -e "Done configuring files\n"
 
   echo -e "Setting up web server"
   bash -c "$(curl -LSs https://github.com/casjay-templates/default-web-assets/raw/main/setup.sh)"
@@ -101,13 +104,11 @@ else
     cp -Rf "/var/lib/tor/hidden_service/hostname" "/var/www/html/tor_hostname"
   fi
   chown -Rf apache:apache /var/www /usr/share/httpd
-  echo -e "Done setting up web server"
+  echo -e "Done setting up web server\n"
 
   echo -e "Setting up ip addresses"
   root_changeip.sh >/dev/null 2>&1
   echo -e "Done setting up ip addresses\n"
-
-  echo -e "Done configuring files\n"
 
   echo -e "Setting up the ssl certs"
   [ -f "/etc/named/certbot-update.conf" ] && chmod 600 /etc/named/certbot-update.conf
@@ -127,8 +128,9 @@ else
 
   echo -e "Cleaning up files and history"
   type -P update-motd &>/dev/null && update-motd
-  sleep 3 && history -c && history -w && root_clean.sh &
+  sleep 1 && history -c && history -w
   echo -e "Update has completed!!!\n"
+  root_clean.sh
 fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # end
