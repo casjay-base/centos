@@ -103,15 +103,13 @@ else
     rm -Rf $PIDFILE
     rm -Rf $BASEDIR/run/*
     poweroff -h
-    exit $?
 
-  else
+  elif [ -z "$no_reboot" ] || [[ "$1" = *no-reboot ]]; then
     echo "restarting system in 10 seconds"
     sleep 10
     rm -Rf $PIDFILE
     rm -Rf $BASEDIR/run/*
     reboot
-    exit $?
   fi
 fi
 exit $?
