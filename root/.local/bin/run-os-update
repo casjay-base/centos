@@ -44,10 +44,10 @@ else
   if [ -d /tmp/dotfiles ]; then
     echo -e "Updating the dotfiles"
     rm -Rf /tmp/dotfiles
-    echo -e "dotfiles have been updated"
+    echo -e "dotfiles have been updated\n"
   fi
 
-  echo -e "\nNow updating the system files"
+  echo -e "Now updating the system files\n"
   rm -Rf /etc/named* /var/named/* /etc/ntp* /etc/cron*/0* /etc/cron*/dailyjobs /var/ftp/uploads /etc/httpd/conf.d/ssl.conf /tmp/configs /etc/samba/*.example >/dev/null 2>&1
   echo -e "Setting up phpsysinfo"
   if [ -d "/var/www/html/sysinfo/.git" ]; then
@@ -56,12 +56,12 @@ else
     rm -Rf "/var/www/html/sysinfo"
     git clone "https://github.com/phpsysinfo/phpsysinfo" "/var/www/html/sysinfo"
   fi
-  echo -e "Done setting up phpsysinfo"
+  echo -e "Done setting up phpsysinfo\n"
 
   echo -e "Setting up configs"
   rm -Rf /tmp/configs
   git clone -q "https://github.com/casjay-base/centos" /tmp/configs
-  echo -e "Done Setting up configs"
+  echo -e "Done Setting up configs\n"
 
   echo -e "Setting up Timezone"
   [ -f "/etc/timezone" ] || echo "$TIME_ZONE" >/etc/timezone
@@ -102,7 +102,7 @@ else
   fi
   chown -Rf apache:apache "/var/www"
 
-  echo -e "Done configuring files"
+  echo -e "Done configuring files\n"
 
   echo -e "Setting up the ssl certs"
   [ -f "/etc/named/certbot-update.conf" ] && chmod 600 /etc/named/certbot-update.conf
@@ -111,19 +111,19 @@ else
     cat /etc/letsencrypt/live/domain/privkey.pem >>/etc/cockpit/ws-certs.d/1-my-cert.cert
   fi
   update-ca-trust && update-ca-trust extract
-  echo -e "Setting up the ssl certs"
+  echo -e "Done setting up the ssl certs\n"
 
-  echo -e "\nSystem Files have been updated\n"
+  echo -e "System Files have been updated\n"
 
   echo -e "Setting up the services"
   for s in $SERVICES_ENABLE; do systemctl enable $s >/dev/null 2>&1; done
   for s in $SERVICES_DISABLE; do systemctl disable $s >/dev/null 2>&1; done
-  echo -e "Done setting up the services"
+  echo -e "Done setting up the services\n"
 
   echo -e "Cleaning up and restarting system"
   type -P update-motd &>/dev/null && update-motd
   sleep 3 && history -c && history -w && root_clean.sh &
-  echo -e "\nUpdate Complete and now restarting your system!!!\n"
+  echo -e "Update Complete and now restarting your system!!!\n"
 fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # end
