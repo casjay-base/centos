@@ -126,6 +126,7 @@ else
 
   echo -e "Setting up the services"
   for s in $SERVICES_ENABLE; do systemctl enable $s >/dev/null 2>&1; done
+  for s in $SERVICES_ENABLE; do systemctl restart $s >/dev/null 2>&1; done
   for s in $SERVICES_DISABLE; do systemctl disable $s >/dev/null 2>&1; done
   echo -e "Done setting up the services\n"
 
