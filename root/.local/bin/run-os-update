@@ -136,8 +136,7 @@ else
 
   echo -e "Cleaning up files and history"
   type -P update-motd &>/dev/null && update-motd
-  sleep 1 && history -c && history -w
-  root_clean.sh
+  sleep 1 && history -c && history -w && root_clean.sh && reboot &
   echo -e "Update has completed!!!\n"
 fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
