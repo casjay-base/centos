@@ -129,9 +129,9 @@ else
   for s in $SERVICES_DISABLE; do systemctl disable $s >/dev/null 2>&1; done
   echo -e "Done setting up the services\n"
 
-  echo -n "Updating systemmgr config"
+  echo -e "Updating systemmgr config"
   systemmgr update script ssl &>/dev/null
-  echo -n "Done updating systemmgr config\n"
+  echo -e "Done updating systemmgr config\n"
 
   echo -e "Cleaning up files and history"
   type -P update-motd &>/dev/null && update-motd
