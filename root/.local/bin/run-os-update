@@ -106,7 +106,7 @@ else
   if [ -f "/var/lib/tor/hidden_service/hostname" ]; then
     cp -Rf "/var/lib/tor/hidden_service/hostname" "/var/www/html/tor_hostname"
   fi
-  chown -Rf apache:apache /var/www /usr/share/httpd
+  chown -Rf apache:apache "/var/www" "/usr/share/httpd"
   echo -e "Done setting up web server\n"
 
   echo -e "Updating motd and issue files"
@@ -115,9 +115,11 @@ else
   cmd_exists update-motd && update-motd &>/dev/null
   echo -e "Done updating motd and issue files \n"
 
-  echo -e "Setting up ip addresses"
-  root_changeip.sh >/dev/null 2>&1
-  echo -e "Done setting up ip addresses\n"
+  if [ -d "$HOME/dns" ] && [ -f "$HOME/dns/master/update.sh" ]; then
+    echo -e "Setting up the ssl certs"
+    bash -c "$HOME/dns/master/update.sh"
+    echo -e "Setting up the ssl certs"
+  fi
 
   echo -e "Setting up the ssl certs"
   [ -f "/etc/named/certbot-update.conf" ] && chmod 600 /etc/named/certbot-update.conf
@@ -127,6 +129,10 @@ else
   fi
   update-ca-trust && update-ca-trust extract
   echo -e "Done setting up the ssl certs\n"
+
+  echo -e "Setting up ip addresses"
+  root_changeip.sh >/dev/null 2>&1
+  echo -e "Done setting up ip addresses\n"
 
   echo -e "System Files have been updated\n"
 
