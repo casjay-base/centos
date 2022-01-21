@@ -113,7 +113,7 @@ else
   mkdir -p /etc/casjaysdev/banners &>/dev/null
   chmod -f 777 /etc/casjaysdev /etc/casjaysdev/banners/ /etc/casjaysdev/banners/* &>/dev/null
   cmd_exists update-motd && update-motd &>/dev/null
-  echo -e "Done updating motd and issue files"
+  echo -e "Done updating motd and issue files \n"
 
   echo -e "Setting up ip addresses"
   root_changeip.sh >/dev/null 2>&1
