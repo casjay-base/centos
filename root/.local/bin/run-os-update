@@ -139,13 +139,6 @@ else
   cmd_exists update-motd && update-motd &>/dev/null
   echo -e "Done updating motd and issue files \n"
 
-  if [ -d "$HOME/dns" ] && [ -f "$HOME/dns/master/update.sh" ]; then
-    echo -e "Setting up the dns server"
-    bash -c "$HOME/dns/master/update.sh"
-    systemctl enable --now named &>/dev/null
-    echo -e "Setting up the dns server"
-  fi
-
   echo -e "Setting up the ssl certs"
   [ -f "/etc/named/certbot-update.conf" ] && chmod 600 /etc/named/certbot-update.conf
   if [[ -d /etc/letsencrypt/live/domain ]]; then
@@ -170,6 +163,13 @@ else
   echo -e "Updating systemmgr config"
   systemmgr update script ssl &>/dev/null
   echo -e "Done updating systemmgr config\n"
+
+  if [ -d "$HOME/dns" ] && [ -f "$HOME/dns/master/update.sh" ]; then
+    echo -e "Setting up the dns server"
+    bash -c "$HOME/dns/master/update.sh"
+    systemctl enable --now named &>/dev/null
+    echo -e "Setting up the dns server"
+  fi
 
   echo -e "Cleaning up files and history"
   sleep 1 && history -c && history -w && root_clean.sh
