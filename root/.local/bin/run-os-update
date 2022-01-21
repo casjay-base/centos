@@ -99,15 +99,15 @@ else
   echo -e "Done Setting up configs\n"
 
   echo -e "Configuring files"
+  rm -Rf /tmp/configs/etc/{tor,cockpit,fail2ban,shorewall,shorewall6,samba,postfix,named*}
+  rm -Rf /tmp/configs/var/named*
+
   find /tmp/configs -type f -iname "*.sh" -exec chmod 755 {} \;
   find /tmp/configs -type f -iname "*.pl" -exec chmod 755 {} \;
   find /tmp/configs -type f -iname "*.cgi" -exec chmod 755 {} \;
   find /tmp/configs -type f -exec sed -i "s#myserverdomainname#$(hostname -f)#g" {} \;
   find /tmp/configs -type f -exec sed -i "s#myhostnameshort#$(hostname -s)#g" {} \;
   find /tmp/configs -type f -exec sed -i "s#mydomainname#$(hostname -f | awk -F. '{$1="";OFS="." ; print $0}' | sed 's/^.//')#g" {} \;
-
-  rm -Rf /tmp/configs/etc/{tor,cockpit,fail2ban,shorewall,shorewall6,samba,postfix,named*}
-  rm -Rf /tmp/configs/var/named*
 
   cp -Rf /tmp/configs/{etc,root,usr,var}* / 2>/dev/null
 
@@ -149,7 +149,7 @@ else
   echo -e "Done setting up the ssl certs\n"
 
   echo -e "Setting up ip addresses"
-  root_changeip.sh >/dev/null 2>&1
+  /root/.local/bin/root_changeip.sh
   echo -e "Done setting up ip addresses\n"
 
   echo -e "System Files have been updated\n"
@@ -172,7 +172,7 @@ else
   fi
 
   echo -e "Cleaning up files and history"
-  sleep 1 && history -c && history -w && root_clean.sh
+  sleep 1 && history -c && history -w && /root/.local/bin/root_clean.sh
 fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # end
