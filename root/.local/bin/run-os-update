@@ -147,8 +147,7 @@ else
   echo -e "Done updating systemmgr config\n"
 
   echo -e "Cleaning up files and history"
-  sleep 1 && history -c && history -w && root_clean.sh && reboot &&
-    echo -e "Update has completed!!!\n"
+  sleep 1 && history -c && history -w && root_clean.sh
 fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # end
