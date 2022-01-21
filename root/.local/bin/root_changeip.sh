@@ -25,68 +25,72 @@ if [ -z "$NEWIP4" ]; then
   echo no ipv4
 else
   echo ipv4 works so continuing with IPV4 changes
-  find /root -type f -exec sed -i "s#$OLDIP4 #$NEWIP4#g" {} \; >/dev/null 2>&1
-  find /etc/sysconfig/network-scripts/ifcfg-eth0 -type f -exec sed -i "s#$OLDIP4#$NEWIP4#g" {} \; >/dev/null 2>&1
-  find /etc/httpd/conf* -type f -exec sed -i "s#$OLDIP4#$NEWIP4#g" {} \; >/dev/null 2>&1
-  find /etc/proftpd* -type f -exec sed -i "s#$OLDIP4#$NEWIP4#g" {} \; >/dev/null 2>&1
-  find /etc/postfix -type f -exec sed -i "s#$OLDIP4#$NEWIP4#g" {} \; >/dev/null 2>&1
-  find /etc/hosts* -type f -exec sed -i "s#$OLDIP4#$NEWIP4#g" {} \; >/dev/null 2>&1
-  find /etc/issue* -type f -exec sed -i "s#$OLDIP4#$NEWIP4#g" {} \; >/dev/null 2>&1
-  find /etc/motd* -type f -exec sed -i "s#$OLDIP4#$NEWIP4#g" {} \; >/dev/null 2>&1
-  find /etc/named -type f -exec sed -i "s#$OLDIP4#$NEWIP4#g" {} \; >/dev/null 2>&1
-  #find /var/www -type f -exec sed -i "s#$OLDIP4#$NEWIP4#g" {} \;  > /dev/null 2>&1
-  find /var/named -type f -exec sed -i "s#$OLDIP4#$NEWIP4#g" {} \; >/dev/null 2>&1
-  find /etc/webmin -type f -exec sed -i "s#$OLDIP4#$NEWIP4#g" {} \; >/dev/null 2>&1
-  #find /etc/usermin -type f -exec sed -i "s#$OLDIP4#$NEWIP4#g" {} \;  > /dev/null 2>&1
-  find /var/lib/system-scripts -type f -exec sed -i "s#$OLDIP4#$NEWIP4#g" {} \; >/dev/null 2>&1
-  find /etc/casjaysdev/system-scripts -type f -exec sed -i "s#$OLDIP4#$NEWIP4#g" {} \; >/dev/null 2>&1
+  [ -e "/root" ] && find /root -type f -exec sed -i "s#$OLDIP4 #$NEWIP4#g" {} \; &>/var/log/changeip
+  [ -e "/etc/hosts" ] && find /etc/hosts* -type f -exec sed -i "s#$OLDIP4#$NEWIP4#g" {} \; &>/var/log/changeip
+  [ -e "/etc/issue" ] && find /etc/issue* -type f -exec sed -i "s#$OLDIP4#$NEWIP4#g" {} \; &>/var/log/changeip
+  [ -e "/etc/proftpd.conf" ] && find /etc/proftpd* -type f -exec sed -i "s#$OLDIP4#$NEWIP4#g" {} \; &>/var/log/changeip
+  [ -e "/etc/sysconfig/network-scripts" ] && find /etc/sysconfig/network-scripts/ifcfg-eth0 -type f -exec sed -i "s#$OLDIP4#$NEWIP4#g" {} \; &>/var/log/changeip
+  [ -e "/etc/httpd" ] && find /etc/httpd -type f -exec sed -i "s#$OLDIP4#$NEWIP4#g" {} \; &>/var/log/changeip
+  [ -e "/etc/nginx" ] && find /etc/nginx -type f -exec sed -i "s#$OLDIP4#$NEWIP4#g" {} \; &>/var/log/changeip
+  [ -e "/etc/postfix" ] && find /etc/postfix -type f -exec sed -i "s#$OLDIP4#$NEWIP4#g" {} \; &>/var/log/changeip
+  [ -e "/etc/motd" ] && find /etc/motd* -type f -exec sed -i "s#$OLDIP4#$NEWIP4#g" {} \; &>/var/log/changeip
+  [ -e "/etc/named" ] && find /etc/named -type f -exec sed -i "s#$OLDIP4#$NEWIP4#g" {} \; &>/var/log/changeip
+  [ -e "/var/www" ] && find /var/www -type f -exec sed -i "s#$OLDIP4#$NEWIP4#g" {} \; &>/var/log/changeip
+  [ -e "/var/named" ] && find /var/named -type f -exec sed -i "s#$OLDIP4#$NEWIP4#g" {} \; &>/var/log/changeip
+  [ -e "/etc/webmin" ] && find /etc/webmin -type f -exec sed -i "s#$OLDIP4#$NEWIP4#g" {} \; &>/var/log/changeip
+  [ -e "/etc/usermin" ] && find /etc/usermin -type f -exec sed -i "s#$OLDIP4#$NEWIP4#g" {} \; &>/var/log/changeip
+  [ -e "/var/lib/system-scripts" ] && find /var/lib/system-scripts -type f -exec sed -i "s#$OLDIP4#$NEWIP4#g" {} \; &>/var/log/changeip
+  [ -e "/etc/casjaysdev/system-scripts" ] && find /etc/casjaysdev/system-scripts -type f -exec sed -i "s#$OLDIP4#$NEWIP4#g" {} \; &>/var/log/changeip
 fi
 #IPV6
 /sbin/ifconfig | grep -E "venet|inet" | grep 'inet6' | grep -i global | awk '{print $2}' | head -n1 >/var/lib/system-scripts/checkip/myip6.txt
 if [ -z "$NEWIP6" ]; then
   echo no ipv6
-  find /etc/httpd/conf* -type f -exec sed -i "s#\[2001:db8:edfa:1234:5678::e1a2\]:443##g" {} \; >/dev/null 2>&1
+  [ -e "/etc/httpd" ] && find /etc/httpd/conf* -type f -exec sed -i "s#\[2001:db8:edfa:1234:5678::e1a2\]:443##g" {} \; &>/var/log/changeip
+  [ -e "/etc/nginx" ] && find /etc/httpd/conf* -type f -exec sed -i "s#\[2001:db8:edfa:1234:5678::e1a2\]:443##g" {} \; &>/var/log/changeip
 else
   echo ipv6 works so continuing with IPV6 changes
-  find /root -type f -exec sed -i "s#$OLDIP6#$NEWIP6#g" {} \; >/dev/null 2>&1
-  find /etc/sysconfig/network-scripts/ifcfg-eth0 -type f -exec sed -i "s#$OLDIP4#$NEWIP6#g" {} \; >/dev/null 2>&1
-  find /etc/postfix -type f -exec sed -i "s#$OLDIP6#$NEWIP6#g" {} \; >/dev/null 2>&1
-  find /etc/httpd/conf* -type f -exec sed -i "s#$OLDIP6#$NEWIP6#g" {} \; >/dev/null 2>&1
-  find /etc/proftpd* -type f -exec sed -i "s#$OLDIP6#$NEWIP6#g" {} \; >/dev/null 2>&1
-  find /etc/named -type f -exec sed -i "s#$OLDIP6#$NEWIP6#g" {} \; >/dev/null 2>&1
-  find /var/named -type f -exec sed -i "s#$OLDIP6#$NEWIP6#g" {} \; >/dev/null 2>&1
-  #find /var/www -type f -exec sed -i "s#$OLDIP6#$NEWIP6#g" {} \;  > /dev/null 2>&1
-  find /etc/hosts* -type f -exec sed -i "s#$OLDIP6#$NEWIP6#g" {} \; >/dev/null 2>&1
-  find /etc/issue* -type f -exec sed -i "s#$OLDIP6#$NEWIP6#g" {} \; >/dev/null 2>&1
-  find /etc/motd* -type f -exec sed -i "s#$OLDIP6#$NEWIP6#g" {} \; >/dev/null 2>&1
-  find /etc/webmin -type f -exec sed -i "s#$OLDIP6#$NEWIP6#g" {} \; >/dev/null 2>&1
-  find /etc/casjaysdev -type f -exec sed -i "s#$OLDIP6#$NEWIP6#g" {} \; >/dev/null 2>&1
-  find /var/lib/system-scripts -type f -exec sed -i "s#$OLDIP6#$NEWIP6#g" {} \; >/dev/null 2>&1
+  [ -e "/root" ] && find /root -type f -exec sed -i "s#$OLDIP6#$NEWIP6#g" {} \; &>/var/log/changeip
+  [ -e "/sysconfig/network-scripts" ] && find /etc/sysconfig/network-scripts/ifcfg-* -type f -exec sed -i "s#$OLDIP4#$NEWIP6#g" {} \; &>/var/log/changeip
+  [ -e "/etc/postfix" ] && find /etc/postfix -type f -exec sed -i "s#$OLDIP6#$NEWIP6#g" {} \; &>/var/log/changeip
+  [ -e "/etc/httpd" ] && find /etc/httpd -type f -exec sed -i "s#$OLDIP6#$NEWIP6#g" {} \; &>/var/log/changeip
+  [ -e "/etc/nginx" ] && find /etc/nginx -type f -exec sed -i "s#$OLDIP6#$NEWIP6#g" {} \; &>/var/log/changeip
+  [ -e "/etc/proftpd.conf" ] && find /etc/proftpd* -type f -exec sed -i "s#$OLDIP6#$NEWIP6#g" {} \; &>/var/log/changeip
+  [ -e "/etc/named" ] && find /etc/named -type f -exec sed -i "s#$OLDIP6#$NEWIP6#g" {} \; &>/var/log/changeip
+  [ -e "/var/named" ] && find /var/named -type f -exec sed -i "s#$OLDIP6#$NEWIP6#g" {} \; &>/var/log/changeip
+  [ -e "/var/www" ] && find /var/www -type f -exec sed -i "s#$OLDIP6#$NEWIP6#g" {} \; >/dev/null 2>&1
+  [ -e "/etc/hosts" ] && find /etc/hosts* -type f -exec sed -i "s#$OLDIP6#$NEWIP6#g" {} \; &>/var/log/changeip
+  [ -e "/etc/issue" ] && find /etc/issue* -type f -exec sed -i "s#$OLDIP6#$NEWIP6#g" {} \; &>/var/log/changeip
+  [ -e "/etc/motd" ] && find /etc/motd* -type f -exec sed -i "s#$OLDIP6#$NEWIP6#g" {} \; &>/var/log/changeip
+  [ -e "/etc/webmin" ] && find /etc/webmin -type f -exec sed -i "s#$OLDIP6#$NEWIP6#g" {} \; &>/var/log/changeip
+  [ -e "/etc/casjaysdev" ] && find /etc/casjaysdev -type f -exec sed -i "s#$OLDIP6#$NEWIP6#g" {} \; &>/var/log/changeip
+  [ -e "/system-scripts" ] && find /var/lib/system-scripts -type f -exec sed -i "s#$OLDIP6#$NEWIP6#g" {} \; &>/var/log/changeip
 fi
 #Domain
-find /root -type f -exec sed -i "s#$OLDDOM#$NEWDOM#g" {} \; >/dev/null 2>&1
-find /etc/postfix -type f -exec sed -i "s#$OLDDOM#$NEWDOM#g" {} \; >/dev/null 2>&1
-find /etc/httpd/conf* -type f -exec sed -i "s#$OLDDOM#$NEWDOM#g" {} \; >/dev/null 2>&1
-find /etc/proftpd* -type f -exec sed -i "s#$OLDDOM#$NEWDOM#g" {} \; >/dev/null 2>&1
-find /etc/named -type f -exec sed -i "s#$OLDDOM#$NEWDOM#g" {} \; >/dev/null 2>&1
-find /var/named -type f -exec sed -i "s#$OLDDOM#$NEWDOM#g" {} \; >/dev/null 2>&1
-#find /var/www -type f -exec sed -i "s#$OLDDOM#$NEWDOM#g" {} \;  > /dev/null 2>&1
-find /etc/hosts* -type f -exec sed -i "s#$OLDDOM#$NEWDOM#g" {} \; >/dev/null 2>&1
-find /etc/issue* -type f -exec sed -i "s#$OLDDOM#$NEWDOM#g" {} \; >/dev/null 2>&1
-find /etc/motd* -type f -exec sed -i "s#$OLDDOM#$NEWDOM#g" {} \; >/dev/null 2>&1
-find /etc/munin -type f -exec sed -i "s#$OLDDOM#$NEWDOM#g" {} \; >/dev/null 2>&1
-find /etc/rc.d/rc.local -type f -exec sed -i "s#$OLDDOM#$NEWDOM#g" {} \; >/dev/null 2>&1
-find /etc/cron* -type f -exec sed -i "s#$OLDDOM#$NEWDOM#g" {} \; >/dev/null 2>&1
-find /etc/casjaysdev -type f -exec sed -i "s#$OLDDOM#$NEWDOM#g" {} \; >/dev/null 2>&1
-find /etc/webmin -type f -exec sed -i "s#$OLDDOM#$NEWDOM#g" {} \; >/dev/null 2>&1
-find /etc/webalizer* -type f -exec sed -i "s#$OLDDOM#$NEWDOM#g" {} \; >/dev/null 2>&1
-find /etc/uptimed.conf -type f -exec sed -i "s#$OLDDOM#$NEWDOM#g" {} \; >/dev/null 2>&1
-find /etc/casjaysdev -type f -exec sed -i "s#$OLDDOM#$NEWDOM#g" {} \; >/dev/null 2>&1
-find /var/lib/system-scripts -type f -exec sed -i "s#$OLDDOM#$NEWDOM#g" {} \; >/dev/null 2>&1
+[ -e "/root" ] && find /root -type f -exec sed -i "s#$OLDDOM#$NEWDOM#g" {} \; &>/var/log/changeip
+[ -e "/etc/postfix" ] && find /etc/postfix -type f -exec sed -i "s#$OLDDOM#$NEWDOM#g" {} \; &>/var/log/changeip
+[ -e "/etc/httpd" ] && find /etc/httpd -type f -exec sed -i "s#$OLDDOM#$NEWDOM#g" {} \; &>/var/log/changeip
+[ -e "/etc/nginx" ] && find /etc/nginx -type f -exec sed -i "s#$OLDDOM#$NEWDOM#g" {} \; &>/var/log/changeip
+[ -e "/etc/proftpd.conf" ] && find /etc/proftpd* -type f -exec sed -i "s#$OLDDOM#$NEWDOM#g" {} \; &>/var/log/changeip
+[ -e "/etc/named" ] && find /etc/named -type f -exec sed -i "s#$OLDDOM#$NEWDOM#g" {} \; &>/var/log/changeip
+[ -e "/var/named" ] && find /var/named -type f -exec sed -i "s#$OLDDOM#$NEWDOM#g" {} \; &>/var/log/changeip
+[ -e "/var/www" ] && find /var/www -type f -exec sed -i "s#$OLDDOM#$NEWDOM#g" {} \; >/dev/null 2>&1
+[ -e "/etc/hosts" ] && find /etc/hosts* -type f -exec sed -i "s#$OLDDOM#$NEWDOM#g" {} \; &>/var/log/changeip
+[ -e "/etc/issue" ] && find /etc/issue* -type f -exec sed -i "s#$OLDDOM#$NEWDOM#g" {} \; &>/var/log/changeip
+[ -e "/etc/motd" ] && find /etc/motd* -type f -exec sed -i "s#$OLDDOM#$NEWDOM#g" {} \; &>/var/log/changeip
+[ -e "/etc/munin" ] && find /etc/munin -type f -exec sed -i "s#$OLDDOM#$NEWDOM#g" {} \; &>/var/log/changeip
+[ -e "/etc/rc.d/rc.local" ] && find /etc/rc.d/rc.local -type f -exec sed -i "s#$OLDDOM#$NEWDOM#g" {} \; &>/var/log/changeip
+[ -e "/etc/cron.d" ] && find /etc/cron* -type f -exec sed -i "s#$OLDDOM#$NEWDOM#g" {} \; &>/var/log/changeip
+[ -e "/etc/casjaysdev" ] && find /etc/casjaysdev -type f -exec sed -i "s#$OLDDOM#$NEWDOM#g" {} \; &>/var/log/changeip
+[ -e "/etc/webmin" ] && find /etc/webmin -type f -exec sed -i "s#$OLDDOM#$NEWDOM#g" {} \; &>/var/log/changeip
+[ -e "/etc/webalizer" ] && find /etc/webalizer* -type f -exec sed -i "s#$OLDDOM#$NEWDOM#g" {} \; &>/var/log/changeip
+[ -e "/etc/uptimed.conf" ] && find /etc/uptimed.conf -type f -exec sed -i "s#$OLDDOM#$NEWDOM#g" {} \; &>/var/log/changeip
+[ -e "/var/lib/system-scripts" ] && find /var/lib/system-scripts -type f -exec sed -i "s#$OLDDOM#$NEWDOM#g" {} \; &>/var/log/changeip
 #Change Short HostName
-find /root -type f -exec sed -i "s#$OLDSHORT#$NEWSHORT#g" {} \; >/dev/null 2>&1
-find /etc/casjaysdev -type f -exec sed -i "s#$OLDSHORT#$NEWSHORT#g" {} \; >/dev/null 2>&1
-find /etc/httpd/conf* -type f -exec sed -i "s#$OLDSHORT#$NEWSHORT#g" {} \; >/dev/null 2>&1
+[ -e "/root" ] && find /root -type f -exec sed -i "s#$OLDSHORT#$NEWSHORT#g" {} \; &>/var/log/changeip
+[ -e "/etc/casjaysdev" ] && find /etc/casjaysdev -type f -exec sed -i "s#$OLDSHORT#$NEWSHORT#g" {} \; &>/var/log/changeip
+[ -e "/etc/httpd" ] && find /etc/httpd -type f -exec sed -i "s#$OLDSHORT#$NEWSHORT#g" {} \; &>/var/log/changeip
+[ -e "/etc/nginx" ] && find /etc/nginx -type f -exec sed -i "s#$OLDSHORT#$NEWSHORT#g" {} \; &>/var/log/changeip
 if [ ! -z "$NEWIP4" ]; then echo "Changed the IP4 from $OLDIP4 to $NEWIP4"; fi
 if [ ! -z "$NEWIP6" ]; then echo "Changed the IP6 from $OLDIP6 to $NEWIP6"; fi
 echo "Changed the DOMAIN from $OLDDOM to $NEWDOM"

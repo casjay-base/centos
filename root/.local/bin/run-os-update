@@ -102,12 +102,12 @@ else
   rm -Rf /tmp/configs/etc/{tor,cockpit,fail2ban,shorewall,shorewall6,samba,postfix,named*}
   rm -Rf /tmp/configs/var/named*
 
-  find /tmp/configs -type f -iname "*.sh" -exec chmod 755 {} \;
-  find /tmp/configs -type f -iname "*.pl" -exec chmod 755 {} \;
-  find /tmp/configs -type f -iname "*.cgi" -exec chmod 755 {} \;
-  find /tmp/configs -type f -exec sed -i "s#myserverdomainname#$(hostname -f)#g" {} \;
-  find /tmp/configs -type f -exec sed -i "s#myhostnameshort#$(hostname -s)#g" {} \;
-  find /tmp/configs -type f -exec sed -i "s#mydomainname#$(hostname -f | awk -F. '{$1="";OFS="." ; print $0}' | sed 's/^.//')#g" {} \;
+  find -L /tmp/configs -type f -iname "*.sh" -exec chmod 755 {} \;
+  find -L /tmp/configs -type f -iname "*.pl" -exec chmod 755 {} \;
+  find -L /tmp/configs -type f -iname "*.cgi" -exec chmod 755 {} \;
+  find -L /tmp/configs -type f -exec sed -i "s#myserverdomainname#$(hostname -f)#g" {} \;
+  find -L /tmp/configs -type f -exec sed -i "s#myhostnameshort#$(hostname -s)#g" {} \;
+  find -L /tmp/configs -type f -exec sed -i "s#mydomainname#$(hostname -f | awk -F. '{$1="";OFS="." ; print $0}' | sed 's/^.//')#g" {} \;
 
   cp -Rf /tmp/configs/{etc,root,usr,var}* / 2>/dev/null
 
