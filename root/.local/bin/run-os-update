@@ -109,6 +109,12 @@ else
   chown -Rf apache:apache /var/www /usr/share/httpd
   echo -e "Done setting up web server\n"
 
+  echo -e "Updating motd and issue files"
+  mkdir -p /etc/casjaysdev/banners &>/dev/null
+  chmod -f 777 /etc/casjaysdev /etc/casjaysdev/banners/ /etc/casjaysdev/banners/* &>/dev/null
+  cmd_exists update-motd && update-motd &>/dev/null
+  echo -e "Done updating motd and issue files"
+
   echo -e "Setting up ip addresses"
   root_changeip.sh >/dev/null 2>&1
   echo -e "Done setting up ip addresses\n"
@@ -135,7 +141,6 @@ else
   echo -e "Done updating systemmgr config\n"
 
   echo -e "Cleaning up files and history"
-  type -P update-motd &>/dev/null && update-motd
   sleep 1 && history -c && history -w && root_clean.sh && reboot &
   echo -e "Update has completed!!!\n"
 fi
