@@ -1,11 +1,30 @@
 #!/bin/sh
-if [ ! -f /usr/sbin/ifconfig ]; then
+PATH="$HOME/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+if [ -z "$(type -P ifconfig 2>/dev/null)" ]; then
   printf "The net-tools package is not installed and therefore I can not continue!\n"
   printf "It can be installed with the command yum install -y net-tools\n"
   exit 1
 fi
 
-mkdir -p /var/lib/system-scripts/checkip /etc/casjaysdev
+if builtin type -P route &>/dev/null || builtin type -P ip &>/dev/null; then
+  if [[ "$OSTYPE" =~ ^darwin ]]; then
+    NETDEV="$(route get default 2>/dev/null | grep interface | awk '{print $2}')"
+  else
+    NETDEV="$(ip route 2>/dev/null | grep default | sed -e "s/^.*dev.//" -e "s/.proto.*//" | awk '{print $1}')"
+  fi
+  if builtin type -P ipconfig &>/dev/null; then
+    CURRIP4="$(/sbin/ifconfig $NETDEV 2>/dev/null | grep -E "venet|inet" | grep -v "127.0.0." | grep 'inet' | grep -v inet6 | awk '{print $2}' | sed s/addr://g | head -n1)"
+    CURRIP6="$(/sbin/ifconfig "$NETDEV" 2>/dev/null | grep -E "venet|inet" | grep 'inet6' | grep -i global | awk '{print $2}' | head -n1)"
+  else
+    CURRIP4="$(ip addr | grep inet 2>/dev/null | grep -vE "127|inet6" | tr '/' ' ' | awk '{print $2}' | head -n 1)"
+    CURRIP6="$(ip addr | grep inet6 2>/dev/null | grep -v "::1/" -v | tr '/' ' ' | awk '{print $2}' | head -n 1)"
+  fi
+else
+  NETDEV="lo"
+  CURRIP4="127.0.0.1"
+  CURRIP6="::1"
+fi
+
 #DOMAIN
 OLDDOM="myserverdomainname"
 NEWDOM="$(hostname -f)"
@@ -14,13 +33,15 @@ OLDSHORT="myhostnameshort"
 NEWSHORT="$(hostname -s)"
 #IP4
 OLDIP4="10.0.20.1"
-NEWIP4="$(/sbin/ifconfig | grep -E "venet|inet" | grep -v "127.0.0." | grep 'inet' | grep -v inet6 | awk '{print $2}' | sed 's|addr:||g' | head -n1)"
+NEWIP4="$CURRIP4"
 #IP6
 OLDIP6="2001:db8:edfa:1234:5678::e1a2"
-NEWIP6="$(/sbin/ifconfig | grep -E "venet|inet" | grep 'inet6' | grep -i global | awk '{print $2}' | head -n1)"
+NEWIP6="$CURRIP6"
 #
+mkdir -p /var/lib/system-scripts/checkip /etc/casjaysdev
+
 #IPV4
-/sbin/ifconfig | grep -E "venet | inet" | grep -v "127.0.0." | grep 'inet' | grep -v inet6 | awk '{print $2}' | sed 's|addr:||g' | head -n1 >/var/lib/system-scripts/checkip/myip4.txt
+echo "$NEWIP4" | head -n1 >/var/lib/system-scripts/checkip/myip4.txt
 if [ -z "$NEWIP4" ]; then
   echo no ipv4
 else
@@ -43,7 +64,7 @@ else
   [ -e "/etc/casjaysdev/system-scripts" ] && find /etc/casjaysdev/system-scripts -type f -exec sed -i "s#$OLDIP4#$NEWIP4#g" {} \; &>/var/log/changeip
 fi
 #IPV6
-/sbin/ifconfig | grep -E "venet|inet" | grep 'inet6' | grep -i global | awk '{print $2}' | head -n1 >/var/lib/system-scripts/checkip/myip6.txt
+echo "$NEWIP6" | head -n1 >/var/lib/system-scripts/checkip/myip6.txt
 if [ -z "$NEWIP6" ]; then
   echo no ipv6
   [ -e "/etc/httpd" ] && find /etc/httpd/conf* -type f -exec sed -i "s#\[2001:db8:edfa:1234:5678::e1a2\]:443##g" {} \; &>/var/log/changeip
@@ -91,7 +112,7 @@ fi
 [ -e "/etc/casjaysdev" ] && find /etc/casjaysdev -type f -exec sed -i "s#$OLDSHORT#$NEWSHORT#g" {} \; &>/var/log/changeip
 [ -e "/etc/httpd" ] && find /etc/httpd -type f -exec sed -i "s#$OLDSHORT#$NEWSHORT#g" {} \; &>/var/log/changeip
 [ -e "/etc/nginx" ] && find /etc/nginx -type f -exec sed -i "s#$OLDSHORT#$NEWSHORT#g" {} \; &>/var/log/changeip
-if [ ! -z "$NEWIP4" ]; then echo "Changed the IP4 from $OLDIP4 to $NEWIP4"; fi
-if [ ! -z "$NEWIP6" ]; then echo "Changed the IP6 from $OLDIP6 to $NEWIP6"; fi
+if [ -n "$NEWIP4" ]; then echo "Changed the IP4 from $OLDIP4 to $NEWIP4"; fi
+if [ -n "$NEWIP6" ]; then echo "Changed the IP6 from $OLDIP6 to $NEWIP6"; fi
 echo "Changed the DOMAIN from $OLDDOM to $NEWDOM"
 echo "Changed the HOSTNAME from $OLDSHORT to $NEWSHORT"
