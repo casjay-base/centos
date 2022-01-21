@@ -116,9 +116,10 @@ else
   echo -e "Done updating motd and issue files \n"
 
   if [ -d "$HOME/dns" ] && [ -f "$HOME/dns/master/update.sh" ]; then
-    echo -e "Setting up the ssl certs"
+    echo -e "Setting up the dns server"
     bash -c "$HOME/dns/master/update.sh"
-    echo -e "Setting up the ssl certs"
+    systemctl enable --now named &>/dev/null
+    echo -e "Setting up the dns server"
   fi
 
   echo -e "Setting up the ssl certs"
