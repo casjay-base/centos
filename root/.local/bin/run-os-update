@@ -30,6 +30,11 @@ else
   sleep 10
   echo -e "\n\nUpdating the system!\n\n"
   sleep 1
+  echo -e "Setting up Timezone"
+  [ -f "/etc/timezone" ] || echo "$TIME_ZONE" >/etc/timezone
+  [ -f "/etc/localtime" ] || ln -sf "/usr/share/zoneinfo/$TIME_ZONE" /etc/localtime
+  echo -e "Done Setting up Timezone\n"
+
   echo -e "Setting up packages - this may take some time!"
   mkdir -p /etc/casjaysdev/updates/versions
   echo "$VERSION" >/etc/casjaysdev/updates/versions/configs.txt
@@ -68,11 +73,6 @@ else
   rm -Rf /tmp/configs
   git clone -q "https://github.com/casjay-base/centos" /tmp/configs
   echo -e "Done Setting up configs\n"
-
-  echo -e "Setting up Timezone"
-  [ -f "/etc/timezone" ] || echo "$TIME_ZONE" >/etc/timezone
-  [ -f "/etc/localtime" ] || ln -sf "/usr/share/zoneinfo/$TIME_ZONE" /etc/localtime
-  echo -e "Done Setting up Timezone\n"
 
   echo -e "Configuring files"
   find /tmp/configs -type f -iname "*.sh" -exec chmod 755 {} \;
