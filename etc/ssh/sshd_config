@@ -39,7 +39,7 @@ X11Forwarding yes
 X11UseLocalhost yes
 PermitTTY yes
 Banner /etc/casjaysdev/banners/ssh.txt
-PrintMotd no
+PrintMotd yes
 PrintLastLog yes
 TCPKeepAlive yes
 UsePrivilegeSeparation yes
