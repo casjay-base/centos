@@ -1,7 +1,26 @@
 #!/usr/bin/env bash
-
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+##@Version           :  202201210244-git
+# @@Author           :  Jason Hempstead
+# @@Contact          :  git-admin@casjaysdev.com
+# @@License          :  LICENSE.md
+# @@ReadME           :  README.md
+# @@Copyright        :  Copyright: (c) 2022 Jason Hempstead, Casjays Developments
+# @@Created          :  Tuesday, Sep 06, 2022 15:18 EDT
+# @@File             :  root_dhparams.sh
+# @@Description      :  Update dhparams
+# @@Changelog        :  New script
+# @@TODO             :  Better documentation
+# @@Other            :
+# @@Resource         :
+# @@Terminal App     :  no
+# @@sudo/root        :  no
+# @@Template         :  bash/system
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+[ -n "$(which openssl 2>/dev/null)" ] || exit
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 TMP="${TMP:-/tmp}"
-
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 if [ -d "/etc/ssl/CA/CasjaysDev/dhparam" ]; then
   DHDIR="${DHDIR:-/etc/ssl/CA/CasjaysDev/dhparam}"
 elif [ -d "/etc/ssl/CA/dh" ]; then
@@ -9,7 +28,7 @@ elif [ -d "/etc/ssl/CA/dh" ]; then
 elif [ ! -e "/etc/ssl/dhparam" ]; then
   DHDIR="/etc/ssl/dhparam"
 fi
-
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 openssl dhparam -out "$TMP/dhparams1024.pem" 1024 >/dev/null 2>&1 && mv -f "$TMP/dhparams1024.pem" "$DHDIR/1024.pem"
 openssl dhparam -out "$TMP/dhparams2048.pem" 2048 >/dev/null 2>&1 && mv -f "$TMP/dhparams2048.pem" "$DHDIR/2048.pem"
 openssl dhparam -out "$TMP/dhparams4096.pem" 4096 >/dev/null 2>&1 && mv -f "$TMP/dhparams4096.pem" "$DHDIR/4096.pem"

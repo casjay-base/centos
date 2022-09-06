@@ -1,2 +1,2 @@
 # Automatic certificate renewal using certbot - run on Monday at 01:30
-30 1 * * 1 root [ -f "$HOME/dns/certbot.sh" ] && "$HOME/dns/certbot.sh" --renew &>>/var/log/le-renew.log || /usr/bin/certbot renew -a webroot -w /var/www/html &>>/var/log/le-renew.log
+30 1 * * 1 root if [ -f "$HOME/dns/certbot.sh" ]; then "$HOME/dns/certbot.sh" --renew &>>/var/log/le-renew.log; else /usr/bin/certbot renew -a webroot -w /var/www/html &>>/var/log/le-renew.log; fi
