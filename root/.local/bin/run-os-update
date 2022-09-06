@@ -104,6 +104,7 @@ else
   echo -e "Configuring files"
   rm -Rf /tmp/configs/etc/{tor,cockpit,fail2ban,shorewall,shorewall6,samba,postfix,named*}
   rm -Rf /tmp/configs/var/named*
+  rm -Rf /etc/sysconfig/network-scripts
 
   find -L /tmp/configs -type f -iname "*.sh" -exec chmod 755 {} \;
   find -L /tmp/configs -type f -iname "*.pl" -exec chmod 755 {} \;
