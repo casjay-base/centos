@@ -57,26 +57,30 @@ else
   sleep 10
   echo -e "\n\nUpdating the system!\n\n"
   sleep 1
+
   echo -e "Setting up Timezone"
   [ -f "/etc/timezone" ] || echo "$TIME_ZONE" >/etc/timezone
   [ -f "/etc/localtime" ] || ln -sf "/usr/share/zoneinfo/$TIME_ZONE" /etc/localtime
   echo -e "Done Setting up Timezone\n"
 
-  echo -e "Setting up packages - this may take some time!"
+  echo -e "Setting version"
   mkdir -p /etc/casjaysdev/updates/versions
-  echo "$VERSION" >/etc/casjaysdev/updates/versions/configs.txt
-  chmod -Rf 664 /etc/casjaysdev/updates/versions/configs.txt
+  echo "$VERSION" >"/etc/casjaysdev/updates/versions/configs.txt"
+  date +'%b %d, %Y at %H:%M' >"/etc/casjaysdev/updates/versions/date.configs.txt"
+  chmod -Rf 664 /etc/casjaysdev/updates/versions/*.txt
+  echo -e "Done setting version\n"
 
-  chattr -i /etc/resolv.conf >/dev/null 2>&1
-  chattr -i /etc/nginx/vhosts.d/default.conf >/dev/null 2>&1
-  chattr -i /etc/httpd/conf/vhosts.d/000-default.conf >/dev/null 2>&1
+  echo -e "Setting up packages - this may take some time!"
+  chattr -i /etc/resolv.conf &>/dev/null
+  chattr -i /etc/nginx/vhosts.d/default.conf &>/dev/null
+  chattr -i /etc/httpd/conf/vhosts.d/000-default.conf &>/dev/null
 
   if [ -f /etc/nginx/vhosts.d/default.conf ]; then
     mv -f /etc/nginx/vhosts.d/default.conf /etc/nginx/vhosts.d/0000-default.conf
   fi
 
   # wget -q "https://github.com/pkmgr/centos/raw/main/lists/default.list" -O /tmp/default-packages.txt
-  # yum install -y --quiet $(cat /tmp/default-packages.txt) --skip-broken >/dev/null 2>&1
+  # yum install -y --quiet $(cat /tmp/default-packages.txt) --skip-broken &>/dev/null
   echo -e "Done with package installation\n"
 
   if [ -d /tmp/dotfiles ]; then
@@ -85,8 +89,10 @@ else
     echo -e "dotfiles have been updated\n"
   fi
 
-  echo -e "Now updating the system files\n"
+  echo -e "Removing old files "
   rm -Rf /etc/named* /var/named/* /etc/ntp* /etc/cron*/0* /etc/cron*/dailyjobs /var/ftp/uploads /etc/httpd/conf.d/ssl.conf /tmp/configs /etc/samba/*.example &>/dev/null
+  echo -e "Done removing old files\n"
+
   echo -e "Setting up phpsysinfo"
   if [ -d "/var/www/html/sysinfo/.git" ]; then
     git -C "/var/www/html/sysinfo" pull -q
@@ -127,11 +133,11 @@ else
   if [ ! -f "/etc/postfix/.installed" ]; then
     touch /etc/postfix/mydomains.pcre
     postmap /etc/postfix/transport /etc/postfix/canonical /etc/postfix/virtual /etc/postfix/mydomains && newaliases
-    chattr +i /etc/resolv.conf
+    chattr +i "/etc/resolv.conf"
   fi
   touch "/etc/postfix/.installed"
 
-  rm -Rf /tmp/*.tar /tmp/dotfiles /tmp/configs /root/bin/linuxcounter.sh
+  rm -Rf /tmp/*.tar "/tmp/dotfiles" "/tmp/configs" "/root/bin/linuxcounter.sh"
   echo -e "Done configuring files\n"
 
   echo -e "Setting up web server"
@@ -142,15 +148,9 @@ else
   chown -Rf apache:apache "/var/www" "/usr/share/httpd"
   echo -e "Done setting up web server\n"
 
-  echo -e "Updating motd and issue files"
-  mkdir -p /etc/casjaysdev/banners &>/dev/null
-  chmod -f 777 /etc/casjaysdev /etc/casjaysdev/banners/ /etc/casjaysdev/banners/* &>/dev/null
-  cmd_exists update-motd && update-motd &>/dev/null
-  echo -e "Done updating motd and issue files \n"
-
   echo -e "Setting up the ssl certs"
   [ -f "/etc/named/certbot-update.conf" ] && chmod 600 /etc/named/certbot-update.conf
-  if [[ -d /etc/letsencrypt/live/domain ]]; then
+  if [ -d /etc/letsencrypt/live/domain ]; then
     cat /etc/letsencrypt/live/domain/fullchain.pem >/etc/cockpit/ws-certs.d/1-my-cert.cert
     cat /etc/letsencrypt/live/domain/privkey.pem >>/etc/cockpit/ws-certs.d/1-my-cert.cert
   fi
@@ -161,17 +161,21 @@ else
   /root/.local/bin/root_changeip.sh
   echo -e "Done setting up ip addresses\n"
 
-  echo -e "System Files have been updated\n"
+  echo -e "Updating motd and issue files"
+  mkdir -p /etc/casjaysdev/banners &>/dev/null
+  chmod -f 777 /etc/casjaysdev /etc/casjaysdev/banners/ /etc/casjaysdev/banners/* &>/dev/null
+  cmd_exists update-motd && update-motd &>/dev/null
+  echo -e "Done updating motd and issue files \n"
 
   echo -e "Setting up the services"
-  for s in $SERVICES_ENABLE; do systemctl enable $s >/dev/null 2>&1; done
-  for s in $SERVICES_ENABLE; do systemctl restart $s >/dev/null 2>&1; done
-  for s in $SERVICES_DISABLE; do systemctl disable $s >/dev/null 2>&1; done
+  for s in $SERVICES_ENABLE; do systemctl enable $s &>/dev/null; done
+  for s in $SERVICES_ENABLE; do systemctl restart $s &>/dev/null; done
+  for s in $SERVICES_DISABLE; do systemctl disable $s &>/dev/null; done
   echo -e "Done setting up the services\n"
 
   echo -e "Updating systemmgr config"
-  systemmgr update script ssl ssh &>/dev/null
-  echo -e "Done updating systemmgr config\n"
+  systemmgr update scripts ssl ssh &>/dev/null
+  echo -e "Done updating systemmgr configs\n"
 
   if [ -d "$HOME/dns" ] && [ -f "$HOME/dns/master/update.sh" ]; then
     echo -e "Setting up the dns server"
@@ -179,10 +183,6 @@ else
     systemctl enable --now named &>/dev/null
     echo -e "done setting up the dns server\n"
   fi
-
-  [ -d "/etc/casjaysdev/updates/versions" ] || mkdir -p "/etc/casjaysdev/updates/versions"
-  echo "$VERSION" >"/etc/casjaysdev/updates/versions/configs.txt"
-  date +'%b %d, %Y at %H:%M' >"/etc/casjaysdev/updates/versions/date.configs.txt"
 
   echo -e "Cleaning up files and history"
   sleep 1
