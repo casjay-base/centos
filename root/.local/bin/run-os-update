@@ -84,19 +84,19 @@ else
   fi
 
   echo -e "Now updating the system files\n"
-  rm -Rf /etc/named* /var/named/* /etc/ntp* /etc/cron*/0* /etc/cron*/dailyjobs /var/ftp/uploads /etc/httpd/conf.d/ssl.conf /tmp/configs /etc/samba/*.example >/dev/null 2>&1
+  rm -Rf /etc/named* /var/named/* /etc/ntp* /etc/cron*/0* /etc/cron*/dailyjobs /var/ftp/uploads /etc/httpd/conf.d/ssl.conf /tmp/configs /etc/samba/*.example &>/dev/null
   echo -e "Setting up phpsysinfo"
   if [ -d "/var/www/html/sysinfo/.git" ]; then
     git -C "/var/www/html/sysinfo" pull -q
   else
-    rm -Rf "/var/www/html/sysinfo"
+    [ -d "/var/www/html/sysinfo" ] && rm -Rf "/var/www/html/sysinfo"
     git clone "https://github.com/phpsysinfo/phpsysinfo" "/var/www/html/sysinfo"
   fi
   echo -e "Done setting up phpsysinfo\n"
 
   echo -e "Setting up configs"
-  rm -Rf /tmp/configs
-  git clone -q "https://github.com/casjay-base/centos" /tmp/configs
+  [ -d "/tmp/configs" ] && rm -Rf "/tmp/configs"
+  git clone -q "https://github.com/casjay-base/centos" "/tmp/configs"
   echo -e "Done Setting up configs\n"
 
   echo -e "Configuring files"
@@ -114,15 +114,19 @@ else
 
   mkdir -p /etc/rsync.d /var/log/named && chown -Rf named:named /etc/named* /var/named /var/log/named
 
-  sed -i "s#myserverdomainname#$(echo $HOSTNAME)#g" /etc/sysconfig/network
+  sed -i "s#myserverdomainname#$HOSTNAME#g" /etc/sysconfig/network
   sed -i "s#mydomain#$domainname#g" /etc/sysconfig/network
 
   grep '^kernel.domainname' '/etc/sysctl.conf' || echo "kernel.domainname=$domainname" >>/etc/sysctl.conf
 
   chmod 644 -Rf /etc/cron.d/* /etc/logrotate.d/*
-  touch /etc/postfix/mydomains.pcre
-  postmap /etc/postfix/transport /etc/postfix/canonical /etc/postfix/virtual /etc/postfix/mydomains && newaliases
-  chattr +i /etc/resolv.conf
+
+  if [ ! -f "/etc/postfix/.installed" ]; then
+    touch /etc/postfix/mydomains.pcre
+    postmap /etc/postfix/transport /etc/postfix/canonical /etc/postfix/virtual /etc/postfix/mydomains && newaliases
+    chattr +i /etc/resolv.conf
+  fi
+  touch "/etc/postfix/.installed"
 
   rm -Rf /tmp/*.tar /tmp/dotfiles /tmp/configs /root/bin/linuxcounter.sh
   echo -e "Done configuring files\n"
@@ -163,7 +167,7 @@ else
   echo -e "Done setting up the services\n"
 
   echo -e "Updating systemmgr config"
-  systemmgr update script ssl &>/dev/null
+  systemmgr update script ssl ssh &>/dev/null
   echo -e "Done updating systemmgr config\n"
 
   if [ -d "$HOME/dns" ] && [ -f "$HOME/dns/master/update.sh" ]; then
