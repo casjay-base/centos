@@ -177,8 +177,13 @@ else
     echo -e "Setting up the dns server"
     bash -c "$HOME/dns/master/update.sh"
     systemctl enable --now named &>/dev/null
-    echo -e "Setting up the dns server"
+    echo -e "done setting up the dns server\n"
   fi
+
+  [ -d "/etc/casjaysdev/updates/versions" ] || mkdir -p "/etc/casjaysdev/updates/versions"
+  echo "$VERSION" >"/etc/casjaysdev/updates/versions/configs.txt"
+  date +'%m %d, %Y at %H:%M' >"/etc/casjaysdev/updates/versions/date.configs.txt"
+
   echo -e "Cleaning up files and history"
   sleep 1
   /root/.local/bin/root_clean.sh &>/dev/null
