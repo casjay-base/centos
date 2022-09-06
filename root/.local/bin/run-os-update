@@ -180,7 +180,10 @@ else
     echo -e "Setting up the dns server"
   fi
   echo -e "Cleaning up files and history"
-  sleep 1 && history -c && history -w && /root/.local/bin/root_clean.sh
+  sleep 1
+  /root/.local/bin/root_clean.sh &>/dev/null
+  history -c && history -w
+  echo -e "Done updating system\n\n"
 fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # end

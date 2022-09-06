@@ -28,7 +28,7 @@ fi
 [ -f "$certbot" ] || exit 1
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 if [ -f "$HOME/dns/certbot.sh" ]; then
-  "$HOME/dns/certbot.sh" --renew &>>/var/log/le-renew.log
+  "$HOME/dns/certbot.sh" --renew
 elif [ -f "/etc/named/certbot-update.conf" ]; then
   [ -f "/etc/certbot.key" ] && . /etc/certbot.key
   if [ -z "$CERTBOT_API_KEY" ]; then
@@ -41,13 +41,13 @@ elif [ -f "/etc/named/certbot-update.conf" ]; then
   fi
 
   if [ -n "$CERTBOT_API_KEY" ] || [ -n "$CERTBOT_KEY" ]; then
-    eval $certbot renew --dry-run --agree-tos --expand --dns-rfc2136 --dns-rfc2136-credentials /etc/named/certbot-update.conf &>>/var/log/le-renew.log &&
-      eval $certbot renew --agree-tos --expand --dns-rfc2136 --dns-rfc2136-credentials /etc/named/certbot-update.conf &>>/var/log/le-renew.log
+    eval $certbot renew --dry-run --agree-tos --expand --dns-rfc2136 --dns-rfc2136-credentials /etc/named/certbot-update.conf &&
+      eval $certbot renew --agree-tos --expand --dns-rfc2136 --dns-rfc2136-credentials /etc/named/certbot-update.conf
   else
     echo "CERTBOT_API_KEY is unset" 1>&2
   fi
 else
-  eval $certbot renew -a webroot -w /var/www/html &>>/var/log/le-renew.log
+  eval $certbot renew -a webroot -w /var/www/html
 fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 exit $?
