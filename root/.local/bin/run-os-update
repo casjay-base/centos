@@ -182,7 +182,7 @@ else
 
   [ -d "/etc/casjaysdev/updates/versions" ] || mkdir -p "/etc/casjaysdev/updates/versions"
   echo "$VERSION" >"/etc/casjaysdev/updates/versions/configs.txt"
-  date +'%m %d, %Y at %H:%M' >"/etc/casjaysdev/updates/versions/date.configs.txt"
+  date +'%b %d, %Y at %H:%M' >"/etc/casjaysdev/updates/versions/date.configs.txt"
 
   echo -e "Cleaning up files and history"
   sleep 1
