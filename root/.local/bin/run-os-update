@@ -40,7 +40,9 @@ export FORCE_INST="${FORCE_INST:-}"
 export CURR_VERSION="$(cat "/etc/casjaysdev/updates/versions/configs.txt" 2>/dev/null)"
 export VERSION="$(curl -q -LSsf "https://github.com/casjay-base/centos/raw/main/version.txt")"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-domainname="$(hostname -f | awk -F. '{$1="";OFS="." ; print $0}' | grep -v '^$' | grep '^' || echo 'local')"
+hostnamefull="$(hostname -f 2>/dev/null || echo "$HOSTNAME")"
+hostnameshort="$(hostname -s 2>/dev/null || echo "$HOSTNAME")"
+domainname="$(echo "$hostnamefull" | awk -F. '{$1="";OFS="." ; print $0}' | grep -v '^$' | grep '^' || echo 'local')"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 { [ "$1" = "--force" ] || [ -n "$FORCE_INST" ]; } && FORCE_INST="true" || FORCE_INST=""
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -106,8 +108,8 @@ else
   find -L /tmp/configs -type f -iname "*.sh" -exec chmod 755 {} \;
   find -L /tmp/configs -type f -iname "*.pl" -exec chmod 755 {} \;
   find -L /tmp/configs -type f -iname "*.cgi" -exec chmod 755 {} \;
-  find -L /tmp/configs -type f -exec sed -i "s#myserverdomainname#$(hostname -f)#g" {} \;
-  find -L /tmp/configs -type f -exec sed -i "s#myhostnameshort#$(hostname -s)#g" {} \;
+  find -L /tmp/configs -type f -exec sed -i "s#myserverdomainname#$hostnamefull#g" {} \;
+  find -L /tmp/configs -type f -exec sed -i "s#myhostnameshort#$hostnameshort#g" {} \;
   find -L /tmp/configs -type f -exec sed -i "s#mydomainname#$domainname#g" {} \;
 
   cp -Rf /tmp/configs/{etc,root,usr,var}* / 2>/dev/null

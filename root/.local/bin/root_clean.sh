@@ -17,4 +17,4 @@
 # @@sudo/root        :  no
 # @@Template         :  bash/system
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-[ -n "$(which clean-system 2>/dev/null)" ] && clean-system
+[ -n "$(which clean-system 2>/dev/null)" ] && clean-system --raw

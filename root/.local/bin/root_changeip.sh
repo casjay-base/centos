@@ -17,4 +17,4 @@
 # @@sudo/root        :  no
 # @@Template         :  bash/system
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-[ -n "$(which changeip 2>/dev/null)" ] && changeip
+[ -n "$(which changeip 2>/dev/null)" ] && changeip --raw
