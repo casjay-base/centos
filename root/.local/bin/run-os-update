@@ -37,8 +37,8 @@ export SERVICES_DISABLE+="iscsi.service iscsiuio.socket lvm2-lvmetad.socket radv
 export SERVICES_DISABLE+="fail2ban shorewall shorewall6 named dhcpd dhcpd6 mdmonitor "
 export FORCE_INST="${FORCE_INST:-}"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export CURR_VERSION="$(cat "/etc/casjaysdev/updates/versions/configs.txt" 2>/dev/null)"
-export VERSION="$(curl -q -LSsf "https://github.com/casjay-base/centos/raw/main/version.txt")"
+export CURR_VERSION="$(cat "/etc/casjaysdev/updates/versions/configs.txt" 2>/dev/null | head -n1)"
+export VERSION="$(curl -q -LSsf "https://github.com/casjay-base/centos/raw/main/version.txt" | head -n1)"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 hostnamefull="$(hostname -f 2>/dev/null || echo "$HOSTNAME")"
 hostnameshort="$(hostname -s 2>/dev/null || echo "$HOSTNAME")"
@@ -50,7 +50,7 @@ if [ -z "$FORCE_INST" ] && [ "$VERSION" = "$CURR_VERSION" ]; then
   echo "There is no update available: $VERSION"
   exit 0
 else
-  echo -e "\nThis is version $VERSION"
+  echo -e "\nUpdating to version $VERSION from $CURR_VERSION"
   echo -e "Running the automatic update script"
   echo -e "Your system will restart when done"
   echo -e "Press control+c now to cancel update"
