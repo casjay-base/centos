@@ -55,42 +55,39 @@ else
   echo -e "Your system will restart when done"
   echo -e "Press control+c now to cancel update"
   sleep 10
-  echo -e "\n\nUpdating the system!\n\n"
-  sleep 1
 
   echo -e "Setting up Timezone"
   [ -f "/etc/timezone" ] || echo "$TIME_ZONE" >/etc/timezone
-  [ -f "/etc/localtime" ] || ln -sf "/usr/share/zoneinfo/$TIME_ZONE" /etc/localtime
+  [ -f "/etc/localtime" ] || ln -sf "/usr/share/zoneinfo/$TIME_ZONE" "/etc/localtime"
   echo -e "Done Setting up Timezone\n"
 
   echo -e "Setting version"
-  mkdir -p /etc/casjaysdev/updates/versions
+  mkdir -p "/etc/casjaysdev/updates/versions"
   echo "$VERSION" >"/etc/casjaysdev/updates/versions/configs.txt"
   date +'%b %d, %Y at %H:%M' >"/etc/casjaysdev/updates/versions/date.configs.txt"
   chmod -Rf 664 /etc/casjaysdev/updates/versions/*.txt
   echo -e "Done setting version\n"
 
   echo -e "Setting up packages - this may take some time!"
+  yum update -yy -q &>/dev/null
   chattr -i /etc/resolv.conf &>/dev/null
   chattr -i /etc/nginx/vhosts.d/default.conf &>/dev/null
   chattr -i /etc/httpd/conf/vhosts.d/000-default.conf &>/dev/null
 
-  if [ -f /etc/nginx/vhosts.d/default.conf ]; then
-    mv -f /etc/nginx/vhosts.d/default.conf /etc/nginx/vhosts.d/0000-default.conf
+  if [ -f "/etc/nginx/vhosts.d/default.conf" ]; then
+    mv -f "/etc/nginx/vhosts.d/default.conf" "/etc/nginx/vhosts.d/0000-default.conf"
   fi
-
-  # wget -q "https://github.com/pkmgr/centos/raw/main/lists/default.list" -O /tmp/default-packages.txt
-  # yum install -y --quiet $(cat /tmp/default-packages.txt) --skip-broken &>/dev/null
   echo -e "Done with package installation\n"
 
-  if [ -d /tmp/dotfiles ]; then
+  if [ -d "/tmp/dotfiles" ]; then
     echo -e "Updating the dotfiles"
     rm -Rf /tmp/dotfiles
     echo -e "dotfiles have been updated\n"
   fi
 
   echo -e "Removing old files "
-  rm -Rf /etc/named* /var/named/* /etc/ntp* /etc/cron*/0* /etc/cron*/dailyjobs /var/ftp/uploads /etc/httpd/conf.d/ssl.conf /tmp/configs /etc/samba/*.example &>/dev/null
+  rm -Rf /etc/named* /var/named/* /etc/ntp* /etc/cron*/0* /etc/cron*/dailyjobs &>/dev/null
+  rm -Rf /var/ftp/uploads /etc/httpd/conf.d/ssl.conf /tmp/configs /etc/samba/*.example &>/dev/null
   echo -e "Done removing old files\n"
 
   echo -e "Setting up phpsysinfo"
@@ -108,9 +105,9 @@ else
   echo -e "Done Setting up configs\n"
 
   echo -e "Configuring files"
-  rm -Rf /tmp/configs/etc/{tor,cockpit,fail2ban,shorewall,shorewall6,samba,postfix,named*}
   rm -Rf /tmp/configs/var/named*
   rm -Rf /tmp/configs/etc/sysconfig/network-scripts
+  rm -Rf /tmp/configs/etc/{tor,cockpit,fail2ban,shorewall,shorewall6,samba,postfix,named*}
 
   find -L /tmp/configs -type f -iname "*.sh" -exec chmod 755 {} \;
   find -L /tmp/configs -type f -iname "*.pl" -exec chmod 755 {} \;
@@ -177,7 +174,7 @@ else
   systemmgr update scripts ssl ssh &>/dev/null
   echo -e "Done updating systemmgr configs\n"
 
-  if [ -d "$HOME/dns" ] && [ -f "$HOME/dns/master/update.sh" ]; then
+  if [ -f "$HOME/dns/master/update.sh" ]; then
     echo -e "Setting up the dns server"
     bash -c "$HOME/dns/master/update.sh"
     systemctl enable --now named &>/dev/null
