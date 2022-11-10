@@ -1,27 +1,34 @@
 #!/usr/bin/env bash
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-##@Version       : 202201210244-git
-# @Author        : Jason Hempstead
-# @Contact       : jason@casjaysdev.com
-# @License       : LICENSE.md
-# @ReadME        : run-os-update --help
-# @Copyright     : Copyright: (c) 2022 Jason Hempstead, Casjays Developments
-# @Created       : Friday, Jan 21, 2022 03:01 EST
-# @File          : run-os-update
-# @Description   : Update centos config files
-# @TODO          :
-# @Other         :
-# @Resource      :
+##@Version           :  202211081932-git
+# @@Author           :  Jason Hempstead
+# @@Contact          :  git-admin@casjaysdev.com
+# @@License          :  LICENSE.md
+# @@ReadME           :  run-os-update --help
+# @@Copyright        :  Copyright: (c) 2022 Jason Hempstead, Casjays Developments
+# @@Created          :  Thursday, Nov 10, 2022 14:36 EST
+# @@File             :  run-os-update
+# @@Description      :  Update centos config files
+# @@Changelog        :  newScript
+# @@TODO             :  Refactor code
+# @@Other            :
+# @@Resource         :
+# @@Terminal App     :  no
+# @@sudo/root        :  no
+# @@Template         :  bash/system
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 APPNAME="$(basename "$0")"
-VERSION="202201210244-git"
-USER="${SUDO_USER:-${USER}}"
-HOME="${USER_HOME:-${HOME}}"
+VERSION="202211081932-git"
+HOME="${USER_HOME:-$HOME}"
+USER="${SUDO_USER:-$USER}"
+RUN_USER="${SUDO_USER:-$USER}"
 SRC_DIR="${BASH_SOURCE%/*}"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Set bash options
-if [[ "$1" == "--debug" ]]; then shift 1 && set -xo pipefail && export SCRIPT_OPTS="--debug" && export _DEBUG="on"; fi
 trap 'exitCode=${exitCode:-$?};[ -n "$RUN_OS_UPDATE_TEMP_FILE" ] && [ -f "$RUN_OS_UPDATE_TEMP_FILE" ] && rm -Rf "$RUN_OS_UPDATE_TEMP_FILE" &>/dev/null' EXIT
+[ "$1" = "--debug" ] && set -xo pipefail && export SCRIPT_OPTS="--debug" && export _DEBUG="on"
+[ "$1" = "--raw" ] && export SHOW_RAW="true"
+set -o pipefail
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 [ "$USER" == "root" ] || [ "$EUID" = 0 ] || exit 1
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -37,12 +44,12 @@ export SERVICES_DISABLE+="iscsi.service iscsiuio.socket lvm2-lvmetad.socket radv
 export SERVICES_DISABLE+="fail2ban shorewall shorewall6 named dhcpd dhcpd6 mdmonitor "
 export FORCE_INST="${FORCE_INST:-}"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export CURR_VERSION="$(cat "/etc/casjaysdev/updates/versions/configs.txt" 2>/dev/null | head -n1)"
+export CURR_VERSION="$(head -n1 <"/etc/casjaysdev/updates/versions/configs.txt" 2>/dev/null)"
 export VERSION="$(curl -q -LSsf "https://github.com/casjay-base/centos/raw/main/version.txt" | head -n1)"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 hostnamefull="$(hostname -f 2>/dev/null || echo "$HOSTNAME")"
 hostnameshort="$(hostname -s 2>/dev/null || echo "$HOSTNAME")"
-domainname="$(echo "$hostnamefull" | awk -F. '{$1="";OFS="." ; print $0}' | grep -v '^$' | grep '^' || echo 'local')"
+domainname="$(echo "$hostnamefull" | awk -F'.' '{$1="";OFS="."; print $0}' | grep -v '^$' | sed 's|^ /*||g;s| |.|g' | grep '^' || echo 'local')"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 { [ "$1" = "--force" ] || [ -n "$FORCE_INST" ]; } && FORCE_INST="true" || FORCE_INST=""
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -95,7 +102,7 @@ else
     git -C "/var/www/html/sysinfo" pull -q
   else
     [ -d "/var/www/html/sysinfo" ] && rm -Rf "/var/www/html/sysinfo"
-    git clone "https://github.com/phpsysinfo/phpsysinfo" "/var/www/html/sysinfo"
+    git clone -q "https://github.com/phpsysinfo/phpsysinfo" "/var/www/html/sysinfo"
   fi
   echo -e "Done setting up phpsysinfo\n"
 
@@ -123,22 +130,33 @@ else
   sed -i "s#myserverdomainname#$HOSTNAME#g" /etc/sysconfig/network
   sed -i "s#mydomain#$domainname#g" /etc/sysconfig/network
 
-  grep '^kernel.domainname' '/etc/sysctl.conf' || echo "kernel.domainname=$domainname" >>/etc/sysctl.conf
+  if grep '^kernel.domainname' '/etc/sysctl.conf'; then
+    sed -i 's|kernel.domainname=.*|kernel.domainname='$domainname'|g' /etc/sysctl.conf
+  else
+    echo "kernel.domainname=$domainname" >>/etc/sysctl.conf
+  fi
 
   chmod 644 -Rf /etc/cron.d/* /etc/logrotate.d/*
 
-  if [ ! -f "/etc/postfix/.installed" ]; then
-    touch /etc/postfix/mydomains.pcre
-    postmap /etc/postfix/transport /etc/postfix/canonical /etc/postfix/virtual /etc/postfix/mydomains && newaliases
-    chattr +i "/etc/resolv.conf"
+  if [ -d "/usr/share/munin/plugins" ]; then
+    chmod 755 -Rf "/usr/share/munin/plugins"/*
   fi
-  touch "/etc/postfix/.installed"
+
+  if [ -d "/etc/postfix" ]; then
+    if [ ! -f "/etc/postfix/.installed" ]; then
+      touch /etc/postfix/mydomains.pcre
+      postmap /etc/postfix/transport /etc/postfix/canonical /etc/postfix/virtual /etc/postfix/mydomains
+      newaliases
+      chattr +i "/etc/resolv.conf"
+    fi
+    touch "/etc/postfix/.installed"
+  fi
 
   rm -Rf /tmp/*.tar "/tmp/dotfiles" "/tmp/configs" "/root/bin/linuxcounter.sh"
   echo -e "Done configuring files\n"
 
   echo -e "Setting up web server"
-  bash -c "$(curl -LSs https://github.com/casjay-templates/default-web-assets/raw/main/setup.sh)"
+  bash -c "$(curl -q -LSs "https://github.com/casjay-templates/default-web-assets/raw/main/setup.sh")"
   if [ -f "/var/lib/tor/hidden_service/hostname" ]; then
     cp -Rf "/var/lib/tor/hidden_service/hostname" "/var/www/html/tor_hostname"
   fi

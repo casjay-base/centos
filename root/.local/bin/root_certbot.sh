@@ -18,36 +18,42 @@
 # @@sudo/root        :  no
 # @@Template         :  shell/sh
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-certbot="$(command -v certbot 2>/dev/null || echo '')"
-certbot3="$(command -v certbot-3 2>/dev/null || echo '')"
+CERTBOT_API_KEY=""
+CERTBOT_BIN="$(builtin type -P certbot 2>/dev/null || false)"
+CERTBOT3_BIN="$(builtin type -P certbot-3 2>/dev/null || builtin type -P certbot3 2>/dev/null || false)"
+CERTBOT_KEY="$(grep -s 'dns_rfc2136_secret = ' "/etc/named/certbot-update.conf" 2>/dev/null | awk -F' = ' '{print $2}' | grep '^' || false)"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-if [ -f "$certbot3" ] && [ ! -f "$certbot" ]; then
-  ln -sf "$certbot3" "$certbot"
+if [ -z "${CERTBOT3_BIN:-$CERTBOT_BIN}" ]; then
+  echo "certbot does not seem to be installed" >&2
+  exit 1
 fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-[ -f "$certbot" ] || exit 1
+if [ -f "$CERTBOT3_BIN" ] && [ -z "$CERTBOT_BIN" ]; then
+  CERTBOT_BIN="$CERTBOT3_BIN"
+  ln -sf "$CERTBOT3_BIN" "/usr/bin/certbot"
+fi
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+[ -f "/etc/certbot.key" ] && . "/etc/certbot.key"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 if [ -f "$HOME/dns/certbot.sh" ]; then
-  "$HOME/dns/certbot.sh" --renew
+  eval "$HOME/dns/certbot.sh" --renew
 elif [ -f "/etc/named/certbot-update.conf" ]; then
-  [ -f "/etc/certbot.key" ] && . /etc/certbot.key
   if [ -z "$CERTBOT_API_KEY" ]; then
-    CERTBOT_KEY="$(grep 'dns_rfc2136_secret = ' | awk -F' = ' '{print $2}' | grep '^')"
-    echo "CERTBOT_API_KEY=$CERTBOT_KEY" >/etc/certbot.key
+    echo "CERTBOT_API_KEY=$CERTBOT_KEY" >"/etc/certbot.key"
   fi
 
   if [ -n "$CERTBOT_KEY" ]; then
-    sed -i 's|dns_rfc2136_secret.*|dns_rfc2136_secret = '$CERTBOT_API_KEY'|g' /etc/named/certbot-update.conf
+    sed -i 's|dns_rfc2136_secret.*|dns_rfc2136_secret = '$CERTBOT_API_KEY'|g' "/etc/named/certbot-update.conf"
   fi
 
   if [ -n "$CERTBOT_API_KEY" ] || [ -n "$CERTBOT_KEY" ]; then
-    eval $certbot renew --dry-run --agree-tos --expand --dns-rfc2136 --dns-rfc2136-credentials /etc/named/certbot-update.conf &&
-      eval $certbot renew --agree-tos --expand --dns-rfc2136 --dns-rfc2136-credentials /etc/named/certbot-update.conf
+    eval $CERTBOT_BIN renew --dry-run --agree-tos --expand --dns-rfc2136 --dns-rfc2136-credentials "/etc/named/certbot-update.conf" &&
+      eval $CERTBOT_BIN renew --agree-tos --expand --dns-rfc2136 --dns-rfc2136-credentials "/etc/named/certbot-update.conf"
   else
     echo "CERTBOT_API_KEY is unset" 1>&2
   fi
 else
-  eval $certbot renew -a webroot -w /var/www/html
+  eval $CERTBOT_BIN renew -a webroot -w "/var/www/html"
 fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 exit $?

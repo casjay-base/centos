@@ -17,7 +17,7 @@
 # @@sudo/root        :  no
 # @@Template         :  shell/sh
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-[ -n "$(which openssl 2>/dev/null)" ] || exit
+[ -n "$(builtin type -P openssl 2>/dev/null)" ] || exit 1
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 TMP="${TMP:-/tmp}"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -25,8 +25,9 @@ if [ -d "/etc/ssl/CA/CasjaysDev/dhparam" ]; then
   DHDIR="${DHDIR:-/etc/ssl/CA/CasjaysDev/dhparam}"
 elif [ -d "/etc/ssl/CA/dh" ]; then
   DHDIR="/etc/ssl/CA/dh/"
-elif [ ! -e "/etc/ssl/dhparam" ]; then
+else
   DHDIR="/etc/ssl/dhparam"
+  mkdir -p "/etc/ssl/dhparam"
 fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 openssl dhparam -out "$TMP/dhparams1024.pem" 1024 >/dev/null 2>&1 && mv -f "$TMP/dhparams1024.pem" "$DHDIR/1024.pem"
