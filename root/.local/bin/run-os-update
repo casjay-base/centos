@@ -60,7 +60,6 @@ if [ -z "$FORCE_INST" ] && [ "$VERSION" = "$CURR_VERSION" ]; then
 else
   echo -e "\nUpdating to version $VERSION from $CURR_VERSION"
   echo -e "Running the automatic update script"
-  echo -e "Your system will restart when done"
   echo -e "Press control+c now to cancel update"
   sleep 10
 
@@ -203,7 +202,7 @@ else
   echo -e "Cleaning up files and history"
   /root/.local/bin/root_clean.sh &>/dev/null
   history -c && history -w
-  echo "Last updated on $DATE" >"/var/log/run_update"
+  echo -e "\nUpdated to version $VERSION from $CURR_VERSION\nLast updated on $DATE" >"/var/log/run_update"
   echo -e "Done updating system\n\n"
 fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
