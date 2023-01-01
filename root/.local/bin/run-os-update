@@ -213,4 +213,6 @@ else
   printf '%s\n' "Done updating system\n\n"
 fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+exit
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # end
