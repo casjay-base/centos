@@ -47,6 +47,7 @@ export FORCE_INST="${FORCE_INST:-}"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export CURR_VERSION="$(head -n1 <"/etc/casjaysdev/updates/versions/configs.txt" 2>/dev/null)"
 export VERSION="$(curl -q -LSsf "https://github.com/casjay-base/centos/raw/main/version.txt" | head -n1)"
+RELEASE_VER="$(grep --no-filename -s 'VERSION_ID=' /etc/*-release | awk -F '=' '{print $2}' | sed 's#"##g' | awk -F '.' '{print $1}' | grep '^')"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 hostnamefull="$(hostname -f 2>/dev/null || echo "$HOSTNAME")"
 hostnameshort="$(hostname -s 2>/dev/null || echo "$HOSTNAME")"
@@ -149,7 +150,7 @@ else
       newaliases
       chattr +i "/etc/resolv.conf"
     fi
-    touch "/etc/postfix/.installed"
+    echo "Last updated on $DATE" >"/etc/postfix/.installed"
   fi
 
   rm -Rf /tmp/*.tar "/tmp/dotfiles" "/tmp/configs" "/root/bin/linuxcounter.sh"
@@ -194,6 +195,9 @@ else
 
   if [ -f "$HOME/dns/master/update.sh" ]; then
     echo -e "Setting up the dns server"
+    rm -Rf "$HOME/dns/master/etc/tor"
+    rm -Rf "$HOME/dns/master/etc/nginx"
+    rm -Rf "$HOME/dns/master/etc/httpd"
     bash -c "$HOME/dns/master/update.sh"
     systemctl enable --now named &>/dev/null
     echo -e "done setting up the dns server\n"
