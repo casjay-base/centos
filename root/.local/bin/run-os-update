@@ -208,8 +208,7 @@ else
 
   echo -e "Cleaning up files and history"
   bash -c "/root/.local/bin/root_clean.sh" &>/dev/null
-  history -c && history -w
-  echo -e "\nUpdated to version $VERSION from $CURR_VERSION\nLast updated on $DATE" >"/var/log/run_update"
+  echo -e "Updated to version $VERSION from $CURR_VERSION\nLast updated on $DATE" >"/var/log/run_update"
   echo -e "Done updating system\n\n"
 fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
