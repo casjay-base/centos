@@ -16,13 +16,13 @@ global debug_package  %{nil}
 %_topdir              %{getenv:HOME}/rpmbuild
 %_sourcedir           %{getenv:HOME}/rpmbuild/%{name}
 %_specdir             %{getenv:HOME}/rpmbuild/%{name}
+%_builddir            %{getenv:HOME}/.local/tmp/BUILD
+%_buildrootdir        %{getenv:HOME}/.local/tmp/BUILDROOT
+%_buildroot           %{_buildrootdir}/%{name}-%{version}-%{release}.%{BuildArch}
 
 %_rpmdir              %{getenv:HOME}/Documents/rpmbuild/%BuildArch/%osver/rpms
 %_srcrpmdir           %{getenv:HOME}/Documents/rpmbuild/%BuildArch/%osver/srpm
 %_debugrpmdir         %{getenv:HOME}/Documents/rpmbuild/%BuildArch/%osver/debug
-%_builddir            /var/tmp/BUILD
-%_buildrootdir        /var/tmp/BUILDROOT
-%_buildroot           /var/tmp/BUILDROOT/%{name}-%{version}-%{release}.%{BuildArch}
 
 %_signature           gpg
 %_gpg_path            %(echo $HOME)/.gnupg
