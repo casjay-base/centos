@@ -60,24 +60,24 @@ if [ -z "$FORCE_INST" ] && [ "$VERSION" = "$CURR_VERSION" ]; then
   echo "There is no update available: $VERSION"
   exit
 else
-  printf '%s\n' "\nUpdating to version $VERSION from $CURR_VERSION"
-  printf '%s\n' "Running the automatic update script"
-  printf '%s\n' "Press control+c now to cancel update"
+  echo -e "\nUpdating to version $VERSION from $CURR_VERSION"
+  echo -e "Running the automatic update script"
+  echo -e "Press control+c now to cancel update\n"
   sleep 10
 
-  printf '%s\n' "Setting Timezone to $TIME_ZONE"
+  echo -e "Setting Timezone to $TIME_ZONE"
   [ -f "/etc/timezone" ] || echo "$TIME_ZONE" >/etc/timezone
   [ -f "/etc/localtime" ] || ln -sf "/usr/share/zoneinfo/$TIME_ZONE" "/etc/localtime"
-  printf '%s\n' "Done Setting up Timezone\n"
+  echo -e "Done Setting up Timezone\n"
 
-  printf '%s\n' "Setting version"
+  echo -e "Setting version"
   mkdir -p "/etc/casjaysdev/updates/versions"
   echo "$VERSION" >"/etc/casjaysdev/updates/versions/configs.txt"
   date +'%b %d, %Y at %H:%M' >"/etc/casjaysdev/updates/versions/date.configs.txt"
   chmod -Rf 664 /etc/casjaysdev/updates/versions/*.txt
-  printf '%s\n' "Done setting version\n"
+  echo -e "Done setting version\n"
 
-  printf '%s\n' "Setting up packages - this may take some time!"
+  echo -e "Setting up packages - this may take some time!"
   yum update -yy -q &>/dev/null
   chattr -i /etc/resolv.conf &>/dev/null
   chattr -i /etc/nginx/vhosts.d/default.conf &>/dev/null
@@ -86,28 +86,28 @@ else
   if [ -f "/etc/nginx/vhosts.d/default.conf" ]; then
     mv -f "/etc/nginx/vhosts.d/default.conf" "/etc/nginx/vhosts.d/0000-default.conf"
   fi
-  printf '%s\n' "Done with package installation\n"
+  echo -e "Done with package installation\n"
 
-  printf '%s\n' "Removing old files "
+  echo -e "Removing old files "
   rm -Rf /etc/named* /var/named/* /etc/ntp* /etc/cron*/0* /etc/cron*/dailyjobs &>/dev/null
   rm -Rf /var/ftp/uploads /etc/httpd/conf.d/ssl.conf /tmp/configs /etc/samba/*.example &>/dev/null
-  printf '%s\n' "Done removing old files\n"
+  echo -e "Done removing old files\n"
 
-  printf '%s\n' "Setting up phpsysinfo"
+  echo -e "Setting up phpsysinfo"
   if [ -d "/var/www/html/sysinfo/.git" ]; then
     git -C "/var/www/html/sysinfo" pull -q
   else
     [ -d "/var/www/html/sysinfo" ] && rm -Rf "/var/www/html/sysinfo"
     git clone -q "https://github.com/phpsysinfo/phpsysinfo" "/var/www/html/sysinfo"
   fi
-  printf '%s\n' "Done setting up phpsysinfo\n"
+  echo -e "Done setting up phpsysinfo\n"
 
-  printf '%s\n' "Setting up configs"
+  echo -e "Setting up configs"
   [ -d "/tmp/configs" ] && rm -Rf "/tmp/configs"
   git clone -q "https://github.com/casjay-base/centos" "/tmp/configs"
-  printf '%s\n' "Done Setting up configs\n"
+  echo -e "Done Setting up configs\n"
 
-  printf '%s\n' "Configuring files"
+  echo -e "Configuring files"
   rm -Rf /tmp/configs/var/named*
   rm -Rf /tmp/configs/etc/sysconfig/network-scripts
   rm -Rf /tmp/configs/etc/{tor,cockpit,fail2ban,shorewall,shorewall6,samba,postfix,named*}
@@ -149,53 +149,53 @@ else
   fi
 
   rm -Rf /tmp/*.tar "/tmp/dotfiles" "/tmp/configs" "/root/bin/linuxcounter.sh"
-  printf '%s\n' "Done configuring files\n"
+  echo -e "Done configuring files\n"
 
-  printf '%s\n' "Setting up web server"
+  echo -e "Setting up web server"
   bash -c "$(curl -q -LSs "https://github.com/casjay-templates/default-web-assets/raw/main/setup.sh")"
   if [ -f "/var/lib/tor/hidden_service/hostname" ]; then
     cp -Rf "/var/lib/tor/hidden_service/hostname" "/var/www/html/tor_hostname"
   fi
   chown -Rf apache:apache "/var/www" "/usr/share/httpd"
-  printf '%s\n' "Done setting up web server\n"
+  echo -e "Done setting up web server\n"
 
   if [ -f "$HOME/.local/dotfiles/personal/install.sh" ]; then
-    printf '%s\n' "Updating personal dotfiles"
+    echo -e "Updating personal dotfiles"
     bash -c "$HOME/.local/dotfiles/personal/install.sh" &>/dev/null
-    printf '%s\n' "dotfiles have been updated\n"
+    echo -e "dotfiles have been updated\n"
   fi
 
-  printf '%s\n' "Setting up the ssl certs"
+  echo -e "Setting up the ssl certs"
   [ -f "/etc/named/certbot-update.conf" ] && chmod 600 /etc/named/certbot-update.conf
   if [ -d /etc/letsencrypt/live/domain ]; then
     cat /etc/letsencrypt/live/domain/fullchain.pem >/etc/cockpit/ws-certs.d/1-my-cert.cert
     cat /etc/letsencrypt/live/domain/privkey.pem >>/etc/cockpit/ws-certs.d/1-my-cert.cert
   fi
   update-ca-trust && update-ca-trust extract
-  printf '%s\n' "Done setting up the ssl certs\n"
+  echo -e "Done setting up the ssl certs\n"
 
-  printf '%s\n' "Setting up ip addresses"
+  echo -e "Setting up ip addresses"
   bash -c "/root/.local/bin/root_changeip.sh"
-  printf '%s\n' "Done setting up ip addresses\n"
+  echo -e "Done setting up ip addresses\n"
 
-  printf '%s\n' "Updating motd and issue files"
+  echo -e "Updating motd and issue files"
   mkdir -p /etc/casjaysdev/banners &>/dev/null
   chmod -f 777 /etc/casjaysdev /etc/casjaysdev/banners/ /etc/casjaysdev/banners/* &>/dev/null
   cmd_exists update-motd && bash -c "update-motd" &>/dev/null
-  printf '%s\n' "Done updating motd and issue files \n"
+  echo -e "Done updating motd and issue files \n"
 
-  printf '%s\n' "Setting up the services"
+  echo -e "Setting up the services"
   for s in $SERVICES_ENABLE; do systemctl enable $s &>/dev/null; done
   for s in $SERVICES_ENABLE; do systemctl restart $s &>/dev/null; done
   for s in $SERVICES_DISABLE; do systemctl disable $s &>/dev/null; done
-  printf '%s\n' "Done setting up the services\n"
+  echo -e "Done setting up the services\n"
 
-  printf '%s\n' "Updating systemmgr config"
+  echo -e "Updating systemmgr config"
   bash -c "systemmgr update scripts ssl ssh" &>/dev/null
-  printf '%s\n' "Done updating systemmgr configs\n"
+  echo -e "Done updating systemmgr configs\n"
 
   if [ -f "$HOME/dns/master/update.sh" ]; then
-    printf '%s\n' "Setting up the dns server"
+    echo -e "Setting up the dns server"
     git -C "$HOME/dns" pull -q &>/dev/null
     cp -Rf "$HOME/dns" "/tmp/dns-update"
     rm -Rf "/tmp/dns-update/master/etc/tor"
@@ -204,13 +204,13 @@ else
     bash -c "/tmp/dns-update/master/update.sh"
     rm -Rf "/tmp/dns-update"
     systemctl enable --now named &>/dev/null
-    printf '%s\n' "done setting up the dns server\n"
+    echo -e "done setting up the dns server\n"
   fi
 
-  printf '%s\n' "Cleaning up files and history"
+  echo -e "Cleaning up files and history"
   bash -c "/root/.local/bin/root_clean.sh" &>/dev/null
-  printf '%s\n' "Updated to version $VERSION from $CURR_VERSION\nLast updated on $DATE" >"/var/log/run_update"
-  printf '%s\n' "Done updating system\n\n"
+  echo -e "Updated to version $VERSION from $CURR_VERSION\nLast updated on $DATE" >"/var/log/run_update"
+  echo -e "Done updating system\n\n"
 fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 exit
