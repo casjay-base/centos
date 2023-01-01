@@ -7,11 +7,11 @@ global debug_package  %{nil}
 
 %_minorver            3
 %BuildArch            %{_arch}
+%osver                el%{?rhel}
 %_pdistro             %distroname
-%osver                el%version
 
-%distribution         %_minorver.%_pdistro.%osver
 %dist                 %_minorver.%_pdistro.%osver
+%distribution         %_minorver.%_pdistro.%osver
 
 %_topdir              %{getenv:HOME}/rpmbuild
 %_sourcedir           %{getenv:HOME}/rpmbuild/%{name}
@@ -32,7 +32,6 @@ global debug_package  %{nil}
 %_usr                 /usr
 %_usrdir              /usr
 %_usrsrc              /usr/src
-%_lib                 %{_lib}
 %_docdir              /usr/share/doc
 %_sysconfdir          /etc
 %_prefix              /usr
