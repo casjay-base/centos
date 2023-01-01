@@ -17,19 +17,31 @@
 # @@sudo/root        :  no
 # @@Template         :  bash/system
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+__chattr() {
+  [ -n "$(builtin type -P chattr)" ] || return
+  chattr "$@"
+}
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+__fetch() {
+  curl -q -LSsf "https://github.com/casjay-base/centos/raw/main/etc/resolv.conf" -o "/tmp/resolv.conf"
+  return $?
+}
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 if [ -f "/etc/resolv.conf " ]; then
-  [ -n "$(builtin type -P chattr)" ] && chattr -i "/etc/resolv.conf"
+  __chattr -i "/etc/resolv.conf"
   mv -f "/etc/resolv.conf" "/tmp/resolv.bak.conf"
 fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-if curl -q -LSsf "https://github.com/casjay-base/centos/raw/main/etc/resolv.conf" -o "/tmp/resolv.conf"; then
+if __fetch; then
   [ -f "/tmp/resolv.conf" ] && mv -f "/tmp/resolv.conf" "/etc/resolv.conf"
 else
   [ -f "/tmp/resolv.bak.conf" ] && mv -f "/etc/resolv.conf" "/tmp/resolv.bak.conf"
 fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+[ -f "/tmp/resolv.conf" ] && rm -Rf "/tmp/resolv.conf"
 [ -f "/tmp/resolv.bak.conf" ] && rm -Rf "/tmp/resolv.bak.conf"
-[ -n "$(builtin type -P chattr)" ] && chattr +i "/etc/resolv.conf"
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+__chattr +i "/etc/resolv.conf"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 exit
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
