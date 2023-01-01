@@ -195,10 +195,13 @@ else
 
   if [ -f "$HOME/dns/master/update.sh" ]; then
     echo -e "Setting up the dns server"
-    rm -Rf "$HOME/dns/master/etc/tor"
-    rm -Rf "$HOME/dns/master/etc/nginx"
-    rm -Rf "$HOME/dns/master/etc/httpd"
-    bash -c "$HOME/dns/master/update.sh"
+    git -C "$HOME/dns" pull -q &>/dev/null
+    cp -Rf "$HOME/dns" "/tmp/dns-update"
+    rm -Rf "/tmp/dns-update/master/etc/tor"
+    rm -Rf "/tmp/dns-update/master/etc/nginx"
+    rm -Rf "/tmp/dns-update/master/etc/httpd"
+    bash -c "/tmp/dns-update/master/update.sh"
+    rm -Rf "/tmp/dns-update"
     systemctl enable --now named &>/dev/null
     echo -e "done setting up the dns server\n"
   fi
