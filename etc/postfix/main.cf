@@ -10,17 +10,18 @@ myhostname = myserverdomainname
 myorigin = myserverdomainname
 inet_interfaces = all
 local_transport=error: local delivery disabled
-relayhost = myrelayhost
+relayhost = smtp-relay.casjay.net
+
+tls_random_source = dev:/dev/urandom
 
 smtp_use_tls = yes
 smtpd_use_tls = yes
-smtpd_tls_exclude_ciphers = aNULL, eNULL, EXPORT, DES, RC4, MD5, PSK, aECDH, EDH-DSS-DES-CBC3-SHA, EDH-RSA-DES-CBC3-SHA, KRB5-DES, CBC3-SHA
 smtpd_tls_session_cache_database = btree:/etc/postfix/smtpd_scache
 smtpd_tls_dh1024_param_file = /etc/ssl/dhparam/1024.pem
-tls_random_source = dev:/dev/urandom
+smtpd_tls_exclude_ciphers = aNULL, eNULL, EXPORT, DES, RC4, MD5, PSK, aECDH, EDH-DSS-DES-CBC3-SHA, EDH-RSA-DES-CBC3-SHA, KRB5-DES, CBC3-SHA
 # LECerts
-smtp_tls_cert_file = /etc/letsencrypt/live/domain/fullchain.pem
 smtp_tls_key_file = /etc/letsencrypt/live/domain/privkey.pem
+smtp_tls_cert_file = /etc/letsencrypt/live/domain/fullchain.pem
 smtpd_tls_key_file = /etc/letsencrypt/live/domain/privkey.pem
 smtpd_tls_cert_file = /etc/letsencrypt/live/domain/fullchain.pem
 
