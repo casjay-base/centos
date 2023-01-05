@@ -1,16 +1,11 @@
 ###
 compatibility_level = 2
+alias_maps = hash:/etc/aliases
+alias_database = hash:/etc/aliases
+mynetworks = /etc/postfix/mynetworks
 transport_maps = hash:/etc/postfix/transport
 virtual_alias_maps = hash:/etc/postfix/virtual
 relay_domains = hash:/etc/postfix/mydomains, regexp:/etc/postfix/mydomains.pcre
-mynetworks = /etc/postfix/mynetworks
-append_dot_mydomain = yes
-mydestination =
-myhostname = myserverdomainname
-myorigin = myserverdomainname
-inet_interfaces = all
-local_transport=error: local delivery disabled
-relayhost = [smtp-relay.casjay.net]:587
 
 tls_random_source = dev:/dev/urandom
 
@@ -26,3 +21,12 @@ smtpd_tls_key_file = /etc/letsencrypt/live/domain/privkey.pem
 smtpd_tls_cert_file = /etc/letsencrypt/live/domain/fullchain.pem
 
 smtpd_relay_restrictions = permit_mynetworks, permit_sasl_authenticated, defer_unauth_destination
+
+mydestination =
+inet_interfaces = all
+append_dot_mydomain = yes
+myorigin = myserverdomainname
+myhostname = myserverdomainname
+local_transport=error: local delivery disabled
+
+relayhost = [smtp-relay.casjay.net]:587
