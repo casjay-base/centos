@@ -115,12 +115,12 @@ else
   rm -Rf /tmp/configs/etc/sysconfig/network-scripts
   rm -Rf /tmp/configs/etc/{tor,cockpit,fail2ban,shorewall,shorewall6,samba,postfix,named*}
 
-  find -L /tmp/configs -type f -iname "*.sh" -exec chmod 755 {} \;
-  find -L /tmp/configs -type f -iname "*.pl" -exec chmod 755 {} \;
-  find -L /tmp/configs -type f -iname "*.cgi" -exec chmod 755 {} \;
-  find -L /tmp/configs -type f -exec sed -i "s#myserverdomainname#$hostnamefull#g" {} \;
-  find -L /tmp/configs -type f -exec sed -i "s#myhostnameshort#$hostnameshort#g" {} \;
-  find -L /tmp/configs -type f -exec sed -i "s#mydomainname#$domainname#g" {} \;
+  find -L /tmp/configs -type f -iname "*.sh" -exec chmod 755 {} \; &>/dev/null
+  find -L /tmp/configs -type f -iname "*.pl" -exec chmod 755 {} \; &>/dev/null
+  find -L /tmp/configs -type f -iname "*.cgi" -exec chmod 755 {} \; &>/dev/null
+  find -L /tmp/configs -type f -exec sed -i "s#myserverdomainname#$hostnamefull#g" {} \; &>/dev/null
+  find -L /tmp/configs -type f -exec sed -i "s#myhostnameshort#$hostnameshort#g" {} \; &>/dev/null
+  find -L /tmp/configs -type f -exec sed -i "s#mydomainname#$domainname#g" {} \; &>/dev/null
 
   cp -Rf /tmp/configs/{etc,root,usr,var}* / 2>/dev/null
 
