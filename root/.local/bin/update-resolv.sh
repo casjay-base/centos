@@ -22,14 +22,7 @@ __fetch() {
   return $?
 }
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-[ -f "/etc/resolv.conf" ] && chattr -i "/etc/resolv.conf" || echo "nameserver 1.1.1.1" >"/etc/resolv.conf"
-[ -f "/etc/resolv.conf" ] && mv -f "/etc/resolv.conf" "/tmp/resolv.bak.conf"
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-if __fetch; then
-  [ -f "/tmp/resolv.conf" ] && mv -f "/tmp/resolv.conf" "/etc/resolv.conf"
-  [ -f "/tmp/resolv.conf" ] && rm -Rf "/tmp/resolv.conf"
-  [ -f "/tmp/resolv.bak.conf" ] && rm -Rf "/tmp/resolv.bak.conf"
-else
+__default_resolv() {
   cat <<EOF | tee "/etc/resolv.conf" &>/dev/null
   # DNS Resolver
 search casjay.in
@@ -38,6 +31,18 @@ nameserver 8.8.8.8
 nameserver 132.226.33.75
 
 EOF
+  [ -f "/etc/resolv.conf" ] || return 1
+}
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+[ -f "/etc/resolv.conf" ] && chattr -i "/etc/resolv.conf" || echo "nameserver 1.1.1.1" >"/etc/resolv.conf"
+[ -f "/etc/resolv.conf" ] && mv -f "/etc/resolv.conf" "/tmp/resolv.bak.conf"
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+if __fetch; then
+  [ -f "/tmp/resolv.conf" ] && mv -f "/tmp/resolv.conf" "/etc/resolv.conf"
+  [ -f "/tmp/resolv.conf" ] && rm -Rf "/tmp/resolv.conf"
+  [ -f "/tmp/resolv.bak.conf" ] && rm -Rf "/tmp/resolv.bak.conf"
+else
+  __default_resolv
 fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 [ -f "/etc/resolv.conf" ] && chattr +i "/etc/resolv.conf"
