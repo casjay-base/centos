@@ -26,8 +26,8 @@ SRC_DIR="${BASH_SOURCE%/*}"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Set bash options
 trap 'exitCode=${exitCode:-$?};[ -n "$RUN_OS_UPDATE_TEMP_FILE" ] && [ -f "$RUN_OS_UPDATE_TEMP_FILE" ] && rm -Rf "$RUN_OS_UPDATE_TEMP_FILE" &>/dev/null' EXIT
-[ "$1" = "--debug" ] && set -xo pipefail && export SCRIPT_OPTS="--debug" && export _DEBUG="on"
-[ "$1" = "--raw" ] && export SHOW_RAW="true"
+[ "$1" = "--debug" ] && shift 1 && set -xo pipefail && export SCRIPT_OPTS="--debug" && export _DEBUG="on"
+[ "$1" = "--raw" ] && shift 1 && export SHOW_RAW="true"
 set -o pipefail
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 [ "$USER" = "root" ] || [ "$EUID" = 0 ] || exit 1
@@ -53,9 +53,9 @@ hostnamefull="$(hostname -f 2>/dev/null || echo "$HOSTNAME")"
 hostnameshort="$(hostname -s 2>/dev/null || echo "$HOSTNAME")"
 domainname="$(echo "$hostnamefull" | awk -F'.' '{$1="";OFS="."; print $0}' | grep -v '^$' | sed 's|^\.||g;s|^ /*||g;s| |.|g' | grep '^' || echo 'local')"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-{ [ "$1" = "--force" ] || [ -n "$FORCE_INST" ]; } && FORCE_INST="true" || FORCE_INST=""
-{ [ "$1" = "--check" ] || [ "$1" = "-c" ] || [ "$1" = "check" ]; } && echo "$VERSION" && exit
-{ [ "$1" = "--version" ] || [ "$1" = "-v" ] || [ "$1" = "version" ]; } && echo "$CURR_VERSION" && exit
+{ [ "$1" = "--force" ] || [ -n "$FORCE_INST" ]; } && shift 1 && FORCE_INST="true" || FORCE_INST=""
+{ [ "$1" = "--check" ] || [ "$1" = "-c" ] || [ "$1" = "check" ]; } && shift 1 && echo "$VERSION" && exit
+{ [ "$1" = "--version" ] || [ "$1" = "-v" ] || [ "$1" = "version" ]; } && shift 1 && echo "$CURR_VERSION" && exit
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 [ $# -ne 0 ] || shift $#
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
