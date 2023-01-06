@@ -24,7 +24,7 @@ __fetch() {
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 __default_resolv() {
   cat <<EOF | tee "/etc/resolv.conf" &>/dev/null
-  # DNS Resolver
+# DNS Resolver
 search casjay.in
 nameserver 1.1.1.1
 nameserver 8.8.8.8
@@ -34,6 +34,14 @@ EOF
   [ -f "/etc/resolv.conf" ] || return 1
 }
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+if [ "$1" = "update" ]; then
+  exitCode="0"
+  for f in run-os-update update-resolv.sh; do
+    curl -q -LSsf "https://raw.githubusercontent.com/casjay-base/centos/main/root/.local/bin/$f" "/root/.local/bin/$f" || exitCode=$(($exitCode + 1))
+  done
+  exit $exitCode
+fi
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 [ -f "/etc/resolv.conf" ] && chattr -i "/etc/resolv.conf" || echo "nameserver 1.1.1.1" >"/etc/resolv.conf"
 [ -f "/etc/resolv.conf" ] && mv -f "/etc/resolv.conf" "/tmp/resolv.bak.conf"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -41,10 +49,9 @@ if __fetch; then
   [ -f "/tmp/resolv.conf" ] && mv -f "/tmp/resolv.conf" "/etc/resolv.conf"
   [ -f "/tmp/resolv.conf" ] && rm -Rf "/tmp/resolv.conf"
   [ -f "/tmp/resolv.bak.conf" ] && rm -Rf "/tmp/resolv.bak.conf"
-else
-  __default_resolv
 fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+[ -f "/etc/resolv.conf" ] || __default_resolv
 [ -f "/etc/resolv.conf" ] && chattr +i "/etc/resolv.conf"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 exit
