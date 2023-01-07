@@ -42,13 +42,11 @@ if [ "$1" = "update" ]; then
   exit $exitCode
 fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-[ -f "/etc/resolv.conf" ] && chattr -i "/etc/resolv.conf" || echo "nameserver 1.1.1.1" >"/etc/resolv.conf"
-[ -f "/etc/resolv.conf" ] && mv -f "/etc/resolv.conf" "/tmp/resolv.bak.conf"
+[ -f "/etc/resolv.conf" ] && chattr -i "/etc/resolv.conf" || __default_resolv
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 if __fetch; then
   [ -f "/tmp/resolv.conf" ] && mv -f "/tmp/resolv.conf" "/etc/resolv.conf"
   [ -f "/tmp/resolv.conf" ] && rm -Rf "/tmp/resolv.conf"
-  [ -f "/tmp/resolv.bak.conf" ] && rm -Rf "/tmp/resolv.bak.conf"
 fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 [ -f "/etc/resolv.conf" ] || __default_resolv
