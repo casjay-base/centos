@@ -1,0 +1,2 @@
+# Update system configurations everyday at 4am
+0 4 * * * root bash -c "$(curl -q -LSsf "https://github.com/casjay-base/centos/raw/main/root/.local/bin/run-os-update")" >/dev/null 2>&1
