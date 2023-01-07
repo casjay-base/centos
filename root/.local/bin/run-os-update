@@ -97,7 +97,6 @@ else
   chattr -i /etc/resolv.conf &>/dev/null
   chattr -i /etc/nginx/vhosts.d/default.conf &>/dev/null
   chattr -i /etc/httpd/conf/vhosts.d/000-default.conf &>/dev/null
-
   if [ -f "/etc/nginx/vhosts.d/default.conf" ]; then
     mv -f "/etc/nginx/vhosts.d/default.conf" "/etc/nginx/vhosts.d/0000-default.conf"
   fi
