@@ -103,6 +103,11 @@ else
   echo -e "Done with package installation\n"
 
   echo -e "Updating systemmgr config"
+  if [ -d "/usr/local/share/CasjaysDev/scripts/.git" ]; then
+    git -C "/usr/local/share/CasjaysDev/scripts" pull -q
+  else
+    git clone -q "https://github.com/casjay-dotfiles/scripts" "/usr/local/share/CasjaysDev/scripts"
+  fi
   bash -c "systemmgr update scripts ssl ssh" &>/dev/null
   echo -e "Done updating systemmgr configs\n"
 
