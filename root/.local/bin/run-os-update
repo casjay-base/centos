@@ -199,7 +199,7 @@ else
   echo -e "Updating motd and issue files"
   mkdir -p /etc/casjaysdev/banners &>/dev/null
   chmod -f 777 /etc/casjaysdev /etc/casjaysdev/banners/ /etc/casjaysdev/banners/* &>/dev/null
-  cmd_exists update-motd && bash -c "update-motd" &>/dev/null
+  bash -c "update-motd" &>/dev/null
   echo -e "Done updating motd and issue files \n"
 
   echo -e "Setting up the services"
@@ -232,6 +232,6 @@ else
   echo -e "Done updating system\n\n"
 fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-exit
+exit $?
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # end
