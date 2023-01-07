@@ -35,9 +35,9 @@ EOF
 }
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 if [ "$1" = "update" ]; then
-  exitCode="0"
+  exitCode=0
   for f in run-os-update update-resolv.sh; do
-    curl -q -LSsf "https://raw.githubusercontent.com/casjay-base/centos/main/root/.local/bin/$f" "/root/.local/bin/$f" || exitCode=$(($exitCode + 1))
+    curl -q -LSsf "https://raw.githubusercontent.com/casjay-base/centos/main/root/.local/bin/$f" -o "/root/.local/bin/$f" 2>/dev/null || exitCode=$(($exitCode + 1))
   done
   exit $exitCode
 fi
