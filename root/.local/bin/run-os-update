@@ -54,8 +54,8 @@ hostnameshort="$(hostname -s 2>/dev/null || echo "$HOSTNAME")"
 domainname="$(echo "$hostnamefull" | awk -F'.' '{$1="";OFS="."; print $0}' | grep -v '^$' | sed 's|^\.||g;s|^ /*||g;s| |.|g' | grep '^' || echo 'local')"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 { [ "$1" = "--force" ] || [ -n "$FORCE_INST" ]; } && shift 1 && FORCE_INST="true" || FORCE_INST=""
-{ [ "$1" = "--check" ] || [ "$1" = "-c" ] || [ "$1" = "check" ]; } && shift 1 && echo "$VERSION" && exit
 { [ "$1" = "--version" ] || [ "$1" = "-v" ] || [ "$1" = "version" ]; } && shift 1 && echo "$CURR_VERSION" && exit
+{ [ "$1" = "--check" ] || [ "$1" = "-c" ] || [ "$1" = "check" ]; } && shift 1 && echo "Old version is $CURR_VERSION and new version is $VERSION" && exit
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 [ -f "/etc/resolv.conf" ] || echo "nameserver 1.1.1.1" >"/etc/resolv.conf"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
