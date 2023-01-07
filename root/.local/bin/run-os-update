@@ -106,6 +106,10 @@ else
   fi
   echo -e "Done with package installation\n"
 
+  echo -e "Updating systemmgr config"
+  bash -c "systemmgr update scripts ssl ssh" &>/dev/null
+  echo -e "Done updating systemmgr configs\n"
+
   echo -e "Removing old files "
   rm -Rf /etc/named* /var/named/* /etc/ntp* /etc/cron*/0* /etc/cron*/dailyjobs &>/dev/null
   rm -Rf /var/ftp/uploads /etc/httpd/conf.d/ssl.conf /tmp/configs /etc/samba/*.example &>/dev/null
@@ -207,10 +211,6 @@ else
   for s in $SERVICES_ENABLE; do systemctl restart "$s" &>/dev/null; done
   for s in $SERVICES_DISABLE; do systemctl disable "$s" &>/dev/null; done
   echo -e "Done setting up the services\n"
-
-  echo -e "Updating systemmgr config"
-  bash -c "systemmgr update scripts ssl ssh" &>/dev/null
-  echo -e "Done updating systemmgr configs\n"
 
   if [ -f "$HOME/dns/master/update.sh" ]; then
     echo -e "Setting up the dns server"
