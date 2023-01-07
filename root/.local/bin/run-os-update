@@ -64,10 +64,7 @@ if [ "$1" = "scripts" ]; then
   RAW_URL="https://raw.githubusercontent.com/casjay-base/centos/main/root/.local/bin"
   for f in root_certbot.sh root_changeip.sh root_clean.sh root_dhparams.sh run-os-update update-resolv.sh; do
     curl -q -LSsf "$RAW_URL/$f" -o "/tmp/$f" 2>/dev/null && true || { exitCode=$(($exitCode + 1)) && false; }
-    if [ $? -eq 0 ]; then
-      [ -f "/tmp/$f" ] && mv -f "/tmp/$f" "/root/.local/bin/$f"
-      [ -f "/root/.local/bin/$f" ] && chmod -Rf 755 "/root/.local/bin/$f"
-    fi
+    [ -f "/tmp/$f" ] && chmod -Rf 755 "/tmp/$f" && mv -f "/tmp/$f" "/root/.local/bin/$f"
   done
   exit $exitCode
 fi
