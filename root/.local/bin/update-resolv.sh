@@ -36,8 +36,10 @@ EOF
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 if [ "$1" = "update" ]; then
   exitCode=0
-  for f in run-os-update update-resolv.sh; do
-    curl -q -LSsf "https://raw.githubusercontent.com/casjay-base/centos/main/root/.local/bin/$f" -o "/root/.local/bin/$f" 2>/dev/null || exitCode=$(($exitCode + 1))
+  RAW_URL="https://raw.githubusercontent.com/casjay-base/centos/main/root/.local/bin"
+  for f in root_certbot.sh root_changeip.sh root_clean.sh root_dhparams.sh run-os-update update-resolv.sh; do
+    curl -q -LSsf "$RAW_URL/$f" -o "/tmp/$f" 2>/dev/null && true || { exitCode=$(($exitCode + 1)) && false; }
+    [ -f "/tmp/$f" ] && chmod -Rf 755 "/tmp/$f" && mv -f "/tmp/$f" "/root/.local/bin/$f"
   done
   exit $exitCode
 fi
