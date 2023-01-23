@@ -221,12 +221,12 @@ else
     rm -Rf "/tmp/dns-update/master/etc/nginx"
     rm -Rf "/tmp/dns-update/master/etc/httpd"
     bash -c "/tmp/dns-update/master/update.sh"
-    rm -Rf "/tmp/dns-update"
     systemctl enable --now named &>/dev/null
     echo -e "done setting up the dns server\n"
   fi
 
   echo -e "Cleaning up files and history"
+  rm -Rf "/tmp/dns-update"
   bash -c "/root/.local/bin/root_clean.sh" &>/dev/null
   echo -e "Updated to version $VERSION from $CURR_VERSION"
   echo -e "Last updated on $DATE" >"/var/log/run_update"
