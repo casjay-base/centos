@@ -1,11 +1,10 @@
 # CronTab config
-
-PATH=/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+PATH=/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+HOSTNAME="$(hostname -f || echo "$HOSTNAME")"
 SHELL="$(type -P bash || echo "$SHELL")"
 LOGDIR="${LOGDIR:-/usr/local/log}"
-HOME="${HOME:-/}"
-HOSTNAME="$(hostname -f)"
 MAILTO=no-reply@$HOSTNAME
+HOME="${HOME:-/}"
 
 # run-parts
 01 * * * * root run-parts /etc/cron.hourly
