@@ -44,7 +44,7 @@ if [ "$1" = "update" ]; then
   exit $exitCode
 fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-[ -f "/etc/resolv.conf" ] && chattr -i "/etc/resolv.conf" || __default_resolv
+[ -f "/etc/resolv.conf" ] && chattr -i "/etc/resolv.conf"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 if __fetch; then
   [ -f "/tmp/resolv.conf" ] && mv -f "/tmp/resolv.conf" "/etc/resolv.conf"

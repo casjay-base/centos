@@ -33,8 +33,4 @@ fi
 openssl dhparam -out "$TMP/dhparams1024.pem" 1024 >/dev/null 2>&1 && mv -f "$TMP/dhparams1024.pem" "$DHDIR/1024.pem"
 openssl dhparam -out "$TMP/dhparams2048.pem" 2048 >/dev/null 2>&1 && mv -f "$TMP/dhparams2048.pem" "$DHDIR/2048.pem"
 openssl dhparam -out "$TMP/dhparams4096.pem" 4096 >/dev/null 2>&1 && mv -f "$TMP/dhparams4096.pem" "$DHDIR/4096.pem"
-cat "$DHDIR/2048.pem" >"$DHDIR/apache.pem"
-cat "$DHDIR/2048.pem" >"$DHDIR/nginx.pem"
-cat "$DHDIR/2048.pem" >"$DHDIR/postfix.pem"
-cat "$DHDIR/2048.pem" >"$DHDIR/proftpd.pem"
-cat "$DHDIR/2048.pem" >"$DHDIR/httpd.pem"
+for dhpem in apache nginx postfix proftpd httpd; do cat "$DHDIR/2048.pem" >"$DHDIR/$dhpem.pem"; done
