@@ -30,6 +30,15 @@ trap 'exitCode=${exitCode:-$?};[ -n "$RUN_OS_UPDATE_TEMP_FILE" ] && [ -f "$RUN_O
 [ "$1" = "--raw" ] && shift 1 && export SHOW_RAW="true"
 set -o pipefail
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+__run_updater() {
+  local url="" file=""
+  url="$1"
+  file="$(basename "$2")"
+  curl -q -LSsf "$url/$file" -o "/tmp/$file" 2>/dev/null && true || return 1
+  #[ -f "/tmp/$file" ] && chmod -Rf 755 "/tmp/$file" && mv -f "/tmp/$file" "/root/.local/bin/$file"
+  return $?
+}
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 [ "$USER" = "root" ] || [ "$EUID" = 0 ] || exit 1
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 echo "$PATH" | grep -q "/root/.local/bin" || export PATH="/root/.local/bin:$PATH"
@@ -61,11 +70,15 @@ domainname="$(echo "$hostnamefull" | awk -F'.' '{$1="";OFS="."; print $0}' | gre
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 if [ "$1" = "scripts" ]; then
   exitCode="0"
-  RAW_URL="https://raw.githubusercontent.com/casjay-base/centos/main/root/.local/bin"
-  for f in root_certbot.sh root_changeip.sh root_clean.sh root_dhparams.sh run-os-update update-resolv.sh; do
-    curl -q -LSsf "$RAW_URL/$f" -o "/tmp/$f" 2>/dev/null && true || { exitCode=$(($exitCode + 1)) && false; }
-    [ -f "/tmp/$f" ] && chmod -Rf 755 "/tmp/$f" && mv -f "/tmp/$f" "/root/.local/bin/$f"
+  RAW_REPO_URL="https://raw.githubusercontent.com/casjay-base/centos/main/root/.local/bin"
+  API_FILE_URL="https://api.github.com/repos/casjay-base/centos/contents/root/.local/bin?ref=main"
+  file_list="$(curl -q -LSsf "$API_FILE_URL" | jq -r '.[].url' | awk -F '?' '{print $1}')"
+  for file in $file_list; do
+    __run_updater "$RAW_REPO_URL" "$file"
+    exitCode=$(($exitCode + 1))
   done
+  __run_updater "$RAW_REPO_URL" "run-os-update"
+  exitCode=$(($exitCode + 1))
   exit $exitCode
 fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
