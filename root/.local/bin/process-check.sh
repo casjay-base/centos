@@ -218,13 +218,15 @@ done
 # Main application
 for proc in $PROCS; do
   if ! __proc_check "$procs"; then
+    printf '%s\n' "Attempting to restart $proc"
     systemctl restart "$proc" &>/dev/null
     exitProcCode=$((1 + exitProcCode))
   fi
 done
 for server in $SERVE; do
   if ! __server_check "$server"; then
-    systemctl restart "$proc" &>/dev/null
+    printf '%s\n' "Attempting to restart $server"
+    systemctl restart "$server" &>/dev/null
     exitProcCode=$((1 + exitProcCode))
   fi
 done
