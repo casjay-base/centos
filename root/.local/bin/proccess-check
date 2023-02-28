@@ -216,11 +216,17 @@ while :; do
 done
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Main application
-for procs in $PROCS; do
-  __proc_check "$procs" || exitProcCode=$((1 + exitProcCode))
+for proc in $PROCS; do
+  if ! __proc_check "$procs"; then
+    systemctl restart "$proc" &>/dev/null
+    exitProcCode=$((1 + exitProcCode))
+  fi
 done
 for server in $SERVE; do
-  __server_check "$server" || exitProcCode=$((1 + exitProcCode))
+  if ! __server_check "$server"; then
+    systemctl restart "$proc" &>/dev/null
+    exitProcCode=$((1 + exitProcCode))
+  fi
 done
 exitCode=$exitProcCode
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
