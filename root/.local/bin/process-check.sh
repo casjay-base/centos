@@ -9,7 +9,7 @@
 # @@Copyright        :  Copyright: (c) 2023 Jason Hempstead, Casjays Developments
 # @@Created          :  Tuesday, Feb 28, 2023 14:45 EST
 # @@File             :  process-check
-# @@Description      :
+# @@Description      :  Check and restart failed processes
 # @@Changelog        :  New script
 # @@TODO             :  Better documentation
 # @@Other            :
@@ -83,38 +83,36 @@ __version() {
 # Help function - Align to 50
 __help() {
   __printf_head "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -"
-  __printf_opts "process-check:  - $VERSION"
+  __printf_opts "process-check: Check and restart failed processes - $VERSION"
   __printf_head "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -"
   __printf_line "Usage: process-check [options] [commands]"
-  __printf_line " - "
+  __printf_line "$PPNAME                         - Check and restart failed processes"
   __printf_head "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -"
   __printf_opts "Other Options"
   __printf_head "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -"
-  __printf_line "--help             - Shows this message"
-  __printf_line "--config           - Generate user config file"
-  __printf_line "--version          - Show script version"
-  __printf_line "--options          - Shows all available options"
-  __printf_line "--debug            - Enables script debugging"
-  __printf_line "--raw              - Removes all formatting on output"
+  __printf_line "--help                          - Shows this message"
+  __printf_line "--config                        - Generate user config file"
+  __printf_line "--version                       - Show script version"
+  __printf_line "--options                       - Shows all available options"
+  __printf_line "--debug                         - Enables script debugging"
+  __printf_line "--raw                           - Removes all formatting on output"
   __printf_head "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -"
 }
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # User defined functions
-__get_proc_port() {
-  port="$(netstat -tapln | grep "$1" | tr ' ' '\n' | grep -v '^$' | grep ':[0-9]' | head -n 1 | sed 's|:||g' | head -n1 | grep '^')"
-  [ -n "$port" ] && printf '%s' "$port"
-  return $?
-}
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 __proc_check() {
-  ps ux | grep -v 'grep' | grep "$1" | grep '^'
-  return $?
+  proc="$(ps aux | grep -v 'grep' | grep -W "$1" | grep '^' | head -n1)"
+  [ -n "$proc" ] && echo "$proc" || return 1
 }
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 __server_check() {
   check="$(__get_proc_port "$1")"
-  [ -n "$port" ] && curl -q -LSsf "http://localhost:$port" &>/dev/null
-  return $?
+  [ -n "$port" ] && curl -q -LSsf "http://localhost:$port" &>/dev/null || return 1
+}
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+__get_proc_port() {
+  port="$(netstat -tapln | grep "$1" | tr ' ' '\n' | grep -v '^$' | grep ':[0-9]' | head -n 1 | sed 's|:||g' | head -n1 | grep '^')"
+  [ -n "$port" ] && printf '%s' "$port" || return 1
 }
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # User defined variables/import external variables
