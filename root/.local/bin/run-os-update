@@ -33,9 +33,9 @@ set -o pipefail
 __run_updater() {
   local url="" file=""
   url="$1"
-  file="$(basename "$2")"
+  file="$(basename "$2" 2>/dev/null)"
   curl -q -LSsf "$url/$file" -o "/tmp/$file" 2>/dev/null && true || return 1
-  #[ -f "/tmp/$file" ] && chmod -Rf 755 "/tmp/$file" && mv -f "/tmp/$file" "/root/.local/bin/$file"
+  [ -f "/tmp/$file" ] && chmod -Rf 755 "/tmp/$file" && mv -f "/tmp/$file" "/root/.local/bin/$file"
   return $?
 }
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
