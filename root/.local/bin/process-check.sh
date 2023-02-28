@@ -115,6 +115,14 @@ __get_proc_port() {
   [ -n "$port" ] && printf '%s' "$port" || return 1
 }
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+__service_exists() {
+  if systemctl status "$1" >/dev/null 2>&1; then return 0; else return 1; fi
+}
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+__service_restart() {
+  if __service_exists "$1" && systemctl restart "$1" >/dev/null 2>&1; then return 0; else return 1; fi
+}
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # User defined variables/import external variables
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -217,7 +225,7 @@ done
 for proc in $PROCS; do
   if ! __proc_check "$procs"; then
     printf '%s\n' "Attempting to restart $proc"
-    systemctl restart "$proc" &>/dev/null
+    __service_restart "$proc" &>/dev/null
     exitProcCode=$((1 + exitProcCode))
   fi
 done
