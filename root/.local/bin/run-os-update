@@ -74,11 +74,9 @@ if [ "$1" = "scripts" ]; then
   API_FILE_URL="https://api.github.com/repos/casjay-base/centos/contents/root/.local/bin?ref=main"
   file_list="$(curl -q -LSsf "$API_FILE_URL" | jq -r '.[].url' | awk -F '?' '{print $1}')"
   for file in $file_list; do
-    __run_updater "$RAW_REPO_URL" "$file"
-    exitCode=$(($exitCode + 1))
+    __run_updater "$RAW_REPO_URL" "$file" || exitCode=$(($exitCode + 1))
   done
-  __run_updater "$RAW_REPO_URL" "run-os-update"
-  exitCode=$(($exitCode + 1))
+  __run_updater "$RAW_REPO_URL" "run-os-update" || exitCode=$(($exitCode + 1))
   exit $exitCode
 fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
