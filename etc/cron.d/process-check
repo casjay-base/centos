@@ -1,0 +1,2 @@
+# Check processes and restart if
+*/15 * * * * root process-check &>/dev/null

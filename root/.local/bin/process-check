@@ -5,10 +5,10 @@
 # @@Author           :  Jason Hempstead
 # @@Contact          :  jason@casjaysdev.com
 # @@License          :  LICENSE.md
-# @@ReadME           :  proccess-check --help
+# @@ReadME           :  process-check --help
 # @@Copyright        :  Copyright: (c) 2023 Jason Hempstead, Casjays Developments
 # @@Created          :  Tuesday, Feb 28, 2023 14:45 EST
-# @@File             :  proccess-check
+# @@File             :  process-check
 # @@Description      :
 # @@Changelog        :  New script
 # @@TODO             :  Better documentation
@@ -83,9 +83,9 @@ __version() {
 # Help function - Align to 50
 __help() {
   __printf_head "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -"
-  __printf_opts "proccess-check:  - $VERSION"
+  __printf_opts "process-check:  - $VERSION"
   __printf_head "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -"
-  __printf_line "Usage: proccess-check [options] [commands]"
+  __printf_line "Usage: process-check [options] [commands]"
   __printf_line " - "
   __printf_head "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -"
   __printf_opts "Other Options"
@@ -125,16 +125,16 @@ __server_check() {
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Set variables
 exitProcCode=0
-PROCS="named "
+PROCS="named postfix crond dockerd sshd php-fpm"
 SERVE="nginx httpd "
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Set additional variables
-PROCCESS_CHECK_CONFIG_FILE="settings.conf"
-PROCCESS_CHECK_CONFIG_DIR="$HOME/.config/$APPNAME"
+PROCESS_CHECK_CONFIG_FILE="settings.conf"
+PROCESS_CHECK_CONFIG_DIR="$HOME/.config/$APPNAME"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # bring in user config
-[ -f "$PROCCESS_CHECK_CONFIG_DIR/$PROCCESS_CHECK_CONFIG_FILE" ] &&
-  . "$PROCCESS_CHECK_CONFIG_DIR/$PROCCESS_CHECK_CONFIG_FILE"
+[ -f "$PROCESS_CHECK_CONFIG_DIR/$PROCESS_CHECK_CONFIG_FILE" ] &&
+  . "$PROCESS_CHECK_CONFIG_DIR/$PROCESS_CHECK_CONFIG_FILE"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Argument/Option settings
 SETARGS=("$@")
