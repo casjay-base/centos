@@ -106,13 +106,13 @@ __proc_check() {
 }
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 __get_proc_port() {
-  port="$(netstat -tapln | grep "$1" | tr ' ' '\n' | grep -v '^$' | grep ':[0-9]' | head -n 1 | sed 's|:||g' | head -n1 | grep '^' || echo '' || echo '')"
+  port="$(netstat -tapln | grep "$1" | tr ' ' '\n' | grep -v '^$' | grep ':[0-9]' | head -n 1 | sed 's|.*:||g' | head -n1 | grep '^' || echo '' || echo '')"
   [ -n "$port" ] && printf '%s\n' "$port" || return 1
 }
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 __server_check() {
   check="$(__get_proc_port "$1")"
-  [ -n "$port" ] && curl -q -LSsf "http://localhost:$port" &>/dev/null || return 1
+  [ -n "$check" ] && curl -q -LSsf "http://localhost:$port" &>/dev/null || return 1
 }
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 __service_exists() {
