@@ -41,7 +41,7 @@ __get_proc_port() {
 __server_check() {
   check="$(__get_proc_port "$1")"
   url="http://localhost:$check"
-  [ -n "$check" ] && curl -q -Ssf "$url" &>/dev/null || {
+  [ -n "$check" ] && curl -q -SsI "$url" &>/dev/null || {
     printf '%s: %s\n' "Failed to connect to $url" "Attempting to restart $1"
     return 1
   }
@@ -56,7 +56,7 @@ __proc_check() {
 }
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 __service_exists() {
-  systemctl status "$1" 2>&1 | grep -v "$1.*could not" || return 0
+  systemctl status "$1" 2>&1 | grep -vq "$1.*could not" || return 0
   systemctl status "$1" 2>&1 | grep 'Active:' | grep -q 'active' || return 0
   if systemctl status "$1" &>/dev/null; then return 0; else return 1; fi
 }
