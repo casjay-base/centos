@@ -41,15 +41,15 @@ __get_proc_port() {
 __server_check() {
   check="$(__get_proc_port "$1")"
   url="http://localhost:$check"
-  [ -n "$check" ] && curl -q -LSsf "$url" &>/dev/null || {
+  [ -n "$check" ] && curl -q -Ssf "$url" &>/dev/null || {
     printf '%s: %s\n' "Failed to connect to $url" "Attempting to restart $1"
     return 1
   }
 }
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 __proc_check() {
-  proc="$(ps aux 2>&1 | grep -v 'grep' | grep -w "$1" | head -n1 | grep -q "$1" || echo '')"
-  [ -n "$proc" ] && printf '%s\n' "$1" || {
+  proc="$(ps aux 2>&1 | grep -v 'grep' | grep -w "$1" | head -n1 | grep -q "$1" && echo "$1" || echo '')"
+  [ -n "$proc" ] || {
     printf '%s\n' "Attempting to restart $1"
     return 1
   }
