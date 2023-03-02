@@ -33,11 +33,6 @@ set -o pipefail
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # User defined functions
-__proc_check() {
-  proc="$(ps aux 2>&1 | grep -v 'grep' | grep -w "$1" | head -n1 | grep -q "$1" || echo '')"
-  [ -n "$proc" ] && printf '%s\n' "$proc" || return 1
-}
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 __get_proc_port() {
   port="$(netstat -tapln | grep "$1" | tr ' ' '\n' | grep -v '^$' | grep ':[0-9]' | head -n 1 | sed 's|.*:||g' | head -n1 | grep '[0-9]' || echo '' || echo '')"
   [ -n "$port" ] && printf '%s\n' "$port" || return 1
@@ -45,7 +40,19 @@ __get_proc_port() {
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 __server_check() {
   check="$(__get_proc_port "$1")"
-  [ -n "$check" ] && curl -q -LSsf "http://localhost:$port" &>/dev/null || return 1
+  url="http://localhost:$check"
+  [ -n "$check" ] && curl -q -LSsf "$url" &>/dev/null || {
+    printf '%s: %s\n' "Failed to connect to $url" "Attempting to restart $1"
+    return 1
+  }
+}
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+__proc_check() {
+  proc="$(ps aux 2>&1 | grep -v 'grep' | grep -w "$1" | head -n1 | grep -q "$1" || echo '')"
+  [ -n "$proc" ] && printf '%s\n' "$1" || {
+    printf '%s\n' "Attempting to restart $1"
+    return 1
+  }
 }
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 __service_exists() {
@@ -64,8 +71,7 @@ SERVE="nginx httpd "
 # Main application
 for proc in $PROCS; do
   if [ -n "$proc" ]; then
-    if ! __proc_check "$procs"; then
-      printf '%s\n' "Attempting to restart $proc"
+    if ! __proc_check "$proc"; then
       __service_restart "$proc" &>/dev/null
       exitProcCode=$((1 + exitProcCode))
     fi
@@ -74,7 +80,6 @@ done
 for server in $SERVE; do
   if [ -n "$server" ]; then
     if ! __server_check "$server"; then
-      printf '%s\n' "Attempting to restart $server"
       systemctl restart "$server" &>/dev/null
       exitProcCode=$((1 + exitProcCode))
     fi
