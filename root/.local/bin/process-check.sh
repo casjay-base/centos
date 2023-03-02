@@ -40,10 +40,7 @@ __check_url() { curl -q -SsI "$1" &>/dev/null || return 1; }
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 __proc_check() {
   proc="$(ps aux 2>&1 | grep -v 'grep' | grep -w "$1" | head -n1 | grep -q "$1" && echo "$1" || echo '')"
-  [ -n "$proc" ] || {
-    printf '%s\n' "Attempting to restart $1"
-    return 1
-  }
+  [ -n "$proc" ] || return 1
 }
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 __get_proc_port() {
@@ -54,16 +51,12 @@ __get_proc_port() {
 __website_check() {
   check="$(__get_proc_port "$1")"
   url="${2:-}"
-  [ -n "$url" ] && [ -n "$check" ] && printf '%s\n' "Checking $url" && __check_url "$url" || {
-    printf '%s\n' "Failed to connect to $url"
-    return 1
-  }
+  [ -n "$url" ] && [ -n "$check" ] && __check_url "$url" || return 1
 }
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 __service_restart() {
   exitcode=0
   systemctl list-unit-files | grep -qw "$1" || return 0
-  systemctl is-enabled "$1" &>/dev/null || return 0
   systemctl restart "$1" &>/dev/null 2>&1
   systemctl is-active "$1" &>/dev/null || exitcode=1
   return $exitcode
@@ -91,7 +84,10 @@ fi
 # check and restart broken processes
 for proc in $PROCS; do
   if [ -n "$proc" ]; then
-    if ! __proc_check "$proc"; then
+    if __proc_check "$proc"; then
+      printf '%s\n' "$proc is running"
+    elif systemctl is-enabled "$proc" &>/dev/null; then
+      printf '%s\n' "Attempting to restart $proc"
       __service_restart "$proc" &>/dev/null
       exitProcCode=$((1 + exitProcCode))
     fi
@@ -102,7 +98,10 @@ done
 for httpd_site in $get_httpd_domains; do
   if [ -n "$httpd" ]; then
     url="${set_httpd_proto:-http}://$httpd_site:$get_httpd_port"
-    if ! __website_check "httpd" "$url"; then
+    if __website_check "httpd" "$url"; then
+      printf '%s\n' "Checking $url"
+    else
+      printf '%s\n' "Failed to connect to $url"
       exithttpdCode=$((1 + exitProcCode))
     fi
   fi
@@ -112,7 +111,10 @@ done
 for nginx_site in $get_nginx_domains; do
   if [ -n "$server" ]; then
     url="${set_nginx_proto:-https}://$nginx_site:$get_nginx_port"
-    if ! __server_check "nginx" "$url"; then
+    if __website_check "nginx" "$url"; then
+      printf '%s\n' "Checking $url"
+    else
+      printf '%s\n' "Failed to connect to $url"
       exitnginxCode=$((1 + exitProcCode))
     fi
   fi
