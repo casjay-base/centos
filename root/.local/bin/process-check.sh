@@ -101,18 +101,18 @@ __help() {
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # User defined functions
 __proc_check() {
-  proc="$(ps aux | grep -v 'grep' | grep -W "$1" | grep '^' | head -n1)"
-  [ -n "$proc" ] && echo "$proc" || return 1
+  proc="$(ps aux | grep -v 'grep' | grep -W "$1" | head -n1 | grep '^' | grep -q "$1" || echo '')"
+  [ -n "$proc" ] && printf '%s\n' "$proc" || return 1
+}
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+__get_proc_port() {
+  port="$(netstat -tapln | grep "$1" | tr ' ' '\n' | grep -v '^$' | grep ':[0-9]' | head -n 1 | sed 's|:||g' | head -n1 | grep '^' || echo '')"
+  [ -n "$port" ] && printf '%s\n' "$port" || return 1
 }
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 __server_check() {
   check="$(__get_proc_port "$1")"
   [ -n "$port" ] && curl -q -LSsf "http://localhost:$port" &>/dev/null || return 1
-}
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-__get_proc_port() {
-  port="$(netstat -tapln | grep "$1" | tr ' ' '\n' | grep -v '^$' | grep ':[0-9]' | head -n 1 | sed 's|:||g' | head -n1 | grep '^')"
-  [ -n "$port" ] && printf '%s' "$port" || return 1
 }
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 __service_exists() {
