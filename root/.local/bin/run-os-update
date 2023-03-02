@@ -69,9 +69,15 @@ domainname="$(echo "$hostnamefull" | awk -F'.' '{$1="";OFS="."; print $0}' | gre
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 if [ "$SCRIPTS_UPDATE" = "true" ]; then
   exitCode="0"
+  version="$VERSION"
   RAW_REPO_URL="https://raw.githubusercontent.com/casjay-base/centos/main/root/.local/bin"
   API_FILE_URL="https://api.github.com/repos/casjay-base/centos/contents/root/.local/bin?ref=main"
   file_list="$(curl -q -LSsf "$API_FILE_URL" | jq -r '.[].url' | awk -F '?' '{print $1}')"
+  if [ "$version" = "$CURR_VERSION" ]; then
+    echo "Reinstalling from version $CURR_VERSION"
+  else
+    echo "Updating scripts to version $version from $CURR_VERSION"
+  fi
   for file in $file_list; do
     filename="$(basename "$file")"
     echo "Updating $filename in /root/.local/bin"
