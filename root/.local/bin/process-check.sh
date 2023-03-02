@@ -96,7 +96,7 @@ done
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # check apache hosts by default mine are http
 for httpd_site in $get_httpd_domains; do
-  if [ -n "$httpd" ]; then
+  if [ -n "$httpd_site" ]; then
     url="${set_httpd_proto:-http}://$httpd_site:$get_httpd_port"
     if __website_check "httpd" "$url"; then
       printf '%s\n' "Checking $url"
@@ -109,7 +109,7 @@ done
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # check nginx hosts by default mine are http
 for nginx_site in $get_nginx_domains; do
-  if [ -n "$server" ]; then
+  if [ -n "$nginx_site" ]; then
     url="${set_nginx_proto:-https}://$nginx_site:$get_nginx_port"
     if __website_check "nginx" "$url"; then
       printf '%s\n' "Checking $url"
