@@ -52,8 +52,8 @@ export SERVICES_DISABLE+="iscsi.service iscsiuio.socket lvm2-lvmetad.socket radv
 export SERVICES_DISABLE+="fail2ban shorewall shorewall6 named dhcpd dhcpd6 mdmonitor "
 export FORCE_INST="${FORCE_INST:-}"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export CURR_VERSION="$(head -n1 <"/etc/casjaysdev/updates/versions/configs.txt" 2>/dev/null)"
-export VERSION="$(curl -q -LSsf "https://github.com/casjay-base/centos/raw/main/version.txt" | head -n1)"
+export INSTALLED_VERSION="$(head -n1 <"/etc/casjaysdev/updates/versions/configs.txt" 2>/dev/null)"
+export REMOTE_VERSION="$(curl -q -LSsf "https://github.com/casjay-base/centos/raw/main/version.txt" | head -n1)"
 export RELEASE_VER="$(grep --no-filename -s 'VERSION_ID=' /etc/*-release | awk -F '=' '{print $2}' | sed 's#"##g' | awk -F '.' '{print $1}' | grep '^')"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 hostnamefull="$(hostname -f 2>/dev/null || echo "$HOSTNAME")"
@@ -61,22 +61,21 @@ hostnameshort="$(hostname -s 2>/dev/null || echo "$HOSTNAME")"
 domainname="$(echo "$hostnamefull" | awk -F'.' '{$1="";OFS="."; print $0}' | grep -v '^$' | sed 's|^\.||g;s|^ /*||g;s| |.|g' | grep '^' || echo 'local')"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 { [ "$1" = "--force" ] || [ -n "$FORCE_INST" ]; } && shift 1 && FORCE_INST="true" || FORCE_INST=""
-{ [ "$1" = "--version" ] || [ "$1" = "-v" ] || [ "$1" = "version" ]; } && shift 1 && echo "$CURR_VERSION" && exit
+{ [ "$1" = "--version" ] || [ "$1" = "-v" ] || [ "$1" = "version" ]; } && shift 1 && echo "$INSTALLED_VERSION" && exit
 { [ "$1" = "--scripts" ] || [ "$1" = "-s" ] || [ "$1" = "scripts" ] || [ "$1" = "script" ]; } && shift 1 && SCRIPTS_UPDATE="true"
-{ [ "$1" = "--check" ] || [ "$1" = "-c" ] || [ "$1" = "check" ]; } && shift 1 && echo "Old version is $CURR_VERSION and new version is $VERSION" && exit
+{ [ "$1" = "--check" ] || [ "$1" = "-c" ] || [ "$1" = "check" ]; } && shift 1 && echo "Old version is $INSTALLED_VERSION and new version is $REMOTE_VERSION" && exit
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 [ -f "/etc/resolv.conf" ] || echo "nameserver 1.1.1.1" >"/etc/resolv.conf"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 if [ "$SCRIPTS_UPDATE" = "true" ]; then
   exitCode="0"
-  version="$VERSION"
   RAW_REPO_URL="https://raw.githubusercontent.com/casjay-base/centos/main/root/.local/bin"
   API_FILE_URL="https://api.github.com/repos/casjay-base/centos/contents/root/.local/bin?ref=main"
   file_list="$(curl -q -LSsf "$API_FILE_URL" | jq -r '.[].url' | awk -F '?' '{print $1}')"
-  if [ "$version" = "$CURR_VERSION" ]; then
-    echo "Reinstalling from version $CURR_VERSION"
+  if [ "$REMOTE_VERSION" = "$INSTALLED_VERSION" ]; then
+    echo "Reinstalling from version $INSTALLED_VERSION"
   else
-    echo "Updating scripts to version $version from $CURR_VERSION"
+    echo "Updating scripts to version $REMOTE_VERSION from $INSTALLED_VERSION"
   fi
   for file in $file_list; do
     filename="$(basename "$file")"
@@ -89,11 +88,11 @@ fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 [ $# -ne 0 ] || shift $#
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-if [ -z "$FORCE_INST" ] && [ "$VERSION" = "$CURR_VERSION" ]; then
-  echo -e "There is no update available: $VERSION"
+if [ -z "$FORCE_INST" ] && [ "$REMOTE_VERSION" = "$INSTALLED_VERSION" ]; then
+  echo -e "There is no update available: $REMOTE_VERSION"
   exit
 else
-  echo -e "\nUpdating to version $VERSION from $CURR_VERSION"
+  echo -e "\nUpdating to version $REMOTE_VERSION from $INSTALLED_VERSION"
   echo -e "Running the automatic update script"
   echo -e "Press control+c now to cancel update\n"
   sleep 10
@@ -105,7 +104,7 @@ else
 
   echo -e "Setting version"
   mkdir -p "/etc/casjaysdev/updates/versions"
-  echo -e "$VERSION" >"/etc/casjaysdev/updates/versions/configs.txt"
+  echo -e "$REMOTE_VERSION" >"/etc/casjaysdev/updates/versions/configs.txt"
   date +'%b %d, %Y at %H:%M' >"/etc/casjaysdev/updates/versions/date.configs.txt"
   chmod -Rf 664 /etc/casjaysdev/updates/versions/*.txt
   echo -e "Done setting version\n"
@@ -246,7 +245,7 @@ else
   echo -e "Cleaning up files and history"
   rm -Rf "/tmp/dns-update"
   bash -c "/root/.local/bin/root_clean.sh" &>/dev/null
-  echo -e "Updated to version $VERSION from $CURR_VERSION"
+  echo -e "Updated to version $REMOTE_VERSION from $INSTALLED_VERSION"
   echo -e "Last updated on $DATE" >"/var/log/run_update"
   echo -e "Done updating system\n\n"
 fi

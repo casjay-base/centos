@@ -62,17 +62,10 @@ __website_check() {
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 __service_restart() {
   exitcode=0
-  if systemctl status "$1" 2>&1 | grep -q "$1.*could not"; then
-    exitcode=0
-  elif systemctl status "$1" 2>&1 | grep 'Loaded: ' | grep -qwi 'enabled'; then
-    if systemctl restart "$1" >/dev/null 2>&1; then
-      exitcode=0
-    else
-      exitcode=1
-    fi
-  else
-    exitcode=0
-  fi
+  systemctl list-unit-files | grep -qw "$1" || return 0
+  systemctl is-enabled "$1" &>/dev/null || return 0
+  systemctl restart "$1" &>/dev/null 2>&1
+  systemctl is-active "$1" &>/dev/null || exitcode=1
   return $exitcode
 }
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
