@@ -64,16 +64,18 @@ domainname="$(echo "$hostnamefull" | awk -F'.' '{$1="";OFS="."; print $0}' | gre
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 { [ "$1" = "--force" ] || [ -n "$FORCE_INST" ]; } && shift 1 && FORCE_INST="true" || FORCE_INST=""
 { [ "$1" = "--version" ] || [ "$1" = "-v" ] || [ "$1" = "version" ]; } && shift 1 && echo "$CURR_VERSION" && exit
+{ [ "$1" = "--scripts" ] || [ "$1" = "-s" ] || [ "$1" = "scripts" ] || [ "$1" = "script" ]; } && shift 1 && SCRIPTS_UPDATE="true"
 { [ "$1" = "--check" ] || [ "$1" = "-c" ] || [ "$1" = "check" ]; } && shift 1 && echo "Old version is $CURR_VERSION and new version is $VERSION" && exit
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 [ -f "/etc/resolv.conf" ] || echo "nameserver 1.1.1.1" >"/etc/resolv.conf"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-if [ "$1" = "scripts" ]; then
+if [ "$SCRIPTS_UPDATE" = "true" ]; then
   exitCode="0"
   RAW_REPO_URL="https://raw.githubusercontent.com/casjay-base/centos/main/root/.local/bin"
   API_FILE_URL="https://api.github.com/repos/casjay-base/centos/contents/root/.local/bin?ref=main"
   file_list="$(curl -q -LSsf "$API_FILE_URL" | jq -r '.[].url' | awk -F '?' '{print $1}')"
   for file in $file_list; do
+    echo "Updating $file in /root/.local/bin"
     __run_updater "$RAW_REPO_URL" "$file" || exitCode=$(($exitCode + 1))
   done
   __run_updater "$RAW_REPO_URL" "run-os-update" || exitCode=$(($exitCode + 1))
