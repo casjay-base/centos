@@ -31,9 +31,7 @@ trap 'exitCode=${exitCode:-$?};[ -n "$RUN_OS_UPDATE_TEMP_FILE" ] && [ -f "$RUN_O
 set -o pipefail
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 __run_updater() {
-  local url="" file=""
-  url="$1"
-  file="$(basename "$2" 2>/dev/null)"
+  local url="$1" file="$2"
   curl -q -LSsf "$url/$file" -o "/tmp/$file" 2>/dev/null && true || return 1
   [ -f "/tmp/$file" ] && chmod -Rf 755 "/tmp/$file" && mv -f "/tmp/$file" "/root/.local/bin/$file"
   return $?
@@ -75,8 +73,9 @@ if [ "$SCRIPTS_UPDATE" = "true" ]; then
   API_FILE_URL="https://api.github.com/repos/casjay-base/centos/contents/root/.local/bin?ref=main"
   file_list="$(curl -q -LSsf "$API_FILE_URL" | jq -r '.[].url' | awk -F '?' '{print $1}')"
   for file in $file_list; do
-    echo "Updating $file in /root/.local/bin"
-    __run_updater "$RAW_REPO_URL" "$file" || exitCode=$(($exitCode + 1))
+    filename="$(basename "$file")"
+    echo "Updating $filename in /root/.local/bin"
+    __run_updater "$RAW_REPO_URL" "$filename" || exitCode=$(($exitCode + 1))
   done
   __run_updater "$RAW_REPO_URL" "run-os-update" || exitCode=$(($exitCode + 1))
   exit $exitCode
