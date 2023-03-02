@@ -56,7 +56,8 @@ __proc_check() {
 }
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 __service_exists() {
-  systemctl status "$1" 2>&1 | grep -q 'Active:.*active' || return 0
+  systemctl status "$1" 2>&1 | grep -v "$1.*could not" || return 0
+  systemctl status "$1" 2>&1 | grep 'Active:' | grep -q 'active' || return 0
   if systemctl status "$1" &>/dev/null; then return 0; else return 1; fi
 }
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
