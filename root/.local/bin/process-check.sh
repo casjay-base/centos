@@ -24,6 +24,7 @@ HOME="${USER_HOME:-$HOME}"
 USER="${SUDO_USER:-$USER}"
 RUN_USER="${SUDO_USER:-$USER}"
 SCRIPT_SRC_DIR="${BASH_SOURCE%/*}"
+FULL_HOSTNAME="$(hostname -f || echo "$HOSTNAME")"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Initial debugging
 [ "$1" = "--debug" ] && set -x && export SCRIPT_OPTS="--debug" && export _DEBUG="on"
@@ -40,7 +41,7 @@ __get_proc_port() {
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 __server_check() {
   check="$(__get_proc_port "$1")"
-  url="http://localhost:$check"
+  url="${FULL_HOSTNAME:-http://localhost}:$check"
   [ -n "$check" ] && curl -q -SsI "$url" &>/dev/null || {
     printf '%s: %s\n' "Failed to connect to $url" "Attempting to restart $1"
     return 1
