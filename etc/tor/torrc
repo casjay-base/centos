@@ -1,45 +1,50 @@
-## Configuration file for a typical Tor user
-ControlSocket /run/tor/control
+# tor settings                                             #####################
+RunAsDaemon                 1
+##### directiories and files                               #####################
+ControlSocket               /run/tor/control.sock
+CookieAuthFile              /run/tor/control.authcookie
+DataDirectory               /var/lib/tor
+##### control settings                                     #####################
 ControlSocketsGroupWritable 1
-CookieAuthentication 1
-CookieAuthFile /run/tor/control.authcookie
+CookieAuthentication        1
 CookieAuthFileGroupReadable 1
-SOCKSPort 9050 # Default: Bind to localhost:9050 for local connections.
-Log notice file /var/log/tor/notices.log
-Log debug file /var/log/tor/debug.log
-RunAsDaemon 1
-DataDirectory /var/lib/tor
-ControlPort 9051
-HashedControlPassword 16:872860B76453A77D60CA2BB8C1A7042072093276A3D701AD684053EC4C
-
-############### This section is just for location-hidden services ###
-HiddenServiceDir /var/lib/tor/hidden_service
-HiddenServicePort 443 myserverdomainname:443
-HiddenServicePort 80 myserverdomainname:80
-HiddenServicePort 22 myserverdomainname:22
-
-################ This section is just for relays #####################
-#ORPort 9001
-#ORPort 443 NoListen
-#ORPort 127.0.0.1:9090 NoAdvertise
-#Address noname.example.com
-# OutboundBindAddress 10.0.0.5
-#Nickname ididnteditheconfig
-#RelayBandwidthRate 100 KBytes  # Throttle traffic to 100KB/s (800Kbps)
-#RelayBandwidthBurst 200 KBytes # But allow bursts up to 200KB (1600Kb)
-#AccountingMax 40 GBytes
-#AccountingStart day 00:00
-#AccountingStart month 3 15:00
-#ContactInfo Random Person <nobody AT example dot com>
-#DirPort 9030 # what port to advertise for directory connections
-#DirPort 80 NoListen
-#DirPort 127.0.0.1:9091 NoAdvertise
-#DirPortFrontPage /etc/tor/tor-exit-notice.html
-#MyFamily $keyid,$keyid,...
-#ExitPolicy accept *:6660-6667,reject *:* # allow irc ports on IPv4 and IPv6 but no more
-#ExitPolicy accept *:119 # accept nntp ports on IPv4 and IPv6 as well as default exit policy
-#ExitPolicy accept *4:119 # accept nntp ports on IPv4 only as well as default exit policy
-#ExitPolicy accept6 *6:119 # accept nntp ports on IPv6 only as well as default exit policy
-#ExitPolicy reject *:* # no exits allowed
-#BridgeRelay 1
-#PublishServerDescriptor 0
+##### tor --hash-password YourPass | grep '[0-9]:[0-9A-Z][0-9A-Z][0-9A-Z][0-9A-Z]'
+#HashedControlPassword 16:C30604D1D90F341360A14D9A1048C1DF4A3CA2411444E52EE5B954C01F
+##### Server settings                                      #####################
+ControlPort                 9051
+SOCKSPort                   9050
+HTTPTunnelPort              9080
+############### Bandwidth                                  #####################
+# https://support.torproject.org/relay-operators/limit-total-bandwidth/
+AccountingStart             day 0:00
+AccountingMax               5 GBytes
+RelayBandwidthRate          1000 KBytes
+RelayBandwidthBurst         5000 KBytes # allow higher bursts but maintain average
+##### logging                                              #####################
+Log notice file             /var/log/tor/tor.log
+#Log debug file              /var/log/tor/debug.log
+##### dns forwarder                                        #####################
+DNSPort                     9053
+AutomapHostsOnResolve       1
+AutomapHostsSuffixes        .exit,.onion
+### Performance related options                            #####################
+AvoidDiskWrites             1          ## Reduce wear on SSD
+DisableAllSwap              1          ## Service must be started as root
+HardwareAccel               1          ## Look for OpenSSL hardware cryptographic support
+NumCPUs                     2          ## Only start two threads
+##### This section is just for relays                      #####################
+#Nickname whateveryouwant
+#ContactInfo                tor-admin@example.com
+#ORPort                     443
+#Exitpolicy                 reject *:*
+#AccountingMax              100 GBytes
+#AccountingStart            month 1 00:00
+#RelayBandwidthRate         5120 KBytes
+#RelayBandwidthBurst        10240 KBytes
+#DisableDebuggerAttachment  0
+#HardwareAccel              1
+##### This section is just for location-hidden services    #####################
+HiddenServiceDir            /var/lib/tor/hidden_service/default
+HiddenServicePort           22  myserverdomainname:22
+HiddenServicePort           80  myserverdomainname:80
+HiddenServicePort           443 myserverdomainname:443

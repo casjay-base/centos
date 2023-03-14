@@ -28,7 +28,7 @@ __default_resolv() {
 search casjay.in
 nameserver 1.1.1.1
 nameserver 8.8.8.8
-nameserver 132.226.33.75
+#nameserver 132.226.33.75
 
 EOF
   [ -f "/etc/resolv.conf" ] || return 1

@@ -33,7 +33,7 @@ FULL_HOSTNAME="$(hostname -f || echo "$HOSTNAME")"
 set -o pipefail
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Set process check
-PROCS="named postfix crond dockerd sshd php-fpm "
+PROCS="nginx httpd postfix crond dockerd sshd php-fpm "
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # User defined functions
 __check_url() { curl -q -SsI "$1" &>/dev/null || return 1; }
