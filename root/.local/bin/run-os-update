@@ -44,7 +44,7 @@ echo "$PATH" | grep -q "/root/.local/bin" || export PATH="/root/.local/bin:$PATH
 DATE="$(date +'%y-%m-%d at %H:%M')"
 export TIME_ZONE="${TZ:-America/New_York}"
 export STATICSITE="${STATICSITE:-(hostnamecli -f)}"
-export SERVICES_ENABLE="tor httpd nginx smb nmb munin-node cockpit postfix "
+export SERVICES_ENABLE="httpd nginx munin-node cockpit postfix "
 export SERVICES_ENABLE+="uptimed downtimed php-fpm proftpd rsyslog chronyd snmpd cockpit "
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export SERVICES_DISABLE="firewalld auditd kdump iscsid.socket lvm2-lvmpolld.socket lvm2-monitor "
@@ -133,6 +133,15 @@ else
   rm -Rf /var/ftp/uploads /etc/httpd/conf.d/ssl.conf /tmp/configs /etc/samba/*.example &>/dev/null
   echo -e "Done removing old files\n"
 
+  echo -e "Setting up vnstat-php-frontend"
+  if [ -d "/var/www/html/vnstat/.git" ]; then
+    git -C "/var/www/html/vnstat" pull -q
+  else
+    [ -d "/var/www/html/vnstat" ] && rm -Rf "/var/www/html/vnstat"
+    git clone -q "https://github.com/solbu/vnstat-php-frontend" "/var/www/html/vnstat"
+  fi
+  echo -e "Done setting up vnstat-php-frontend\n"
+
   echo -e "Setting up phpsysinfo"
   if [ -d "/var/www/html/sysinfo/.git" ]; then
     git -C "/var/www/html/sysinfo" pull -q
@@ -163,8 +172,10 @@ else
 
   mkdir -p /etc/rsync.d /var/log/named && chown -Rf named:named /etc/named* /var/named /var/log/named
 
-  sed -i "s#myserverdomainname#$HOSTNAME#g" /etc/sysconfig/network
-  sed -i "s#mydomain#$domainname#g" /etc/sysconfig/network
+  if [ -f "/etc/sysconfig/network" ]; then
+    sed -i "s#myserverdomainname#$HOSTNAME#g" /etc/sysconfig/network
+    sed -i "s#mydomain#$domainname#g" /etc/sysconfig/network
+  fi
 
   if grep '^kernel.domainname' '/etc/sysctl.conf'; then
     sed -i 's|kernel.domainname=.*|kernel.domainname='$domainname'|g' /etc/sysctl.conf
@@ -193,8 +204,8 @@ else
 
   echo -e "Setting up web server"
   bash -c "$(curl -q -LSsf "https://github.com/casjay-templates/default-web-assets/raw/main/setup.sh")"
-  if [ -f "/var/lib/tor/hidden_service/hostname" ]; then
-    cp -Rf "/var/lib/tor/hidden_service/hostname" "/var/www/html/tor_hostname"
+  if [ -f "/var/lib/tor/hidden_service/default/hostname" ]; then
+    cat "/var/lib/tor/hidden_service/*/hostname" >"/var/www/html/tor_hostname" 2>/dev/null
   fi
   chown -Rf apache:apache "/var/www" "/usr/share/httpd"
   echo -e "Done setting up web server\n"
