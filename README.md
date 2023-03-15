@@ -3,7 +3,13 @@
 ## Automated Install  
   
 ```shell
-sudo bash -c "$(curl -q -LSsf "https://github.com/pkmgr/centos/raw/main/scripts/default.sh")"
+sudo bash -c "$(curl -q -LSsf "https://github.com/pkmgr/centos/raw/main/scripts/min.sh")"
+```
+
+OR for oracle cloud almalinux
+
+```shell
+sudo bash -c "$(curl -q -LSsf "https://github.com/pkmgr/centos/raw/main/scripts/min.oci.sh")"
 ```
   
 ## Automated Update  
