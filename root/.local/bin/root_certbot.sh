@@ -18,7 +18,7 @@
 # @@sudo/root        :  no
 # @@Template         :  shell/sh
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-__certbot_api_check() { [ -z "$CERTBOT_API_KEY" ] && return 0 || return 1; }
+__certbot_api_check() { [ -n "$CERTBOT_API_KEY" ] && return 0 || return 1; }
 __certbot_renew() { eval $CERTBOT_BIN renew --agree-tos --expand --dns-rfc2136 --dns-rfc2136-credentials "$CERTBOT_FILE"; }
 __certbot_test() { eval $CERTBOT_BIN renew --dry-run --agree-tos --expand --dns-rfc2136 --dns-rfc2136-credentials "$CERTBOT_FILE" || return 1; }
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -59,11 +59,11 @@ if [ -f "$CERTBOT_KEY_FILE" ]; then
   . "$CERTBOT_KEY_FILE"
 fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-if [ -n "$CERTBOT_KEY_ENV" ]; then
+if __certbot_api_check; then
   sed -i 's|dns_rfc2136_secret.*|dns_rfc2136_secret = '$CERTBOT_API_KEY'|g' "$CERTBOT_FILE"
 fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-if [ -n "$CERTBOT_API_KEY" ]; then
+if __certbot_api_check; then
   mkdir -p "/root/.config/certbot"
   echo "CERTBOT_API_KEY=$CERTBOT_KEY_ENV" >"$CERTBOT_KEY_FILE"
   chmod 600 "$CERTBOT_KEY_FILE"
@@ -72,7 +72,7 @@ fi
 if [ -f "$HOME/dns/certbot.sh" ]; then
   eval "$HOME/dns/certbot.sh" --renew
   exit $?
-elif __certbot_api_check; then
+elif ! __certbot_api_check; then
   echo "CERTBOT_API_KEY is unset" 1>&2
   exit 1
 fi
