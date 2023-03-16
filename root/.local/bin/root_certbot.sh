@@ -40,6 +40,10 @@ SSL_DIR="/etc/letsencrypt/live"
 SSL_KEY="/etc/letsencrypt/live/domain/privkey.pem"
 SSL_CERT="/etc/letsencrypt/live/domain/fullchain.pem"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+if [ -f "/root/.config/certbot/dns_rfc2136_secret" ]; then
+  . "/root/.config/certbot/dns_rfc2136_secret"
+fi
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 CERTBOT_FILE="${CERTBOT_FILE:-}"
 CERTBOT_KEY_FILE="${CERTBOT_KEY_FILE:-/root/.config/certbot/dns_rfc2136_secret}"
 CERTBOT_KEY_ENV="${CERTBOT_KEY_ENV:-$(grep -s 'dns_rfc2136_secret = ' "$CERTBOT_FILE" 2>/dev/null | awk -F' = ' '{print $2}' | grep '^' || false)}"
@@ -53,10 +57,6 @@ fi
 if [ -n "$CERTBOT3_BIN" ] && [ -z "$CERTBOT_BIN" ]; then
   CERTBOT_BIN="$CERTBOT3_BIN"
   ln -sf "$CERTBOT3_BIN" "/usr/bin/certbot"
-fi
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-if [ -f "$CERTBOT_KEY_FILE" ]; then
-  . "$CERTBOT_KEY_FILE"
 fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 if __certbot_api_check; then
