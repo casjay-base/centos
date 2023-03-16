@@ -83,8 +83,8 @@ fi
 case "$1" in
 new | create)
   shift 1
-  [ $# -ne 0 ] || { echo "Usage: create domain list" && exit 1; }
-  for domain in "$@"; do DOMAIN+="-d $domain "; done
+  [ $# -ne 0 ] || { echo "Usage: create [domains]" && exit 1; }
+  for domain in "$@"; do [ -n "$domain" ] && DOMAIN+="-d $domain "; done
   __certbot_new "$DOMAIN"
   exit $?
   ;;
