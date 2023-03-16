@@ -43,7 +43,7 @@ echo "$PATH" | grep -q "/root/.local/bin" || export PATH="/root/.local/bin:$PATH
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 DATE="$(date +'%y-%m-%d at %H:%M')"
 export TIME_ZONE="${TZ:-America/New_York}"
-export STATICSITE="${STATICSITE:-(hostnamecli -f)}"
+export STATICSITE="${STATICSITE:-$(hostnamecli -f)}"
 export SERVICES_ENABLE="httpd nginx munin-node cockpit postfix "
 export SERVICES_ENABLE+="uptimed downtimed php-fpm proftpd rsyslog chronyd snmpd cockpit "
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -261,6 +261,6 @@ else
   echo -e "Done updating system\n\n"
 fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-exit ${?:-0}
+exit
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # end
