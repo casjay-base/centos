@@ -70,6 +70,8 @@ if __certbot_api_check; then
   chmod 600 "$CERTBOT_KEY_FILE"
 fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+[ -f "$CERTBOT_FILE" ] && chmod 600 "$CERTBOT_FILE"
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 if [ -f "$HOME/dns/certbot.sh" ]; then
   eval "$HOME/dns/certbot.sh" --renew
   exit $?
