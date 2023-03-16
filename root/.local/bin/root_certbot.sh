@@ -23,7 +23,7 @@ __certbot_renew() { eval $CERTBOT_BIN renew --agree-tos --expand --dns-rfc2136 -
 __certbot_test() { eval $CERTBOT_BIN renew --dry-run --agree-tos --expand --dns-rfc2136 --dns-rfc2136-credentials "$CERTBOT_FILE" || return 1; }
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 __certbot_new() {
-  certbot certonly -n --agree-tos -m "casjay+ssl@gmail.com" --expand --dns-rfc2136 --dns-rfc2136-credentials /etc/named/certbot-update.conf -key-path "$SSL_KEY" -fullchain-path "$SSL_CERT" "$@" || return 1
+  certbot certonly -n --agree-tos -m "casjay+ssl@gmail.com" --expand --dns-rfc2136 --dns-rfc2136-credentials /etc/named/certbot-update.conf --key-path "$SSL_KEY" --fullchain-path "$SSL_CERT" "$@" || return 1
   [ -d "$SSL_DIR/$1" ] && [ ! -d "$SSL_DIR/domain" ] && ln -sf "$SSL_DIR/$1" "$SSL_DIR/domain"
   [ -d "" ] || return 1
 }
