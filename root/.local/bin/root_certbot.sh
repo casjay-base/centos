@@ -23,9 +23,10 @@ __certbot_renew() { eval $CERTBOT_BIN renew --agree-tos --expand --dns-rfc2136 -
 __certbot_test() { eval $CERTBOT_BIN renew --dry-run --agree-tos --expand --dns-rfc2136 --dns-rfc2136-credentials "$CERTBOT_FILE" || return 1; }
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 __certbot_new() {
-  certbot certonly -n --agree-tos -m "casjay+ssl@gmail.com" --expand --dns-rfc2136 --dns-rfc2136-credentials /etc/named/certbot-update.conf --key-path "$SSL_KEY" --fullchain-path "$SSL_CERT" "$@" || return 1
+  local domains="$*"
+  certbot certonly -n --agree-tos -m "casjay+ssl@gmail.com" --expand --dns-rfc2136 --dns-rfc2136-credentials $CERTBOT_FILE --key-path "$SSL_KEY" --fullchain-path "$SSL_CERT" $domains || return 1
   [ -d "$SSL_DIR/$1" ] && [ ! -d "$SSL_DIR/domain" ] && ln -sf "$SSL_DIR/$1" "$SSL_DIR/domain"
-  [ -d "" ] || return 1
+  [ -d "$SSL_DIR/domain" ] || return 1
 }
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 CERTBOT_BIN="$(builtin type -P certbot 2>/dev/null || echo '')"
@@ -47,7 +48,7 @@ fi
 CERTBOT_FILE="${CERTBOT_FILE:-}"
 CERTBOT_KEY_FILE="${CERTBOT_KEY_FILE:-/root/.config/certbot/dns_rfc2136_secret}"
 CERTBOT_KEY_ENV="${CERTBOT_KEY_ENV:-$(grep -s 'dns_rfc2136_secret = ' "$CERTBOT_FILE" 2>/dev/null | awk -F' = ' '{print $2}' | grep '^' || false)}"
-CERTBOT_API_KEY="${CERTBOT_API_KEY:-${CERTBOT_KEY_FILE:-$CERTBOT_KEY_ENV}}"
+CERTBOT_API_KEY="${CERTBOT_API_KEY:-$CERTBOT_KEY_ENV}"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 if [ -z "${CERTBOT3_BIN:-$CERTBOT_BIN}" ]; then
   echo "certbot does not seem to be installed" >&2
@@ -80,6 +81,7 @@ fi
 case "$1" in
 new | create)
   shift 1
+  [ $# -ne 0 ] || { echo "Usage: create domain list" && exit 1; }
   for domain in "$@"; do DOMAIN+="-d $domain "; done
   __certbot_new "$DOMAIN"
   exit $?
