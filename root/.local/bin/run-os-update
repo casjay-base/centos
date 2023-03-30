@@ -30,6 +30,33 @@ trap 'exitCode=${exitCode:-$?};[ -n "$RUN_OS_UPDATE_TEMP_FILE" ] && [ -f "$RUN_O
 [ "$1" = "--raw" ] && shift 1 && export SHOW_RAW="true"
 set -o pipefail
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+__rm_repo_files() { [ "${1:-$YUM_DELETE}" = "yes" ] && rm -Rf "/etc/yum.repos.d"/* || true; }
+__save_remote_file() { curl -q -SLs "$1" | tee "$2" &>/dev/null || exit 1; }
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+__repo_file() {
+  local statusCode="0"
+  if [ "$RELEASE_VER" -ge "9" ]; then
+    YUM_DELETE="no"
+    RELEASE_FILE="https://github.com/rpm-devel/casjay-release/raw/main/casjay.rh9.repo"
+  elif [ "$RELEASE_VER" -ge "8" ]; then
+    YUM_DELETE="yes"
+    RELEASE_FILE="https://github.com/rpm-devel/casjay-release/raw/main/casjay.rh8.repo"
+  elif [ "$RELEASE_VER" -lt "8" ]; then
+    YUM_DELETE="yes"
+    RELEASE_FILE="https://github.com/rpm-devel/casjay-release/raw/main/casjay.rh.repo"
+  else
+    YUM_DELETE="no"
+    RELEASE_FILE=""
+    return
+  fi
+  if [ -n "$RELEASE_FILE" ]; then
+    yum clean all &>/dev/null && __rm_repo_files "$YUM_DELETE" &&
+      __save_remote_file "$RELEASE_FILE" "/etc/yum.repos.d/casjay.repo" &&
+      yum makecache -y -q &>/dev/null || statusCode=1
+  fi
+  return $statusCode
+}
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 __run_updater() {
   local url="$1" file="$2"
   curl -q -LSsf "$url/$file" -o "/tmp/$file" 2>/dev/null && true || return 1
@@ -55,6 +82,9 @@ export FORCE_INST="${FORCE_INST:-}"
 export INSTALLED_VERSION="$(head -n1 <"/etc/casjaysdev/updates/versions/configs.txt" 2>/dev/null)"
 export REMOTE_VERSION="$(curl -q -LSsf "https://github.com/casjay-base/centos/raw/main/version.txt" | head -n1)"
 export RELEASE_VER="$(grep --no-filename -s 'VERSION_ID=' /etc/*-release | awk -F '=' '{print $2}' | sed 's#"##g' | awk -F '.' '{print $1}' | grep '^')"
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+RELEASE_VER="$(grep --no-filename -s 'VERSION_ID=' /etc/*-release | awk -F '=' '{print $2}' | sed 's#"##g' | awk -F '.' '{print $1}' | grep '^')"
+RELEASE_NAME="$(grep --no-filename -s '^NAME=' /etc/*-release | awk -F'=' '{print $2}' | sed 's|"||g;s| .*||g' | tr '[:upper:]' '[:lower:]' | grep '^')"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 hostnamefull="$(hostname -f 2>/dev/null || echo "$HOSTNAME")"
 hostnameshort="$(hostname -s 2>/dev/null || echo "$HOSTNAME")"
@@ -108,6 +138,13 @@ else
   date +'%b %d, %Y at %H:%M' >"/etc/casjaysdev/updates/versions/date.configs.txt"
   chmod -Rf 664 /etc/casjaysdev/updates/versions/*.txt
   echo -e "Done setting version\n"
+
+  echo -e "Updating yum repos for $RELEASE_NAME $RELEASE_VER"
+  if ! __repo_file; then
+    echo -e "Failed to update the repos"
+    exit 1
+  fi
+  echo -e "Done updating yum repos for $RELEASE_NAME $RELEASE_VER"
 
   echo -e "Setting up packages - this may take some time!"
   yum update -yy -q &>/dev/null
