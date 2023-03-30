@@ -39,15 +39,11 @@ __restore_repo_files() {
   mkdir -p "$BACKUP_DIR" && cp -Rf "$BACKUP_DIR/${1:-}"* "/etc/yum.repos.d/" || return 0
 }
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+__yum() { yum "$@" $yum_opts -yy -q &>/dev/null || return 1; }
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 __repo_file() {
   local statusCode="0"
-  local remi_php_repo_old=""
-  local remi_php_repo_new=""
   local almalinux_release="http://mirror.siena.edu/almalinux/almalinux-repos-latest-$RELEASE_VER.$ARCH.rpm"
-  if [ "$ARCH" != "x86_64" ]; then
-    remi_php_repo_old="https://rpms.remirepo.net/enterprise/\$releasever/php74/\$basearch/mirror"
-    remi_php_repo_new="https://github.com/CasjaysDev/rpm-devel/raw/main/docs/ZREPO/RHEL/rhel/mirrors/remi"
-  fi
   if [ "$RELEASE_VER" -ge "9" ]; then
     YUM_DELETE="no"
     RELEASE_FILE="https://github.com/rpm-devel/casjay-release/raw/main/casjay.rh9.repo"
@@ -68,11 +64,7 @@ __repo_file() {
     __rm_repo_files "$YUM_DELETE"
     __save_remote_file "$RELEASE_FILE" "/etc/yum.repos.d/casjay.repo"
     __restore_repo_files "almalinux"
-    yum reinstall -yy "$almalinux_release" &>/dev/null && crb enable
-    if [ -n "$remi_php_repo_old" ] && [ -n "$remi_php_repo_new" ]; then
-      sed -i "s|$remi_php_repo_old|$remi_php_repo_new|g" "/etc/yum.repos.d/casjay.repo"
-    fi
-    yum makecache -y -q &>/dev/null || statusCode=1
+    __yum makecache &>/dev/null || statusCode=1
   fi
   return $statusCode
 }
@@ -111,6 +103,8 @@ export RELEASE_NAME="$(grep --no-filename -s '^NAME=' /etc/*-release | awk -F'='
 hostnamefull="$(hostname -f 2>/dev/null || echo "$HOSTNAME")"
 hostnameshort="$(hostname -s 2>/dev/null || echo "$HOSTNAME")"
 domainname="$(echo "$hostnamefull" | awk -F'.' '{$1="";OFS="."; print $0}' | grep -v '^$' | sed 's|^\.||g;s|^ /*||g;s| |.|g' | grep '^' || echo 'local')"
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+[ "$ARCH" = "x86_64" ] || yum_opts="--disablerepo casjay-remi-php,casjay-remi-safe"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 { [ "$1" = "--force" ] || [ -n "$FORCE_INST" ]; } && shift 1 && FORCE_INST="true" || FORCE_INST=""
 { [ "$1" = "--version" ] || [ "$1" = "-v" ] || [ "$1" = "version" ]; } && shift 1 && echo "$INSTALLED_VERSION" && exit
@@ -169,7 +163,7 @@ else
   echo -e "Done updating yum repos for $RELEASE_NAME $RELEASE_VER\n"
 
   echo -e "Setting up packages - this may take some time!"
-  yum update -yy -q &>/dev/null
+  __yum update &>/dev/null
   chattr -i /etc/resolv.conf &>/dev/null
   chattr -i /etc/nginx/vhosts.d/default.conf &>/dev/null
   chattr -i /etc/httpd/conf/vhosts.d/000-default.conf &>/dev/null
