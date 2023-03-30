@@ -111,8 +111,13 @@ domainname="$(echo "$hostnamefull" | awk -F'.' '{$1="";OFS="."; print $0}' | gre
 { [ "$1" = "--scripts" ] || [ "$1" = "-s" ] || [ "$1" = "scripts" ] || [ "$1" = "script" ]; } && shift 1 && SCRIPTS_UPDATE="true"
 { [ "$1" = "--check" ] || [ "$1" = "-c" ] || [ "$1" = "check" ]; } && shift 1 && echo "Old version is $INSTALLED_VERSION and new version is $REMOTE_VERSION" && exit
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+chattr -i /etc/hosts &>/dev/null
+chattr -i /etc/resolv.conf &>/dev/null
+[ -f "/etc/nginx/vhosts.d/default.conf" ] && chattr -i /etc/nginx/vhosts.d/default.conf &>/dev/null
+[ -f "/etc/httpd/conf/vhosts.d/000-default.conf" ] && chattr -i /etc/httpd/conf/vhosts.d/000-default.conf &>/dev/null
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 if [ -w "/etc/resolv.conf" ]; then
-  printf '%s\n%s\n%s\n' "search casjay.in" "nameserver 1.1.1.1" "nameserver 8.8.8.8" >"/etc/resolv.conf"
+  printf '%s\n%s\n%s\n' "search casjay.in" "nameserver 1.1.1.1" "nameserver 8.8.8.8" | tee "/etc/resolv.conf" &>/dev/null
 fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 if [ "$SCRIPTS_UPDATE" = "true" ]; then
@@ -167,9 +172,6 @@ else
 
   echo -e "Setting up packages - this may take some time!"
   __yum update &>/dev/null
-  chattr -i /etc/resolv.conf &>/dev/null
-  chattr -i /etc/nginx/vhosts.d/default.conf &>/dev/null
-  chattr -i /etc/httpd/conf/vhosts.d/000-default.conf &>/dev/null
   if [ -f "/etc/nginx/vhosts.d/default.conf" ]; then
     mv -f "/etc/nginx/vhosts.d/default.conf" "/etc/nginx/vhosts.d/0000-default.conf"
   fi
@@ -216,6 +218,7 @@ else
   rm -Rf /tmp/configs/var/named*
   rm -Rf /tmp/configs/etc/sysconfig/network-scripts
   rm -Rf /tmp/configs/etc/{hosts,tor,cockpit,fail2ban,shorewall,shorewall6,samba,postfix,named*}
+  mkdir -p "/etc/rsync.d"
 
   find -L /tmp/configs -type f -iname "*.sh" -exec chmod 755 {} \; &>/dev/null
   find -L /tmp/configs -type f -iname "*.pl" -exec chmod 755 {} \; &>/dev/null
@@ -226,7 +229,9 @@ else
 
   cp -Rf /tmp/configs/{etc,root,usr,var}* / 2>/dev/null
 
-  mkdir -p /etc/rsync.d /var/log/named && chown -Rf named:named /etc/named* /var/named /var/log/named
+  if grep -qs "named:" "/etc/passwd"; then
+    mkdir -p /var/log/named && chown -Rf named:named /etc/named* /var/named /var/log/named
+  fi
 
   if [ -f "/etc/sysconfig/network" ]; then
     sed -i "s#myserverdomainname#$HOSTNAME#g" /etc/sysconfig/network
@@ -250,11 +255,11 @@ else
       touch /etc/postfix/mydomains.pcre
       postmap /etc/postfix/transport /etc/postfix/canonical /etc/postfix/virtual /etc/postfix/mydomains
       newaliases
-      chattr +i "/etc/resolv.conf"
     fi
     echo -e "Last updated on $DATE" >"/etc/postfix/.installed"
   fi
 
+  chattr +i "/etc/resolv.conf"
   rm -Rf /tmp/*.tar "/tmp/dotfiles" "/tmp/configs" "/root/bin/linuxcounter.sh"
   echo -e "Done configuring files\n"
 
