@@ -31,12 +31,12 @@ trap 'exitCode=${exitCode:-$?};[ -n "$RUN_OS_UPDATE_TEMP_FILE" ] && [ -f "$RUN_O
 set -o pipefail
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 __save_remote_file() { curl -q -SLs "$1" | tee "$2" &>/dev/null || return 1; }
-__backup_repo_files() { mkdir -p "$BACKUP_DIR" && cp -Rf "/etc/yum.repos.d/." "$BACKUP_DIR" || return 0; }
+__backup_repo_files() { cp -Rf "/etc/yum.repos.d/." "$BACKUP_DIR" 2>/dev/null || return 0; }
 __rm_repo_files() { [ "${1:-$YUM_DELETE}" = "yes" ] && rm -Rf "/etc/yum.repos.d"/* &>/dev/null || return 0; }
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 __restore_repo_files() {
-  [ -n "$(ls -A "$BACKUP_DIR" 2>/dev/null)" ] || return 0
-  mkdir -p "$BACKUP_DIR" && cp -Rf "$BACKUP_DIR/${1:-}"* "/etc/yum.repos.d/" || return 0
+  [ -n "$(ls -A "$BACKUP_DIR/" 2>/dev/null)" ] || return 0
+  cp -Rf "$BACKUP_DIR/${1:-}"* "/etc/yum.repos.d/" 2>/dev/null || return 0
 }
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 __yum() { yum "$@" $yum_opts -yy -q &>/dev/null || return 1; }
@@ -111,7 +111,9 @@ domainname="$(echo "$hostnamefull" | awk -F'.' '{$1="";OFS="."; print $0}' | gre
 { [ "$1" = "--scripts" ] || [ "$1" = "-s" ] || [ "$1" = "scripts" ] || [ "$1" = "script" ]; } && shift 1 && SCRIPTS_UPDATE="true"
 { [ "$1" = "--check" ] || [ "$1" = "-c" ] || [ "$1" = "check" ]; } && shift 1 && echo "Old version is $INSTALLED_VERSION and new version is $REMOTE_VERSION" && exit
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-[ -f "/etc/resolv.conf" ] || echo "nameserver 1.1.1.1" >"/etc/resolv.conf"
+if [ -w "/etc/resolv.conf" ]; then
+  printf '%s\n%s\n%s\n' "search casjay.in" "nameserver 1.1.1.1" "nameserver 8.8.8.8" >"/etc/resolv.conf"
+fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 if [ "$SCRIPTS_UPDATE" = "true" ]; then
   exitCode="0"
@@ -142,6 +144,7 @@ else
   echo -e "Running the automatic update script"
   echo -e "Press control+c now to cancel update\n"
   sleep 10
+  mkdir -p "$BACKUP_DIR" &>/dev/null
 
   echo -e "Setting Timezone to $TIME_ZONE"
   [ -f "/etc/timezone" ] || echo "$TIME_ZONE" >/etc/timezone
