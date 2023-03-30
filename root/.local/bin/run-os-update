@@ -30,8 +30,9 @@ trap 'exitCode=${exitCode:-$?};[ -n "$RUN_OS_UPDATE_TEMP_FILE" ] && [ -f "$RUN_O
 [ "$1" = "--raw" ] && shift 1 && export SHOW_RAW="true"
 set -o pipefail
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-__rm_repo_files() { [ "${1:-$YUM_DELETE}" = "yes" ] && rm -Rf "/etc/yum.repos.d"/* || true; }
 __save_remote_file() { curl -q -SLs "$1" | tee "$2" &>/dev/null || exit 1; }
+__rm_repo_files() { [ "${1:-$YUM_DELETE}" = "yes" ] && rm -Rf "/etc/yum.repos.d"/* &>/dev/null || true; }
+__backup_repo_files() { mkdir -p "$BACKUP_DIR" && cp -Rf "/etc/yum.repos.d/." "$BACKUP_DIR"; }
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 __repo_file() {
   local statusCode="0"
@@ -51,9 +52,11 @@ __repo_file() {
     return
   fi
   if [ -n "$RELEASE_FILE" ]; then
-    yum clean all &>/dev/null && __rm_repo_files "$YUM_DELETE" &&
-      __save_remote_file "$RELEASE_FILE" "/etc/yum.repos.d/casjay.repo" &&
-      yum makecache -y -q &>/dev/null || statusCode=1
+    yum clean all &>/dev/null
+    __backup_repo_files
+    __rm_repo_files "$YUM_DELETE"
+    __save_remote_file "$RELEASE_FILE" "/etc/yum.repos.d/casjay.repo"
+    yum makecache -y -q &>/dev/null || statusCode=1
   fi
   return $statusCode
 }
@@ -71,6 +74,7 @@ echo "$PATH" | grep -q "/root/.local/bin" || export PATH="/root/.local/bin:$PATH
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 DATE="$(date +'%y-%m-%d at %H:%M')"
 ARCH="$(uname -m | tr '[:upper:]' '[:lower:]')"
+BACKUP_DIR="$HOME/Documents/backups/$(date +'%Y/%m/%H%M')"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export FORCE_INST="${FORCE_INST:-}"
 export TIME_ZONE="${TZ:-America/New_York}"
