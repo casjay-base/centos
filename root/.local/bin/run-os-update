@@ -32,8 +32,12 @@ set -o pipefail
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 __save_remote_file() { curl -q -SLs "$1" | tee "$2" &>/dev/null || return 1; }
 __backup_repo_files() { mkdir -p "$BACKUP_DIR" && cp -Rf "/etc/yum.repos.d/." "$BACKUP_DIR" || return 0; }
-__restore_repo_files() { mkdir -p "$BACKUP_DIR" && cp -Rf "$BACKUP_DIR/$1"* "/etc/yum.repos.d/" || return 0; }
 __rm_repo_files() { [ "${1:-$YUM_DELETE}" = "yes" ] && rm -Rf "/etc/yum.repos.d"/* &>/dev/null || return 0; }
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+__restore_repo_files() {
+  [ -n "$(ls -A "$BACKUP_DIR" 2>/dev/null)" ] || return 0
+  mkdir -p "$BACKUP_DIR" && cp -Rf "$BACKUP_DIR/${1:-}"* "/etc/yum.repos.d/" || return 0
+}
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 __repo_file() {
   local statusCode="0"
@@ -63,6 +67,7 @@ __repo_file() {
     __backup_repo_files
     __rm_repo_files "$YUM_DELETE"
     __save_remote_file "$RELEASE_FILE" "/etc/yum.repos.d/casjay.repo"
+    __restore_repo_files "almalinux"
     yum reinstall -yy "$almalinux_release" &>/dev/null && crb enable
     if [ -n "$remi_php_repo_old" ] && [ -n "$remi_php_repo_new" ]; then
       sed -i "s|$remi_php_repo_old|$remi_php_repo_new|g" "/etc/yum.repos.d/casjay.repo"
@@ -85,7 +90,7 @@ echo "$PATH" | grep -q "/root/.local/bin" || export PATH="/root/.local/bin:$PATH
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 DATE="$(date +'%y-%m-%d at %H:%M')"
 ARCH="$(uname -m | tr '[:upper:]' '[:lower:]')"
-BACKUP_DIR="$HOME/Documents/backups/$(date +'%Y/%m/%H%M')"
+BACKUP_DIR="$HOME/Documents/backups/$(date +'%Y/%m/%d')"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export FORCE_INST="${FORCE_INST:-}"
 export TIME_ZONE="${TZ:-America/New_York}"
