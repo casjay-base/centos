@@ -35,7 +35,7 @@ __save_remote_file() { curl -q -SLs "$1" | tee "$2" &>/dev/null || exit 1; }
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 __repo_file() {
   local statusCode="0"
-  [ "$ARCH" = "x86_64" ] || return 0
+  #[ "$ARCH" = "x86_64" ] || return 0
   if [ "$RELEASE_VER" -ge "9" ]; then
     YUM_DELETE="no"
     RELEASE_FILE="https://github.com/rpm-devel/casjay-release/raw/main/casjay.rh9.repo"
@@ -141,7 +141,7 @@ else
   chmod -Rf 664 /etc/casjaysdev/updates/versions/*.txt
   echo -e "Done setting version\n"
 
-  echo -e "Updating yum repos for $RELEASE_NAME $RELEASE_VER"
+  echo -e "Updating yum repos for $RELEASE_NAME $RELEASE_VER - $ARCH"
   if ! __repo_file; then
     echo -e "Failed to update the repos\n"
     exit 1
