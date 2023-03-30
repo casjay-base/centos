@@ -39,6 +39,7 @@ __repo_file() {
   local statusCode="0"
   local remi_php_repo_old=""
   local remi_php_repo_new=""
+  local almalinux_release="http://mirror.siena.edu/almalinux/almalinux-repos-latest-$RELEASE_VER.$ARCH.rpm"
   if [ "$ARCH" != "x86_64" ]; then
     remi_php_repo_old="https://rpms.remirepo.net/enterprise/\$releasever/php74/\$basearch/mirror"
     remi_php_repo_new="https://github.com/CasjaysDev/rpm-devel/raw/main/docs/ZREPO/RHEL/rhel/mirrors/remi"
@@ -62,8 +63,7 @@ __repo_file() {
     __backup_repo_files
     __rm_repo_files "$YUM_DELETE"
     __save_remote_file "$RELEASE_FILE" "/etc/yum.repos.d/casjay.repo"
-    __restore_repo_files alama
-    yum reinstall almalinux-release epel-release -yy &>/dev/null && crb enable
+    yum reinstall -yy "$almalinux_release" &>/dev/null && crb enable
     if [ -n "$remi_php_repo_old" ] && [ -n "$remi_php_repo_new" ]; then
       sed -i "s|$remi_php_repo_old|$remi_php_repo_new|g" "/etc/yum.repos.d/casjay.repo"
     fi
