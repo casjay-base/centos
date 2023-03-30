@@ -30,13 +30,18 @@ trap 'exitCode=${exitCode:-$?};[ -n "$RUN_OS_UPDATE_TEMP_FILE" ] && [ -f "$RUN_O
 [ "$1" = "--raw" ] && shift 1 && export SHOW_RAW="true"
 set -o pipefail
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-__save_remote_file() { curl -q -SLs "$1" | tee "$2" &>/dev/null || exit 1; }
-__rm_repo_files() { [ "${1:-$YUM_DELETE}" = "yes" ] && rm -Rf "/etc/yum.repos.d"/* &>/dev/null || true; }
-__backup_repo_files() { mkdir -p "$BACKUP_DIR" && cp -Rf "/etc/yum.repos.d/." "$BACKUP_DIR"; }
+__save_remote_file() { curl -q -SLs "$1" | tee "$2" &>/dev/null || return 1; }
+__backup_repo_files() { mkdir -p "$BACKUP_DIR" && cp -Rf "/etc/yum.repos.d/." "$BACKUP_DIR" || return 0; }
+__rm_repo_files() { [ "${1:-$YUM_DELETE}" = "yes" ] && rm -Rf "/etc/yum.repos.d"/* &>/dev/null || return 0; }
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 __repo_file() {
   local statusCode="0"
-  #[ "$ARCH" = "x86_64" ] || return 0
+  local remi_php_repo_old=""
+  local remi_php_repo_new=""
+  if [ "$ARCH" != "x86_64" ]; then
+    remi_php_repo_old="https://rpms.remirepo.net/enterprise/\$releasever/php74/\$basearch/mirror"
+    remi_php_repo_new="https://github.com/CasjaysDev/rpm-devel/raw/main/docs/ZREPO/RHEL/rhel/mirrors/remi"
+  fi
   if [ "$RELEASE_VER" -ge "9" ]; then
     YUM_DELETE="no"
     RELEASE_FILE="https://github.com/rpm-devel/casjay-release/raw/main/casjay.rh9.repo"
@@ -56,6 +61,9 @@ __repo_file() {
     __backup_repo_files
     __rm_repo_files "$YUM_DELETE"
     __save_remote_file "$RELEASE_FILE" "/etc/yum.repos.d/casjay.repo"
+    if [ -n "$remi_php_repo_old" ] && [ -n "$remi_php_repo_new" ]; then
+      sed -i "s|$remi_php_repo_old|$remi_php_repo_new|g" "/etc/yum.repos.d/casjay.repo"
+    fi
     yum makecache -y -q &>/dev/null || statusCode=1
   fi
   return $statusCode
