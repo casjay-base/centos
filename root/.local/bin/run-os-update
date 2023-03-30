@@ -61,6 +61,7 @@ __repo_file() {
     __backup_repo_files
     __rm_repo_files "$YUM_DELETE"
     __save_remote_file "$RELEASE_FILE" "/etc/yum.repos.d/casjay.repo"
+    yum reinstall almalinux-release epel-release -yy &>/dev/null && crb enable || statusCode=1
     if [ -n "$remi_php_repo_old" ] && [ -n "$remi_php_repo_new" ]; then
       sed -i "s|$remi_php_repo_old|$remi_php_repo_new|g" "/etc/yum.repos.d/casjay.repo"
     fi
