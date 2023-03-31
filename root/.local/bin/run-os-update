@@ -43,7 +43,6 @@ __yum() { yum "$@" $yum_opts -yy -q &>/dev/null || return 1; }
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 __repo_file() {
   local statusCode="0"
-  local almalinux_release="http://mirror.siena.edu/almalinux/almalinux-repos-latest-$RELEASE_VER.$ARCH.rpm"
   if [ "$RELEASE_VER" -ge "9" ]; then
     YUM_DELETE="no"
     RELEASE_FILE="https://github.com/rpm-devel/casjay-release/raw/main/casjay.rh9.repo"
@@ -64,6 +63,10 @@ __repo_file() {
     __rm_repo_files "$YUM_DELETE"
     __save_remote_file "$RELEASE_FILE" "/etc/yum.repos.d/casjay.repo"
     __restore_repo_files "almalinux"
+    if [ "$ARCH" != "x86_64" ]; then
+      sed -i 's|http://cdn.remirepo.net/enterprise/$releasever/safe/$basearch/mirror|https://github.com/rpm-devel/casjay-release/raw/main/ZREPO/RHEL/rhel/mirrors/remi|g' /etc/yum.repos.d/casjay.repo
+      sed -i 's|https://rpms.remirepo.net/enterprise/$releasever/php74/$basearch/mirror|https://github.com/rpm-devel/casjay-release/raw/main/ZREPO/RHEL/rhel/mirrors/remi|g' /etc/yum.repos.d/casjay.repo
+    fi
     __yum makecache &>/dev/null || statusCode=1
   fi
   return $statusCode
