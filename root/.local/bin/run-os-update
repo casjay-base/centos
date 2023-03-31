@@ -186,6 +186,7 @@ else
 
   echo -e "Updating systemmgr config"
   if [ -d "/usr/local/share/CasjaysDev/scripts/.git" ]; then
+    git -C "/usr/local/share/CasjaysDev/scripts" reset --hard -q
     git -C "/usr/local/share/CasjaysDev/scripts" pull -q
   else
     git clone -q "https://github.com/casjay-dotfiles/scripts" "/usr/local/share/CasjaysDev/scripts"
@@ -200,6 +201,7 @@ else
 
   echo -e "Setting up vnstat-php-frontend"
   if [ -d "/var/www/html/vnstat/.git" ]; then
+    git -C "/var/www/html/vnstat" reset --hard -q
     git -C "/var/www/html/vnstat" pull -q
   else
     [ -d "/var/www/html/vnstat" ] && rm -Rf "/var/www/html/vnstat"
@@ -209,6 +211,7 @@ else
 
   echo -e "Setting up phpsysinfo"
   if [ -d "/var/www/html/sysinfo/.git" ]; then
+    git -C "/var/www/html/sysinfo" reset --hard -q
     git -C "/var/www/html/sysinfo" pull -q
   else
     [ -d "/var/www/html/sysinfo" ] && rm -Rf "/var/www/html/sysinfo"
@@ -241,8 +244,8 @@ else
   fi
 
   if [ -f "/etc/sysconfig/network" ]; then
-    sed -i "s#myserverdomainname#$HOSTNAME#g" /etc/sysconfig/network
     sed -i "s#mydomain#$domainname#g" /etc/sysconfig/network
+    sed -i "s#myserverdomainname#$HOSTNAME#g" /etc/sysconfig/network
   fi
 
   if grep '^kernel.domainname' '/etc/sysctl.conf'; then
@@ -254,16 +257,18 @@ else
   chmod 644 -Rf /etc/cron.d/* /etc/logrotate.d/*
 
   if [ -d "/usr/share/munin/plugins" ]; then
-    chmod 755 -Rf "/usr/share/munin/plugins"
+    chmod 755 -Rf "/usr/share/munin/plugins"/*
   fi
 
   if [ -d "/etc/postfix" ]; then
-    if [ ! -f "/etc/postfix/.installed" ]; then
+    if [ -f "/etc/postfix/.installed" ]; then
+      echo -e "Last updated on $DATE" >"/etc/postfix/.installed"
+    else
       touch /etc/postfix/mydomains.pcre
       postmap /etc/postfix/transport /etc/postfix/canonical /etc/postfix/virtual /etc/postfix/mydomains
       newaliases
+      echo -e "Installed on $DATE" >"/etc/postfix/.installed"
     fi
-    echo -e "Last updated on $DATE" >"/etc/postfix/.installed"
   fi
 
   chattr +i "/etc/resolv.conf"
@@ -275,7 +280,9 @@ else
   if [ -f "/var/lib/tor/hidden_service/default/hostname" ]; then
     cat "/var/lib/tor/hidden_service/*/hostname" >"/var/www/html/tor_hostname" 2>/dev/null
   fi
-  chown -Rf apache:apache "/var/www" "/usr/share/httpd"
+  if grep -qs "apache:" "/etc/passwd"; then
+    chown -Rf apache:apache "/var/www" "/usr/share/httpd"
+  fi
   echo -e "Done setting up web server\n"
 
   if [ -f "$HOME/.local/dotfiles/personal/install.sh" ]; then
@@ -286,9 +293,9 @@ else
 
   echo -e "Setting up the ssl certs"
   [ -f "/etc/named/certbot-update.conf" ] && chmod 600 /etc/named/certbot-update.conf
-  if [ -d /etc/letsencrypt/live/domain ]; then
-    cat /etc/letsencrypt/live/domain/fullchain.pem >/etc/cockpit/ws-certs.d/1-my-cert.cert
-    cat /etc/letsencrypt/live/domain/privkey.pem >>/etc/cockpit/ws-certs.d/1-my-cert.cert
+  if [ -d "/etc/letsencrypt/live/domain" ]; then
+    cat "/etc/letsencrypt/live/domain/fullchain.pem" >"/etc/cockpit/ws-certs.d/1-my-cert.cert"
+    cat "/etc/letsencrypt/live/domain/privkey.pem" >>"/etc/cockpit/ws-certs.d/1-my-cert.cert"
   fi
   update-ca-trust && update-ca-trust extract
   echo -e "Done setting up the ssl certs\n"
@@ -300,16 +307,20 @@ else
   echo -e "Updating motd and issue files"
   mkdir -p /etc/casjaysdev/banners &>/dev/null
   chmod -f 777 /etc/casjaysdev /etc/casjaysdev/banners/ /etc/casjaysdev/banners/* &>/dev/null
-  bash -c "$(builtin type -P update-motd)" &>/dev/null
+  bash -c "/usr/local/share/CasjaysDev/scripts/bin/update-motd" &>/dev/null
   echo -e "Done updating motd and issue files \n"
 
   echo -e "Setting up the services"
-  for s in $SERVICES_ENABLE; do systemctl enable "$s" &>/dev/null; done
+  for s in $SERVICES_ENABLE; do systemctl enable --now "$s" &>/dev/null; done
   for s in $SERVICES_ENABLE; do systemctl restart "$s" &>/dev/null; done
   for s in $SERVICES_DISABLE; do systemctl disable "$s" &>/dev/null; done
   echo -e "Done setting up the services\n"
 
-  if [ -f "$HOME/dns/master/update.sh" ]; then
+  if [ -f "$HOME/dns/docker.sh" ]; then
+    echo -e "Setting up the dns server"
+    bash -c "$HOME/dns/docker.sh"
+    echo -e "done setting up the dns server\n"
+  elif [ -f "$HOME/dns/master/update.sh" ]; then
     echo -e "Setting up the dns server"
     git -C "$HOME/dns" pull -q &>/dev/null
     cp -Rf "$HOME/dns" "/tmp/dns-update"
