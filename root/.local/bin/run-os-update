@@ -43,18 +43,21 @@ __yum() { yum "$@" $yum_opts -yy -q &>/dev/null || return 1; }
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 __repo_file() {
   local statusCode="0"
-  if [ "$RELEASE_VER" -ge "9" ]; then
-    YUM_DELETE="no"
-    RELEASE_FILE="https://github.com/rpm-devel/casjay-release/raw/main/casjay.rh9.repo"
-  elif [ "$RELEASE_VER" -ge "8" ]; then
-    YUM_DELETE="yes"
-    RELEASE_FILE="https://github.com/rpm-devel/casjay-release/raw/main/casjay.rh8.repo"
-  elif [ "$RELEASE_VER" -lt "8" ]; then
-    YUM_DELETE="yes"
-    RELEASE_FILE="https://github.com/rpm-devel/casjay-release/raw/main/casjay.rh.repo"
+  if [ "$RELEASE_NAME" = "centos" ] && [ "$(hostname -s)" != "pbx" ]; then
+    if [ "$RELEASE_VER" -ge "9" ]; then
+      YUM_DELETE="no"
+      RELEASE_FILE="https://github.com/rpm-devel/casjay-release/raw/main/casjay.rh9.repo"
+    elif [ "$RELEASE_VER" -ge "8" ]; then
+      YUM_DELETE="yes"
+      RELEASE_FILE="https://github.com/rpm-devel/casjay-release/raw/main/casjay.rh8.repo"
+    elif [ "$RELEASE_VER" -lt "8" ]; then
+      YUM_DELETE="yes"
+      RELEASE_FILE="https://github.com/rpm-devel/casjay-release/raw/main/casjay.rh.repo"
+    else
+      YUM_DELETE="no"
+      RELEASE_FILE=""
+    fi
   else
-    YUM_DELETE="no"
-    RELEASE_FILE=""
     return
   fi
   if [ -n "$RELEASE_FILE" ]; then
