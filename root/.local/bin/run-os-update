@@ -146,6 +146,12 @@ if [ "$SCRIPTS_UPDATE" = "true" ]; then
   exit $exitCode
 fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+if [ "$1" = "repo" ]; then
+  echo "Updating casjay.repo file"
+  __repo_file && echo "Update completed" || { echo "Update has failed" && false; }
+  exit $?
+fi
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 [ $# -eq 0 ] || shift $#
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 if [ -z "$FORCE_INST" ] && [ "$REMOTE_VERSION" = "$INSTALLED_VERSION" ]; then
