@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-##@Version           :  202201210244-git
+##@Version           :  202305090019-git
 # @@Author           :  Jason Hempstead
 # @@Contact          :  git-admin@casjaysdev.com
 # @@License          :  LICENSE.md
@@ -46,7 +46,9 @@ fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 [ -f "/etc/resolv.conf" ] && chattr -i "/etc/resolv.conf"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-if __fetch; then
+if [ -n "$(type -P update-resolv)" ]; then
+  update-resolv
+elif __fetch; then
   [ -f "/tmp/resolv.conf" ] && mv -f "/tmp/resolv.conf" "/etc/resolv.conf"
   [ -f "/tmp/resolv.conf" ] && rm -Rf "/tmp/resolv.conf"
 fi
