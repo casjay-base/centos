@@ -36,22 +36,22 @@ set -o pipefail
 PROCS="nginx httpd postfix crond dockerd sshd php-fpm "
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # User defined functions
-__check_url() { curl -q -SsI "$1" &>/dev/null || return 1; }
+__check_url() { curl -q -LSsIf --max-time 3 "$1" &>/dev/null || return 1; }
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 __proc_check() {
-  proc="$(ps aux 2>&1 | grep -v 'grep' | grep -w "$1" | head -n1 | grep -q "$1" && echo "$1" || echo '')"
+  proc="$(ps aux 2>&1 | grep -v 'grep' | grep -w "$1" | head -n1 | grep -q "$1" && echo "$1" || false)"
   [ -n "$proc" ] || return 1
 }
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 __get_proc_port() {
-  port="$(netstat -tapln | grep "$1" | tr ' ' '\n' | grep -v '^$' | grep ':[0-9]' | head -n 1 | sed 's|.*:||g' | head -n1 | grep '[0-9]' || echo '' || echo '')"
+  port="$(netstat -tapln | grep "$1" | tr ' ' '\n' | grep -v '^$' | grep ':[0-9]' | head -n 1 | sed 's|.*:||g' | head -n1 | grep '[0-9]' || false)"
   [ -n "$port" ] && printf '%s\n' "$port" || return 1
 }
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 __website_check() {
   check="$(__get_proc_port "$1")"
   url="${2:-}"
-  [ -n "$url" ] && [ -n "$check" ] && __check_url "$url" || return 1
+  [ -n "$check" ] && { [ -z "$url" ] || __check_url "$url"; } || return 1
 }
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 __service_restart() {
