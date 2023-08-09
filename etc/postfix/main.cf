@@ -9,6 +9,8 @@ relay_domains = hash:/etc/postfix/mydomains, regexp:/etc/postfix/mydomains.pcre
 
 tls_random_source = dev:/dev/urandom
 
+smtp_tls_wrappermode = yes
+smtp_tls_security_level = encrypt
 smtp_use_tls = yes
 smtpd_use_tls = yes
 smtpd_tls_session_cache_database = btree:/etc/postfix/smtpd_scache
@@ -33,5 +35,5 @@ smtp_sasl_auth_enable = yes
 smtp_sasl_security_options = noanonymous
 smtp_sasl_password_maps = hash:/etc/postfix/sasl_passwd
 
-relayhost = [casjay.helioho.st]:25
+relayhost = [casjay.helioho.st]:465
 
