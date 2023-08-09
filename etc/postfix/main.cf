@@ -6,12 +6,16 @@ mynetworks = /etc/postfix/mynetworks
 transport_maps = hash:/etc/postfix/transport
 virtual_alias_maps = hash:/etc/postfix/virtual
 relay_domains = hash:/etc/postfix/mydomains, regexp:/etc/postfix/mydomains.pcre
+smtp_sasl_password_maps = hash:/etc/postfix/sasl_passwd
 
 tls_random_source = dev:/dev/urandom
 
+smtp_use_tls = yes
 smtp_tls_wrappermode = yes
 smtp_tls_security_level = encrypt
-smtp_use_tls = yes
+smtp_sasl_auth_enable = yes
+smtp_sasl_security_options = noanonymous
+
 smtpd_use_tls = yes
 smtpd_tls_session_cache_database = btree:/etc/postfix/smtpd_scache
 smtpd_tls_dh1024_param_file = /etc/ssl/dhparam/1024.pem
@@ -21,19 +25,16 @@ smtp_tls_key_file = /etc/letsencrypt/live/domain/privkey.pem
 smtp_tls_cert_file = /etc/letsencrypt/live/domain/fullchain.pem
 smtpd_tls_key_file = /etc/letsencrypt/live/domain/privkey.pem
 smtpd_tls_cert_file = /etc/letsencrypt/live/domain/fullchain.pem
-
 smtpd_relay_restrictions = permit_mynetworks, permit_sasl_authenticated, defer_unauth_destination
 
 mydestination =
 inet_interfaces = all
+inet_protocols = ipv4
 append_dot_mydomain = yes
-myorigin = myserverdomainname
-myhostname = myserverdomainname
 local_transport=error: local delivery disabled
 
-smtp_sasl_auth_enable = yes
-smtp_sasl_security_options = noanonymous
-smtp_sasl_password_maps = hash:/etc/postfix/sasl_passwd
+myorigin = myserverdomainname
+myhostname = myserverdomainname
 
 relayhost = [casjay.helioho.st]:465
 
