@@ -33,4 +33,5 @@ smtp_sasl_auth_enable = yes
 smtp_sasl_security_options = noanonymous
 smtp_sasl_password_maps = hash:/etc/postfix/sasl_passwd
 
-relayhost = [casjay.helioho.st]:587
+relayhost = [casjay.helioho.st]:25
+
