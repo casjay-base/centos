@@ -270,11 +270,13 @@ else
     if [ -f "/etc/postfix/.installed" ]; then
       echo -e "Last updated on $DATE" >"/etc/postfix/.installed"
     else
-      touch /etc/postfix/mydomains.pcre
-      postmap /etc/postfix/transport /etc/postfix/canonical /etc/postfix/virtual /etc/postfix/mydomains
-      newaliases
       echo -e "Installed on $DATE" >"/etc/postfix/.installed"
     fi
+    touch "/etc/postfix/sasl_passwd"
+    touch "/etc/postfix/mydomains.pcre"
+    touch "/etc/aliases" && newaliases
+    postmap="access canonical relocated transport virtual sasl_passwd"
+    for f in $postmap; do postmap /etc/postfix/$f &>/dev/null; done
   fi
 
   chattr +i "/etc/resolv.conf"
@@ -286,7 +288,7 @@ else
   if [ -f "/var/lib/tor/hidden_service/default/hostname" ]; then
     cat "/var/lib/tor/hidden_service/*/hostname" >"/var/www/html/tor_hostname" 2>/dev/null
   fi
-  if grep -qs "apache:" "/etc/passwd"; then
+  if grep -qs "^apache:" "/etc/passwd"; then
     chown -Rf apache:apache "/var/www" "/usr/share/httpd"
   fi
   echo -e "Done setting up web server\n"

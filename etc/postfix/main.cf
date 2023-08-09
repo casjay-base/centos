@@ -29,4 +29,8 @@ myorigin = myserverdomainname
 myhostname = myserverdomainname
 local_transport=error: local delivery disabled
 
-relayhost = [smtp-relay.casjay.net]:587
+smtp_sasl_auth_enable = yes
+smtp_sasl_security_options = noanonymous
+smtp_sasl_password_maps = hash:/etc/postfix/sasl_passwd
+
+relayhost = [casjay.helioho.st]:587
