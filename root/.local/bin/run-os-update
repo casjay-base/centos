@@ -175,13 +175,13 @@ fi
 if [ -d "/usr/local/share/CasjaysDev/scripts/.git" ]; then
   git -C "/usr/local/share/CasjaysDev/scripts" reset --hard &>/dev/null
   git -C "/usr/local/share/CasjaysDev/scripts" pull -q &>/dev/null
-  [ "$FORCE_INST" = "true" ] && [ -f "/usr/local/share/CasjaysDev/scripts/install.sh" ] && bash "/usr/local/share/CasjaysDev/scripts/install.sh"
+  [ "$FORCE_INST" = "true" ] && [ -f "/usr/local/share/CasjaysDev/scripts/install.sh" ] && bash "/usr/local/share/CasjaysDev/scripts/install.sh" --raw
 fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 for git_repos in /root/.local/share/CasjaysDev/dfmgr/*; do
   if [ -d "$git_repos/.git" ]; then
     git -C "$git_repos" reset --hard &>/dev/null && git -C "$git_repos" pull -q
-    [ "$FORCE_INST" = "true" ] && [ -f "$git_repos/install.sh" ] && bash "$git_repos/install.sh"
+    [ "$FORCE_INST" = "true" ] && [ -f "$git_repos/install.sh" ] && bash "$git_repos/install.sh" --raw
   fi
 done
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -189,7 +189,7 @@ if [ "$DOCKER_UPDATE" = "true" ] && [ -n "$(builtin type -P docker)" ] && [ -n "
   for docker_repos in "$HOME/.local/share/CasjaysDev/dockermgr"/*; do
     if [ -d "$docker_repos/.git" ]; then
       git -C "$docker_repos" reset --hard &>/dev/null && git -C "$docker_repos" pull -q
-      [ "$FORCE_INST" = "true" ] && [ -f "$docker_repos/install.sh" ] && bash "$docker_repos/install.sh"
+      [ "$FORCE_INST" = "true" ] && [ -f "$docker_repos/install.sh" ] && bash "$docker_repos/install.sh" --raw
     fi
   done
 fi
