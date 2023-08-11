@@ -140,6 +140,11 @@ if [ -w "/etc/resolv.conf" ]; then
   printf '%s\n%s\n%s\n' "search casjay.in" "nameserver 1.1.1.1" "nameserver 8.8.8.8" | tee "/etc/resolv.conf" &>/dev/null
 fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+if [ -d "/usr/local/share/CasjaysDev/scripts/.git" ]; then
+  git -C "/usr/local/share/CasjaysDev/scripts" reset --hard &>/dev/null
+  git -C "/usr/local/share/CasjaysDev/scripts" pull -q &>/dev/null
+fi
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 for git_repos in /root/.local/share/CasjaysDev/*/*; do
   if [ -d "$git_repos/.git" ]; then
     git -C "$git_repos" reset --hard &>/dev/null && git -C "$git_repos" pull -q
