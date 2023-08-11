@@ -159,22 +159,6 @@ if [ -d "/usr/local/share/CasjaysDev/scripts/.git" ]; then
   [ "$FORCE_INST" = "true" ] && [ -f "/usr/local/share/CasjaysDev/scripts/install.sh" ] && bash "/usr/local/share/CasjaysDev/scripts/install.sh"
 fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-for git_repos in /root/.local/share/CasjaysDev/dfmgr/*; do
-  if [ -d "$git_repos/.git" ]; then
-    git -C "$git_repos" reset --hard &>/dev/null && git -C "$git_repos" pull -q
-    [ "$FORCE_INST" = "true" ] && [ -f "$git_repos/install.sh" ] && bash "$git_repos/install.sh"
-  fi
-done
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-if [ "$DOCKER_UPDATE" = "true" ] && [ -n "$(builtin type -P docker)" ] && [ -n "$(builtin type -P dockermgr)" ]; then
-  for docker_repos in "$HOME/.local/share/CasjaysDev/dockermgr"/*; do
-    if [ -d "$docker_repos/.git" ]; then
-      git -C "$docker_repos" reset --hard &>/dev/null && git -C "$docker_repos" pull -q
-      [ "$FORCE_INST" = "true" ] && [ -f "$docker_repos/install.sh" ] && bash "$docker_repos/install.sh"
-    fi
-  done
-fi
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 if [ "$SCRIPTS_UPDATE" = "true" ]; then
   exitCode="0"
   RAW_REPO_URL="https://raw.githubusercontent.com/casjay-base/centos/main/root/.local/bin"
@@ -192,6 +176,22 @@ if [ "$SCRIPTS_UPDATE" = "true" ]; then
   done
   __run_updater "$RAW_REPO_URL" "run-os-update" || exitCode=$(($exitCode + 1))
   exit $exitCode
+fi
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+for git_repos in /root/.local/share/CasjaysDev/dfmgr/*; do
+  if [ -d "$git_repos/.git" ]; then
+    git -C "$git_repos" reset --hard &>/dev/null && git -C "$git_repos" pull -q
+    [ "$FORCE_INST" = "true" ] && [ -f "$git_repos/install.sh" ] && bash "$git_repos/install.sh"
+  fi
+done
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+if [ "$DOCKER_UPDATE" = "true" ] && [ -n "$(builtin type -P docker)" ] && [ -n "$(builtin type -P dockermgr)" ]; then
+  for docker_repos in "$HOME/.local/share/CasjaysDev/dockermgr"/*; do
+    if [ -d "$docker_repos/.git" ]; then
+      git -C "$docker_repos" reset --hard &>/dev/null && git -C "$docker_repos" pull -q
+      [ "$FORCE_INST" = "true" ] && [ -f "$docker_repos/install.sh" ] && bash "$docker_repos/install.sh"
+    fi
+  done
 fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 if [ "$1" = "repo" ]; then
