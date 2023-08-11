@@ -15,6 +15,12 @@ sudo /usr/local/share/CasjaysDev/scripts/install.sh
 yum update -y
 ```
 
+## Reboot the  system
+
+```shell
+reboot
+```
+
 ## Automated Install  
   
 ```shell
