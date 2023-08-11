@@ -70,7 +70,7 @@ __repo_file() {
       sed -i 's|http://cdn.remirepo.net/enterprise/$releasever/safe/$basearch/mirror|https://github.com/rpm-devel/casjay-release/raw/main/ZREPO/RHEL/mirrors/remi|g' /etc/yum.repos.d/casjay.repo
       sed -i 's|https://rpms.remirepo.net/enterprise/$releasever/php74/$basearch/mirror|https://github.com/rpm-devel/casjay-release/raw/main/ZREPO/RHEL/mirrors/remi|g' /etc/yum.repos.d/casjay.repo
     fi
-    __yum makecache &>/dev/null || statusCode=1
+    yum makecache &>/dev/null || statusCode=1
   fi
   return $statusCode
 }
@@ -127,12 +127,13 @@ fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 [ "$1" = "--force" ] && shift 1 && FORCE_INST="true"
 [ "$1" = "--docker" ] && shift 1 && DOCKER_UPDATE="true"
+{ [ "$1" = "--repo" ] || [ "$1" = "repo" ]; } && shift 1 && REPO_UPDATE="true"
 { [ "$1" = "--version" ] || [ "$1" = "-v" ] || [ "$1" = "version" ]; } && shift 1 && echo "$INSTALLED_VERSION" && exit
 { [ "$1" = "--scripts" ] || [ "$1" = "-s" ] || [ "$1" = "scripts" ] || [ "$1" = "script" ]; } && shift 1 && SCRIPTS_UPDATE="true"
 { [ "$1" = "--check" ] || [ "$1" = "-c" ] || [ "$1" = "check" ]; } && shift 1 && echo "Old version is $INSTALLED_VERSION and new version is $REMOTE_VERSION" && exit
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 if [ ! -f "/tmp/run-os-update" ] && ping -c 2 1.1.1.1 &>/dev/null; then
-  export DOCKER_UPDATE INSTALLED_VERSION SCRIPTS_UPDATE STATICSITE USER FORCE_INST
+  export DOCKER_UPDATE INSTALLED_VERSION SCRIPTS_UPDATE STATICSITE USER FORCE_INST REPO_UPDATE
   curl -q -LSsf "https://raw.githubusercontent.com/casjay-base/centos/main/root/.local/bin/run-os-update" -o "/tmp/run-os-update" 2>/dev/null
   if [ -f "/tmp/run-os-update" ]; then
     chmod 755 "/tmp/run-os-update" |
@@ -194,7 +195,7 @@ if [ "$DOCKER_UPDATE" = "true" ] && [ -n "$(builtin type -P docker)" ] && [ -n "
   done
 fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-if [ "$1" = "repo" ]; then
+if [ "$REPO_UPDATE" = "true" ]; then
   echo "Updating casjay.repo file"
   __repo_file && echo "Update completed" || { echo "Update has failed" && false; }
   exit $?
@@ -225,6 +226,7 @@ else
   echo -e "Done setting version\n"
 
   echo -e "Updating yum repos for $RELEASE_NAME $RELEASE_VER - $ARCH"
+  yum clean all &>/dev/null
   if ! __repo_file; then
     echo -e "Failed to update the repos\n"
     exit 1
