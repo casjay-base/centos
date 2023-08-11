@@ -1,5 +1,20 @@
 # RHEL & Fedora Configuration  
   
+Setup a base almalinux server
+
+## Install scripts
+
+```shell
+sudo git clone https://github.com/casjay-dotfiles/scripts "/usr/local/share/CasjaysDev/scripts" && \
+sudo /usr/local/share/CasjaysDev/scripts/install.sh
+```
+
+## Update the system
+
+```shell
+yum update -y
+```
+
 ## Automated Install  
   
 ```shell
