@@ -289,13 +289,17 @@ else
   rm -Rf /tmp/configs/etc/sysconfig/network-scripts
   rm -Rf /tmp/configs/etc/{hosts,tor,cockpit,fail2ban,shorewall,shorewall6,samba,postfix,named*}
   mkdir -p "/etc/rsync.d"
-
   find -L /tmp/configs -type f -iname "*.sh" -exec chmod 755 {} \; &>/dev/null
   find -L /tmp/configs -type f -iname "*.pl" -exec chmod 755 {} \; &>/dev/null
   find -L /tmp/configs -type f -iname "*.cgi" -exec chmod 755 {} \; &>/dev/null
+
+  echo -e "Setting IP to $mycurrentipaddress_4"
   find -L /tmp/configs -type f -exec sed -i "s#mycurrentipaddress_4#$mycurrentipaddress_4#g" {} \; &>/dev/null
+  echo -e "Setting full hostname to $myserverdomainname"
   find -L /tmp/configs -type f -exec sed -i "s#myserverdomainname#$hostnamefull#g" {} \; &>/dev/null
+  echo -e "Setting short hostname to $hostnameshort"
   find -L /tmp/configs -type f -exec sed -i "s#myhostnameshort#$hostnameshort#g" {} \; &>/dev/null
+  echo -e "Setting the domain name to $domainname"
   find -L /tmp/configs -type f -exec sed -i "s#mydomainname#$domainname#g" {} \; &>/dev/null
 
   cp -Rf /tmp/configs/{etc,root,usr,var}* / 2>/dev/null
