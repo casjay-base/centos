@@ -118,6 +118,15 @@ domainname="$(echo "$hostnamefull" | awk -F'.' '{$1="";OFS="."; print $0}' | gre
 { [ "$1" = "--scripts" ] || [ "$1" = "-s" ] || [ "$1" = "scripts" ] || [ "$1" = "script" ]; } && shift 1 && SCRIPTS_UPDATE="true"
 { [ "$1" = "--check" ] || [ "$1" = "-c" ] || [ "$1" = "check" ]; } && shift 1 && echo "Old version is $INSTALLED_VERSION and new version is $REMOTE_VERSION" && exit
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+if [ ! -f "/tmp/run-os-update" ] && ping -c 2 1.1.1.1 &>/dev/null; then
+  export FORCE_INST INSTALLED_VERSION SCRIPTS_UPDATE STATICSITE USER
+  curl -q -LSsf "https://raw.githubusercontent.com/casjay-base/centos/main/root/.local/bin/run-os-update" -o "/tmp/run-os-update" 2>/dev/null
+  [ -f "/tmp/run-os-update" ] && chmod 755 "/tmp/run-os-update" || exit 1
+  eval bash "/tmp/run-os-update" && exitCode=0 || exitCode=1
+  rm -Rf "/tmp/run-os-update"
+  exit $exitCode
+fi
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 chattr -i /etc/hosts &>/dev/null
 chattr -i /etc/resolv.conf &>/dev/null
 [ -f "/etc/nginx/vhosts.d/default.conf" ] && chattr -i /etc/nginx/vhosts.d/default.conf &>/dev/null
@@ -126,6 +135,13 @@ chattr -i /etc/resolv.conf &>/dev/null
 if [ -w "/etc/resolv.conf" ]; then
   printf '%s\n%s\n%s\n' "search casjay.in" "nameserver 1.1.1.1" "nameserver 8.8.8.8" | tee "/etc/resolv.conf" &>/dev/null
 fi
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+for git_repos in /root/.local/share/CasjaysDev/*/*; do
+  if [ -d "$git_repos/.git" ]; then
+    git -C "$git_repos" reset --hard &>/dev/null && git -C "$git_repos" pull -q
+    [ -f "$git_repos/install.sh" ] && bash "$git_repos/install.sh"
+  fi
+done
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 if [ "$SCRIPTS_UPDATE" = "true" ]; then
   exitCode="0"
@@ -239,7 +255,7 @@ else
   find -L /tmp/configs -type f -iname "*.sh" -exec chmod 755 {} \; &>/dev/null
   find -L /tmp/configs -type f -iname "*.pl" -exec chmod 755 {} \; &>/dev/null
   find -L /tmp/configs -type f -iname "*.cgi" -exec chmod 755 {} \; &>/dev/null
-  find -L /tmp/configs -type f -exec sed -i "s#myserverdomainname#$hostnamefull#g" {} \; &>/dev/null
+  find -L /tmp/configs -type f -exec sed -i "s#myserverdomainname#$hostnamefull #g" {} \; &>/dev/null
   find -L /tmp/configs -type f -exec sed -i "s#myhostnameshort#$hostnameshort#g" {} \; &>/dev/null
   find -L /tmp/configs -type f -exec sed -i "s#mydomainname#$domainname#g" {} \; &>/dev/null
 
