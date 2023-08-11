@@ -289,7 +289,7 @@ else
   find -L /tmp/configs -type f -iname "*.sh" -exec chmod 755 {} \; &>/dev/null
   find -L /tmp/configs -type f -iname "*.pl" -exec chmod 755 {} \; &>/dev/null
   find -L /tmp/configs -type f -iname "*.cgi" -exec chmod 755 {} \; &>/dev/null
-  find -L /tmp/configs -type f -exec sed -i "s#myserverdomainname#$hostnamefull #g" {} \; &>/dev/null
+  find -L /tmp/configs -type f -exec sed -i "s#myserverdomainname#$hostnamefull#g" {} \; &>/dev/null
   find -L /tmp/configs -type f -exec sed -i "s#myhostnameshort#$hostnameshort#g" {} \; &>/dev/null
   find -L /tmp/configs -type f -exec sed -i "s#mydomainname#$domainname#g" {} \; &>/dev/null
 
