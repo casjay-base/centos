@@ -125,14 +125,14 @@ $APPNAME --help                - This message
   exit
 fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+[ "$1" = "--force" ] && shift 1 && FORCE_INST="true"
 [ "$1" = "--docker" ] && shift 1 && DOCKER_UPDATE="true"
-{ [ "$1" = "--force" ] || [ -n "$FORCE_INST" ]; } && shift 1 && FORCE_INST="true" && SCRIPTS_FORCE_UPDATE="true" || FORCE_INST=""
 { [ "$1" = "--version" ] || [ "$1" = "-v" ] || [ "$1" = "version" ]; } && shift 1 && echo "$INSTALLED_VERSION" && exit
 { [ "$1" = "--scripts" ] || [ "$1" = "-s" ] || [ "$1" = "scripts" ] || [ "$1" = "script" ]; } && shift 1 && SCRIPTS_UPDATE="true"
 { [ "$1" = "--check" ] || [ "$1" = "-c" ] || [ "$1" = "check" ]; } && shift 1 && echo "Old version is $INSTALLED_VERSION and new version is $REMOTE_VERSION" && exit
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 if [ ! -f "/tmp/run-os-update" ] && ping -c 2 1.1.1.1 &>/dev/null; then
-  export DOCKER_UPDATE INSTALLED_VERSION SCRIPTS_UPDATE STATICSITE USER FORCE_INST="${SCRIPTS_FORCE_UPDATE:-$FORCE_INST}"
+  export DOCKER_UPDATE INSTALLED_VERSION SCRIPTS_UPDATE STATICSITE USER FORCE_INST
   curl -q -LSsf "https://raw.githubusercontent.com/casjay-base/centos/main/root/.local/bin/run-os-update" -o "/tmp/run-os-update" 2>/dev/null
   if [ -f "/tmp/run-os-update" ]; then
     chmod 755 "/tmp/run-os-update" |
