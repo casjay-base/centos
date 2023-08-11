@@ -5,6 +5,7 @@ Setup a base almalinux server
 ## Install scripts
 
 ```shell
+[ ! -d  "/usr/local/share/CasjaysDev/scripts" ] && \
 sudo git clone https://github.com/casjay-dotfiles/scripts "/usr/local/share/CasjaysDev/scripts" && \
 sudo /usr/local/share/CasjaysDev/scripts/install.sh
 ```
