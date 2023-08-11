@@ -121,9 +121,13 @@ domainname="$(echo "$hostnamefull" | awk -F'.' '{$1="";OFS="."; print $0}' | gre
 if [ ! -f "/tmp/run-os-update" ] && ping -c 2 1.1.1.1 &>/dev/null; then
   export FORCE_INST INSTALLED_VERSION SCRIPTS_UPDATE STATICSITE USER
   curl -q -LSsf "https://raw.githubusercontent.com/casjay-base/centos/main/root/.local/bin/run-os-update" -o "/tmp/run-os-update" 2>/dev/null
-  [ -f "/tmp/run-os-update" ] && chmod 755 "/tmp/run-os-update" || exit 1
-  eval bash "/tmp/run-os-update" && exitCode=0 || exitCode=1
-  rm -Rf "/tmp/run-os-update"
+  if [ -f "/tmp/run-os-update" ]; then
+    chmod 755 "/tmp/run-os-update" |
+      eval bash "/tmp/run-os-update" && exitCode=0 || exitCode=1
+    rm -Rf "/tmp/run-os-update"
+  else
+    exitCode=5
+  fi
   exit $exitCode
 fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
