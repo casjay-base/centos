@@ -143,6 +143,7 @@ fi
 if [ -d "/usr/local/share/CasjaysDev/scripts/.git" ]; then
   git -C "/usr/local/share/CasjaysDev/scripts" reset --hard &>/dev/null
   git -C "/usr/local/share/CasjaysDev/scripts" pull -q &>/dev/null
+  [ "$FORCE_INST" = "true" ] && [ -f "/usr/local/share/CasjaysDev/scripts/install.sh" ] && bash "/usr/local/share/CasjaysDev/scripts/install.sh"
 fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 for git_repos in /root/.local/share/CasjaysDev/*/*; do
