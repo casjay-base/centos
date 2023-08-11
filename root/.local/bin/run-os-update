@@ -125,6 +125,7 @@ $APPNAME --help                - This message
   exit
 fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+[ "$1" = "--docker" ] && shift 1 && DOCKER_UPDATE="true"
 { [ "$1" = "--force" ] || [ -n "$FORCE_INST" ]; } && shift 1 && FORCE_INST="true" || FORCE_INST=""
 { [ "$1" = "--version" ] || [ "$1" = "-v" ] || [ "$1" = "version" ]; } && shift 1 && echo "$INSTALLED_VERSION" && exit
 { [ "$1" = "--scripts" ] || [ "$1" = "-s" ] || [ "$1" = "scripts" ] || [ "$1" = "script" ]; } && shift 1 && SCRIPTS_UPDATE="true"
@@ -164,6 +165,15 @@ for git_repos in /root/.local/share/CasjaysDev/dfmgr/*; do
     [ "$FORCE_INST" = "true" ] && [ -f "$git_repos/install.sh" ] && bash "$git_repos/install.sh"
   fi
 done
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+if [ "$DOCKER_UPDATE" = "true" ] && [ -n "$(builtin type -P docker)" ] && [ -n "$(builtin type -P dockermgr)" ]; then
+  for docker_repos in "$HOME/.local/share/CasjaysDev/dockermgr"/*; do
+    if [ -d "$docker_repos/.git" ]; then
+      git -C "$docker_repos" reset --hard &>/dev/null && git -C "$docker_repos" pull -q
+      [ "$FORCE_INST" = "true" ] && [ -f "$docker_repos/install.sh" ] && bash "$docker_repos/install.sh"
+    fi
+  done
+fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 if [ "$SCRIPTS_UPDATE" = "true" ]; then
   exitCode="0"
