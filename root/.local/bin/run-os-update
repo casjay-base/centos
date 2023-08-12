@@ -300,6 +300,8 @@ else
 
   echo -e "Setting IP to $mycurrentipaddress_4"
   find -L /tmp/configs -type f -exec sed -i "s#mycurrentipaddress_4#$mycurrentipaddress_4#g" {} \; &>/dev/null
+  echo -e "Setting IP to $mycurrentipaddress_6"
+  find -L /tmp/configs -type f -exec sed -i "s#mycurrentipaddress_6#$mycurrentipaddress_6#g" {} \; &>/dev/null
   echo -e "Setting full hostname to $myserverdomainname"
   find -L /tmp/configs -type f -exec sed -i "s#myserverdomainname#$hostnamefull#g" {} \; &>/dev/null
   echo -e "Setting short hostname to $hostnameshort"
