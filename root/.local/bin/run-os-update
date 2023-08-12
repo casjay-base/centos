@@ -91,6 +91,18 @@ __run_updater() {
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 echo "$PATH" | grep -q "/root/.local/bin" || export PATH="/root/.local/bin:$PATH"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+NC="$(tput sgr0 2>/dev/null)"
+BLACK="\033[0;30m"    # Black
+RED="\033[0;31m"      # Red
+GREEN="\033[0;32m"    # Green
+YELLOW="\033[0;33m"   # Yellow
+BLUE="\033[0;34m"     # Blue
+PURPLE="\033[0;35m"   # Purple
+CYAN="\033[0;36m"     # Cyan
+WHITE="\033[0;37m"    # White
+ORANGE="\033[0;33m"   # Orange
+LIGHTRED='\033[1;31m' # Light Red
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 DATE="$(date +'%y-%m-%d at %H:%M')"
 ARCH="$(uname -m | tr '[:upper:]' '[:lower:]')"
 BACKUP_DIR="$HOME/Documents/backups/$(date +'%Y/%m/%d')"
