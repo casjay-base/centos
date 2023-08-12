@@ -325,7 +325,7 @@ else
 
   cp -Rf /tmp/configs/{etc,root,usr,var}* / 2>/dev/null
 
-  if grep -qs "named:" "/etc/passwd"; then
+  if grep -qs "^named:" "/etc/passwd"; then
     mkdir -p /var/log/named && chown -Rf named:named /etc/named* /var/named /var/log/named
   fi
 
@@ -339,6 +339,8 @@ else
   else
     echo -e "kernel.domainname=$domainname" >>/etc/sysctl.conf
   fi
+
+  echo "PRESERVE_HOSTINFO=2" >"/etc/oci-hostname.conf"
 
   chmod 644 -Rf /etc/cron.d/* /etc/logrotate.d/*
 
