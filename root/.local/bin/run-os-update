@@ -424,6 +424,8 @@ else
 
   echo -e "Cleaning up files and history"
   rm -Rf "/tmp/dns-update"
+  find / -type f -name '*.rpmnew' -exec rm -Rf {} \;
+  find / -type f -name '*.rpmsave' -exec rm -Rf {} \;
   bash -c "/root/.local/bin/root_clean.sh" &>/dev/null
   echo -e "Updated to version $REMOTE_VERSION from $INSTALLED_VERSION"
   echo -e "Last updated on $DATE" >"/var/log/run_update"
