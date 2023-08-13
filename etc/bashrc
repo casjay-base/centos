@@ -11,7 +11,7 @@
 # Prevent doublesourcing
 if [ -z "$BASHRCSOURCED" ]; then
   BASHRCSOURCED="Y"
-  [ "$USER" = "root" ] && export PS1=" $ " || export PS1=" # "
+  [ "$USER" = "root" ] && PS1='[\u@\H]:\w: $ ' || export PS1='[\u@\H]:\w: # '
   # are we an interactive shell?
   if [ "$PS1" ]; then
     if [ -z "$PROMPT_COMMAND" ]; then
