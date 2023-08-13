@@ -43,10 +43,12 @@ __yum() { yum "$@" $yum_opts -yy -q &>/dev/null || return 1; }
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 __repo_file() {
   local statusCode="0"
+  local YUM_DELETE="true"
   yum clean all &>/dev/null
   if [ "$RELEASE_TYPE" = "centos" ] && [ "$(hostname -s)" != "pbx" ]; then
     if [ "$RELEASE_VER" -ge "9" ]; then
       YUM_DELETE="no"
+      REPO_REPLACE="false"
       RELEASE_FILE="https://github.com/rpm-devel/casjay-release/raw/main/casjay.rh9.repo"
     elif [ "$RELEASE_VER" -ge "8" ]; then
       YUM_DELETE="yes"
@@ -67,7 +69,7 @@ __repo_file() {
     __backup_repo_files
     __rm_repo_files "$YUM_DELETE"
     __save_remote_file "$RELEASE_FILE" "/etc/yum.repos.d/casjay.repo"
-    if [ "$ARCH" != "x86_64" ]; then
+    if [ "$ARCH" != "x86_64" ] && [ "$REPO_REPLACE" = "true" ]; then
       sed -i 's|http://mirrors.elrepo.org/mirrors-elrepo.el$releasever|https://github.com/rpm-devel/casjay-release/raw/main/ZREPO/RHEL/mirrors/remi|g' /etc/yum.repos.d/casjay.repo
       sed -i 's|http://mirrors.elrepo.org/mirrors-elrepo-kernel.el$releasever|https://github.com/rpm-devel/casjay-release/raw/main/ZREPO/RHEL/mirrors/remi|g' /etc/yum.repos.d/casjay.repo
       sed -i 's|http://mirrors.elrepo.org/mirrors-elrepo-extras.el$releasever|https://github.com/rpm-devel/casjay-release/raw/main/ZREPO/RHEL/mirrors/remi|g' /etc/yum.repos.d/casjay.repo
@@ -120,7 +122,9 @@ export SERVICES_DISABLE+="fail2ban shorewall shorewall6 named dhcpd dhcpd6 mdmon
 export INSTALLED_VERSION="$(head -n1 <"/etc/casjaysdev/updates/versions/configs.txt" 2>/dev/null)"
 export REMOTE_VERSION="$(curl -q -LSsf "https://github.com/casjay-base/centos/raw/main/version.txt" | head -n1)"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export RELEASE_VER="$(grep --no-filename -s 'VERSION_ID=' /etc/*-release | awk -F '=' '{print $2}' | sed 's#"##g' | awk -F '.' '{print $1}' | grep '^')"
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+[ -f "/etc/casjaysdev/updates/versions/os_version.txt" ] && RELEASE_VER="$(<"/etc/casjaysdev/updates/versions/os_version.txt")"
+export RELEASE_VER="${RELEASE_VER:-$(grep --no-filename -s 'VERSION_ID=' /etc/*-release | awk -F '=' '{print $2}' | sed 's#"##g' | awk -F '.' '{print $1}' | grep '^')}"
 export RELEASE_NAME="$(grep --no-filename -s '^NAME=' /etc/*-release | awk -F'=' '{print $2}' | sed 's|"||g;s| .*||g' | tr '[:upper:]' '[:lower:]' | grep '^')"
 export RELEASE_TYPE="$(grep --no-filename -s '^ID_LIKE=' /etc/*-release | awk -F'=' '{print $2}' | sed 's|"||g' | tr '[:upper:]' '[:lower:]' | tr ' ' '\n' | grep 'centos' | grep '^')"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
