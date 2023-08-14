@@ -10,6 +10,27 @@ esac
 
 export PATH=~/.local/bin:/usr/local/bin:/usr/bin:/bin:/usr/local/games:/usr/games:/usr/share/games:/usr/local/sbin:/usr/sbin:/sbin
 
+# colorize
+RESET="$(tput sgr0 2>/dev/null)"
+BLACK="$(printf '%b' "\033[0;30m")"
+RED="$(printf '%b' "\033[1;31m")"
+GREEN="$(printf '%b' "\033[0;32m")"
+YELLOW="$(printf '%b' "\033[0;33m")"
+BLUE="$(printf '%b' "\033[0;34m")"
+PURPLE="$(printf '%b' "\033[0;35m")"
+CYAN="$(printf '%b' "\033[0;36m")"
+WHITE="$(printf '%b' "\033[0;37m")"
+ORANGE="$(printf '%b' "\033[0;33m")"
+LIGHTRED="$(printf '%b' '\033[1;31m')"
+BG_GREEN="\[$(tput setab 2 2>/dev/null)\]"
+BG_RED="\[$(tput setab 9 2>/dev/null)\]"
+
+# prompt prev exit status
+__ps1_promp_command() {
+  local retVal=$?
+  [ $retVal = 0 ] || printf '%b' "${RED}[ $retVal ]${RESET}"
+}
+
 # don't put duplicate lines or lines starting with space in the history.
 # See bash(1) for more options
 HISTCONTROL=ignoreboth
@@ -49,19 +70,18 @@ force_color_prompt=yes
 
 if [ -n "$force_color_prompt" ]; then
   if [ -x /usr/bin/tput ] && tput setaf 1 >&/dev/null; then
-    # We have color support; assume it's compliant with Ecma-48
-    # (ISO/IEC-6429). (Lack of such support is extremely rare, and such
-    # a case would tend to support setf rather than setaf.)
     color_prompt=yes
   else
+    RED=""
+    RESET=""
     color_prompt=
   fi
 fi
 
 if [ "$color_prompt" = yes ]; then
-  PS1="\[\033[0;31m\]\342\224\214\342\224\200\$([[ \$? != 0 ]] && echo \"[\[\033[0;31m\]\342\234\227\[\033[0;37m\]]\342\224\200\")[$(if [[ ${EUID} == 0 ]]; then echo '\[\033[01;31m\]root\[\033[01;33m\]@\[\033[01;96m\]\H'; else echo '\[\033[0;39m\]\u\[\033[01;33m\]@\[\033[01;96m\]\H'; fi)\[\033[0;31m\]]\342\224\200[\[\033[0;32m\]\w\[\033[0;31m\]]\n\[\033[0;31m\]\342\224\224\342\224\200\342\224\200\342\225\274 \[\033[0m\]\[\e[01;33m\]\\$\[\e[0m\]"
+  PS1=" ${RED}\342\224\214\342\224\200[$([ ${EUID} == 0 ] && printf 'root${YELLOW}@${BLUE}\H' || printf '${GREEN}\u@\H')]\342\224\200${GREEN}[\w]\${RED}\n${RESET}\\342\224\224\342\224\200\342\224\200\342\225\274 \$(__ps1_promp_command) \$ \${RESET}"
 else
-  PS1='┌──[\u@\H]─[\w]\n└──╼ \$ '
+  PS1='┌──[\u@\H]─[\w]\n└──╼ $(__ps1_promp_command) $ '
 fi
 
 # Set 'man' colors
@@ -84,7 +104,7 @@ unset color_prompt force_color_prompt
 # If this is an xterm set the title to user@host:dir
 case "$TERM" in
 xterm* | rxvt*)
-  PS1="\[\033[0;31m\]\342\224\214\342\224\200\$([[ \$? != 0 ]] && echo \"[\[\033[0;31m\]\342\234\227\[\033[0;37m\]]\342\224\200\")[$(if [[ ${EUID} == 0 ]]; then echo '\[\033[01;31m\]root\[\033[01;33m\]@\[\033[01;96m\]\H'; else echo '\[\033[0;39m\]\u\[\033[01;33m\]@\[\033[01;96m\]\H'; fi)\[\033[0;31m\]]\342\224\200[\[\033[0;32m\]\w\[\033[0;31m\]]\n\[\033[0;31m\]\342\224\224\342\224\200\342\224\200\342\225\274 \[\033[0m\]\[\e[01;33m\]\\$\[\e[0m\]"
+  PS1=" ${RED}\342\224\214\342\224\200[$([ ${EUID} == 0 ] && printf 'root${YELLOW}@${BLUE}\H' || printf '${GREEN}\u@\H')]\342\224\200${GREEN}[\w]\${RED}\n${RESET}\\342\224\224\342\224\200\342\224\200\342\225\274 \$(__ps1_promp_command) \$ \${RESET}"
   ;;
 *) ;;
 esac
