@@ -28,7 +28,7 @@ BG_RED="\[$(tput setab 9 2>/dev/null)\]"
 # prompt prev exit status
 __ps1_promp_command() {
   local retVal=$?
-  [ $retVal = 0 ] || printf '%b' "${RED}[ $retVal ]${RESET}"
+  [ $retVal = 0 ] && printf '%b' "${GREEN}[$retVal]${RESET}" || printf '%b' "${RED}[ $retVal ]${RESET}"
 }
 
 # don't put duplicate lines or lines starting with space in the history.
