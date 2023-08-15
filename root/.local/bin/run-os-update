@@ -358,10 +358,12 @@ else
     else
       echo -e "Installed on $DATE" >"/etc/postfix/.installed"
     fi
+    mkdir -p /etc/postfix/sasl
+    touch /etc/postfix/sasl/passwd
     touch "/etc/postfix/sasl_passwd"
     touch "/etc/postfix/mydomains.pcre"
     touch "/etc/aliases" && newaliases
-    postmap="access canonical relocated transport virtual sasl_passwd"
+    postmap="access canonical relocated transport virtual sasl_passwd sasl/passwd"
     for f in $postmap; do postmap /etc/postfix/$f &>/dev/null; done
   fi
 
