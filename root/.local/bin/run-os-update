@@ -429,6 +429,9 @@ else
     echo -e "done setting up the dns server\n"
   fi
 
+  echo "Fixing files"
+  [ -d "/var/log/munin-node" ] && mv -f "/var/log/munin-node" "/var/log/munin" && systemctl restart munin-node &>/dev/null
+
   echo -e "Cleaning up files and history"
   rm -Rf "/tmp/dns-update"
   find / -type f -name '*.rpmnew' -exec rm -Rf {} \;
