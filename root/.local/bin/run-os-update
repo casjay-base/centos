@@ -309,6 +309,7 @@ else
 
   echo -e "Configuring files"
   rm -Rf /tmp/configs/var/named*
+  rm -Rf /tmp/configs/root/.bashrc
   rm -Rf /tmp/configs/etc/sysconfig/network-scripts
   rm -Rf /tmp/configs/etc/{hosts,tor,cockpit,fail2ban,shorewall,shorewall6,samba,postfix,named*}
   mkdir -p "/etc/rsync.d"

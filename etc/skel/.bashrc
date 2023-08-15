@@ -28,7 +28,7 @@ BG_RED="\[$(tput setab 9 2>/dev/null)\]"
 # prompt prev exit status
 __ps1_promp_command() {
   local retVal=$?
-  [ $retVal = 0 ] || printf '%b' "${RED}[ $retVal ]${RESET}"
+  [ $retVal = 0 ] && printf '%b' "${GREEN}[$retVal]${RESET}" || printf '%b' "${RED}[ $retVal ]${RESET}"
 }
 
 # don't put duplicate lines or lines starting with space in the history.
@@ -79,7 +79,7 @@ if [ -n "$force_color_prompt" ]; then
 fi
 
 if [ "$color_prompt" = yes ]; then
-  PS1=" ${RED}\342\224\214\342\224\200[$([ ${EUID} == 0 ] && printf 'root${YELLOW}@${BLUE}\H' || printf '${GREEN}\u@\H')]\342\224\200${GREEN}[\w]\${RED}\n${RESET}\\342\224\224\342\224\200\342\224\200\342\225\274 \$(__ps1_promp_command) \$ \${RESET}"
+  PS1=" ${RED}\342\224\214\342\224\200[$([ ${EUID} == 0 ] && printf 'root${YELLOW}@${BLUE}\H' || printf '${GREEN}\u@\H')]\342\224\200${GREEN}[\w]${RESET}${GREEN}\$(__ps1_promp_command) \$ \${RESET}"
 else
   PS1='┌──[\u@\H]─[\w]\n└──╼ $(__ps1_promp_command) $ '
 fi
@@ -104,7 +104,7 @@ unset color_prompt force_color_prompt
 # If this is an xterm set the title to user@host:dir
 case "$TERM" in
 xterm* | rxvt*)
-  PS1=" ${RED}\342\224\214\342\224\200[$([ ${EUID} == 0 ] && printf 'root${YELLOW}@${BLUE}\H' || printf '${GREEN}\u@\H')]\342\224\200${GREEN}[\w]\${RED}\n${RESET}\\342\224\224\342\224\200\342\224\200\342\225\274 \$(__ps1_promp_command) \$ \${RESET}"
+  PS1=" ${RED}\342\224\214\342\224\200[$([ ${EUID} == 0 ] && printf 'root${YELLOW}@${BLUE}\H' || printf '${GREEN}\u@\H')]\342\224\200${GREEN}[\w]${RESET}${GREEN}\$(__ps1_promp_command) \$ \${RESET}"
   ;;
 *) ;;
 esac
@@ -115,20 +115,25 @@ if [ -x /usr/bin/dircolors ]; then
   alias ls='ls --color=auto'
   alias dir='dir --color=auto'
   alias vdir='vdir --color=auto'
-
   alias grep='grep --color=auto'
   alias fgrep='fgrep --color=auto'
   alias egrep='egrep --color=auto'
 fi
 
 # some more ls aliases
+alias q='exit'
+alias c='clear'
+alias l='ls -CF'
 alias ll='ls -l'
 alias la='ls -A'
-alias l='ls -CF'
+alias lla='ls -laA'
 alias em='emacs -nw'
 alias dd='dd status=progress'
-alias _='sudo'
-alias _i='sudo -i'
+
+# sudo aliases
+alias _='sudo -n && sudo'
+alias _i='sudo -n && sudo -i'
+alias systemctl='sudo -n && systemctl'
 
 # Alias definitions.
 # You may want to put all your additions into a separate file like
@@ -150,9 +155,7 @@ if ! shopt -oq posix; then
   fi
 fi
 
-# check if local bin folder exist
-# $HOME/bin
-# prepend it to $PATH if so
-if [ -d $HOME/bin ]; then
-  export PATH=$HOME/bin:$PATH
+# check if local bin folder exist prepend it to $PATH if so
+if [ -d $HOME/.local/bin ]; then
+  export PATH=$HOME/.local/bin:$PATH
 fi
