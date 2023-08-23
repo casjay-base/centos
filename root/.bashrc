@@ -8,8 +8,51 @@ case $- in
 *) return ;;
 esac
 
+# Reset variables
+unset PROMPT_COMMAND PS1 PS2 PS4 PATH
+
 # export path
 export PATH="$HOME/.local/bin:/usr/local/bin:/usr/bin:/bin:/usr/local/games:/usr/games:/usr/share/games:/usr/local/sbin:/usr/sbin:/sbin"
+
+# colorize
+RESET="$(tput sgr0 2>/dev/null)"
+BLACK="$(printf '%b' "\033[0;30m")"
+RED="$(printf '%b' "\033[1;31m")"
+GREEN="$(printf '%b' "\033[0;32m")"
+YELLOW="$(printf '%b' "\033[0;33m")"
+BLUE="$(printf '%b' "\033[0;34m")"
+PURPLE="$(printf '%b' "\033[0;35m")"
+CYAN="$(printf '%b' "\033[0;36m")"
+WHITE="$(printf '%b' "\033[0;37m")"
+ORANGE="$(printf '%b' "\033[0;33m")"
+LIGHTRED="$(printf '%b' '\033[1;31m')"
+BG_GREEN="\[$(tput setab 2 2>/dev/null)\]"
+BG_RED="\[$(tput setab 9 2>/dev/null)\]"
+
+# set title
+__ps1_set_title() {
+  echo -ne "${USER}@${HOSTNAME}:${PWD//$HOME/\~}"
+}
+
+# prompt prev exit status
+__ps1_promp_command() {
+  local retVal=$?
+  if [ $retVal = 0 ]; then
+    PS1="$(printf '%b' "${RED}[\v]:${GREEN}[\u]@[\H]${RESET}:${YELLOW}[\w]${RESET}:${GREEN}[$retVal]${RESET}${BLACK}🐚${RESET}")"
+  else
+    PS1="$(printf '%b' "${RED}[\v]:${GREEN}[\u]@[\H]${RESET}:${YELLOW}[\w]${RESET}:${RED}[$retVal]${RESET}${BLACK}🐚${RESET}")"
+  fi
+  return $retVal
+}
+
+# set default prompt
+PROMPT_COMMAND="PS1=;__ps1_promp_command;__ps1_set_title;history -a && history -r"
+PS2="⚡ "
+PS4="$(
+  tput cr 2>/dev/null
+  tput cuf 6 2>/dev/null
+  printf "${GREEN}+%s ($LINENO) +" " $RESET"
+)"
 
 # don't put duplicate lines or lines starting with space in the history.
 # See bash(1) for more options
