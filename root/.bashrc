@@ -8,6 +8,10 @@ case $- in
 *) return ;;
 esac
 
+if [ -z "$BASHRCSOURCED" ] && [ -f "/etc/bashrc" ]; then
+  . /etc/bashrc && export BASHRCSOURCED="Y"
+fi
+
 # Reset variables
 unset PROMPT_COMMAND PS1 PS2 PS4 PATH
 
