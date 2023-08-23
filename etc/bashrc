@@ -38,11 +38,10 @@ if [ -z "$BASHRCSOURCED" ]; then
   # prompt prev exit status
   __ps1_promp_command() {
     local retVal=$?
-    PS=""
     if [ $retVal = 0 ]; then
-      PS1+="${RED}[\v]:${GREEN}[\u]@[\H]${RESET}:${YELLOW}[\w]${RESET}:'${GREEN}[$retVal]${RESET}${BLACK}🐚${RESET}"
+      PS1="${RED}[\v]:${GREEN}[\u]@[\H]${RESET}:${YELLOW}[\w]${RESET}:${GREEN}[$retVal]${RESET}${BLACK}🐚${RESET}"
     else
-      PS1+="${RED}[\v]:${GREEN}[\u]@[\H]${RESET}:${YELLOW}[\w]${RESET}:${RED}[$retVal]${RESET}${BLACK}🐚${RESET}"
+      PS1="${RED}[\v]:${GREEN}[\u]@[\H]${RESET}:${YELLOW}[\w]${RESET}:${RED}[$retVal]${RESET}${BLACK}🐚${RESET}"
     fi
     return $retVal
   }
