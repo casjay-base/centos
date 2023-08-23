@@ -54,6 +54,7 @@ DEFAULT_COLOR="254"
 FETCH_REPO_FILE_EXIT_STATUS=0
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Main application
+printf '%b\n' "Updating yum repo info"
 yum clean all >/dev/null 2>&1
 if [ "$RELEASE_TYPE" = "centos" ] && [ "$(hostname -s)" != "pbx" ]; then
   if [ "$RELEASE_VER" -ge "9" ]; then
