@@ -52,11 +52,14 @@ __rm_repo_files() { [ "${1:-$YUM_DELETE}" = "yes" ] && rm -Rf "/etc/yum.repos.d"
 YUM_DELETE="true"
 DEFAULT_COLOR="254"
 FETCH_REPO_FILE_EXIT_STATUS=0
+RELEASE_VER="$(grep --no-filename -s 'VERSION_ID=' /etc/*-release | awk -F '=' '{print $2}' | sed 's#"##g' | awk -F '.' '{print $1}' | grep '^')"
+RELEASE_NAME="$(grep --no-filename -s '^NAME=' /etc/*-release | awk -F'=' '{print $2}' | sed 's|"||g;s| .*||g' | tr '[:upper:]' '[:lower:]' | grep '^')"
+RELEASE_TYPE="$(grep --no-filename -s '^ID_LIKE=' /etc/*-release | awk -F'=' '{print $2}' | sed 's|"||g' | tr '[:upper:]' '[:lower:]' | tr ' ' '\n' | grep 'centos' | grep '^')"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Main application
-printf '%b\n' "Updating yum repo info"
-yum clean all >/dev/null 2>&1
 if [ "$RELEASE_TYPE" = "centos" ] && [ "$(hostname -s)" != "pbx" ]; then
+  printf '%b\n' "Updating yum repo info"
+  yum clean all >/dev/null 2>&1
   if [ "$RELEASE_VER" -ge "9" ]; then
     YUM_DELETE="yes"
     REPO_REPLACE="false"
@@ -72,6 +75,8 @@ if [ "$RELEASE_TYPE" = "centos" ] && [ "$(hostname -s)" != "pbx" ]; then
     RELEASE_FILE=""
   fi
 else
+  printf '%b\n' "No repos specified"
+  yum clean all >/dev/null 2>&1
   yum makecache >/dev/null 2>&1
   exit $?
 fi
