@@ -8,6 +8,24 @@ case $- in
 *) return ;;
 esac
 
+# set title
+__ps1_set_title() {
+  echo -ne "${USER}@${HOSTNAME}:${PWD//$HOME/\~}"
+}
+
+# prompt prev exit status
+__ps1_promp_command() {
+  local retVal=$?
+  PS=""
+  if [ $retVal = 0 ]; then
+    PS1+="${RED}[\v]:${GREEN}[\u]@[\H]${RESET}:${YELLOW}[\w]${RESET}:'${GREEN}[$retVal]${RESET}${BLACK}🐚${RESET} "
+  else
+    PS1+="${RED}[\v]:${GREEN}[\u]@[\H]${RESET}:${YELLOW}[\w]${RESET}:${RED}[$retVal]${RESET}${BLACK}🐚${RESET} "
+  fi
+  return $retVal
+}
+
+# export path
 export PATH="$HOME/.local/bin:/usr/local/bin:/usr/bin:/bin:/usr/local/games:/usr/games:/usr/share/games:/usr/local/sbin:/usr/sbin:/sbin"
 
 # colorize
@@ -25,11 +43,16 @@ LIGHTRED="$(printf '%b' '\033[1;31m')"
 BG_GREEN="\[$(tput setab 2 2>/dev/null)\]"
 BG_RED="\[$(tput setab 9 2>/dev/null)\]"
 
-# prompt prev exit status
-__ps1_promp_command() {
-  local retVal=$?
-  [ $retVal = 0 ] && printf '%b' "${GREEN}[$retVal]${RESET}" || printf '%b' "${RED}[ $retVal ]${RESET}"
-}
+# set default prompt
+unset PROMPT_COMMAND
+PROMPT_COMMAND="PS1=;__ps1_promp_command;__ps1_set_title;history -a && history -r"
+
+export PS2="⚡ "
+export PS4="$(
+  tput cr 2>/dev/null
+  tput cuf 6 2>/dev/null
+  printf "${GREEN}+%s ($LINENO) +" " $RESET"
+)"
 
 # don't put duplicate lines or lines starting with space in the history.
 # See bash(1) for more options
@@ -84,7 +107,7 @@ if [ "$color_prompt" = yes ]; then
       LESS_TERMCAP_so=$'\e[01;44;33m' \
       LESS_TERMCAP_ue=$'\e[0m' \
       LESS_TERMCAP_us=$'\e[01;32m' \
-      \man "$@"
+      command man "$@"
   }
 fi
 
@@ -93,8 +116,7 @@ __git_pull() { for d in "$@"; do printf '%-40s' "Pulling $d" && git -C "$d" pull
 __git_push() { for d in "$@"; do printf '%-40s' "Pulling $d" && git -C "$d" push; done; }
 __git_clone() {
   local dir="${2:-$HOME/Projects/$(echo "${1//*:\/\//}" | cut -d'.' -f1)/$(echo "${1//*:\/\//}" | awk -F'/' '{print $(NF-1)"/"$NF}')}"
-  echo "$dir"
-  # [ -d "$dir/.git" ] && printf '%-40s' "Pulling $dir" && git -C "$dir" pull || printf '%-40s' "cloning $1" && git clone "$1" "$dir"
+  [ -d "$dir/.git" ] && printf '%-40s' "Pulling $dir" && git -C "$dir" pull || printf '%-40s' "cloning $1" && git clone "$1" "$dir"
 }
 
 unset color_prompt force_color_prompt
@@ -121,9 +143,9 @@ alias em='emacs -nw'
 alias dd='dd status=progress'
 
 # sudo aliases
-alias _='sudo -n && sudo'
-alias _i='sudo -n && sudo -i'
-alias systemctl='sudo -n && sudo systemctl'
+alias _='sudo -n true && sudo'
+alias _i='sudo -n true && sudo -i'
+alias systemctl='sudo -n true && sudo systemctl || systemctl'
 
 # Alias definitions.
 # You may want to put all your additions into a separate file like
