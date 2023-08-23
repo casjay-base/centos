@@ -1,25 +1,20 @@
 # RHEL & Fedora Configuration  
   
-Setup a base almalinux server
+Setup a base almalinux server with my system scripts
+
+## Update the system
+
+```shell
+bash -c "$(curl -q -LSsf "https://github.com/casjay-base/centos/raw/main/root/.local/bin/fetch-repo-file")" && reboot
+```
 
 ## Install scripts
 
 ```shell
 [ ! -d  "/usr/local/share/CasjaysDev/scripts" ] && \
-sudo git clone https://github.com/casjay-dotfiles/scripts "/usr/local/share/CasjaysDev/scripts" && \
-sudo /usr/local/share/CasjaysDev/scripts/install.sh
-```
-
-## Update the system
-
-```shell
-yum update -y
-```
-
-## Reboot the  system
-
-```shell
-reboot
+echo cloning "https://github.com/casjay-dotfiles/scripts >/usr/local/share/CasjaysDev/scripts" &&
+sudo git clone -q https://github.com/casjay-dotfiles/scripts "/usr/local/share/CasjaysDev/scripts" && \
+sudo /usr/local/share/CasjaysDev/scripts/install.sh && reboot
 ```
 
 ## Automated Install  
