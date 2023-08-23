@@ -11,29 +11,53 @@
 # Prevent doublesourcing
 if [ -z "$BASHRCSOURCED" ]; then
   BASHRCSOURCED="Y"
-  [ "$USER" = "root" ] && PS1='[\u@\H]:\w: $ ' || export PS1='[\u@\H]:\w: # '
+
+  # colorize
+  RESET="$(tput sgr0 2>/dev/null)"
+  BLACK="$(printf '%b' "\033[0;30m")"
+  RED="$(printf '%b' "\033[1;31m")"
+  GREEN="$(printf '%b' "\033[0;32m")"
+  YELLOW="$(printf '%b' "\033[0;33m")"
+  BLUE="$(printf '%b' "\033[0;34m")"
+  PURPLE="$(printf '%b' "\033[0;35m")"
+  CYAN="$(printf '%b' "\033[0;36m")"
+  WHITE="$(printf '%b' "\033[0;37m")"
+  ORANGE="$(printf '%b' "\033[0;33m")"
+  LIGHTRED="$(printf '%b' '\033[1;31m')"
+  BG_GREEN="\[$(tput setab 2 2>/dev/null)\]"
+  BG_RED="\[$(tput setab 9 2>/dev/null)\]"
+
+  # set default prompt
+  unset PROMPT_COMMAND PS1
+
+  # set title
+  __ps1_set_title() {
+    echo -ne "${USER}@${HOSTNAME}:${PWD//$HOME/\~}"
+  }
+
+  # prompt prev exit status
+  __ps1_promp_command() {
+    local retVal=$?
+    PS=""
+    if [ $retVal = 0 ]; then
+      PS1+="${RED}[\v]:${GREEN}[\u]@[\H]${RESET}:${YELLOW}[\w]${RESET}:'${GREEN}[$retVal]${RESET}${BLACK}🐚${RESET}"
+    else
+      PS1+="${RED}[\v]:${GREEN}[\u]@[\H]${RESET}:${YELLOW}[\w]${RESET}:${RED}[$retVal]${RESET}${BLACK}🐚${RESET}"
+    fi
+    return $retVal
+  }
+
+  export PS2="⚡ "
+  export PS4="$(
+    tput cr 2>/dev/null
+    tput cuf 6 2>/dev/null
+    printf "${GREEN}+%s ($LINENO) +" " $RESET"
+  )"
+
   # are we an interactive shell?
-  if [ "$PS1" ]; then
+  if [ -n "$PS1" ]; then
     if [ -z "$PROMPT_COMMAND" ]; then
-      case $TERM in
-      xterm* | vte*)
-        if [ -e /etc/sysconfig/bash-prompt-xterm ]; then
-          PROMPT_COMMAND=/etc/sysconfig/bash-prompt-xterm
-        else
-          PROMPT_COMMAND='printf "\033]0;%s@%s:%s\007" "${USER}" "${HOSTNAME%%.*}" "${PWD/#$HOME/\~}"'
-        fi
-        ;;
-      screen*)
-        if [ -e /etc/sysconfig/bash-prompt-screen ]; then
-          PROMPT_COMMAND=/etc/sysconfig/bash-prompt-screen
-        else
-          PROMPT_COMMAND='printf "\033k%s@%s:%s\033\\" "${USER}" "${HOSTNAME%%.*}" "${PWD/#$HOME/\~}"'
-        fi
-        ;;
-      *)
-        [ -e /etc/sysconfig/bash-prompt-default ] && PROMPT_COMMAND=/etc/sysconfig/bash-prompt-default
-        ;;
-      esac
+      PROMPT_COMMAND="PS1=;__ps1_promp_command;__ps1_set_title;history -a && history -r"
     fi
     # Turn on parallel history
     shopt -s histappend
@@ -41,14 +65,6 @@ if [ -z "$BASHRCSOURCED" ]; then
     PROMPT_COMMAND="$PROMPT_COMMAND "
     # Turn on checkwinsize
     shopt -s checkwinsize
-    # PS1="[\u@\h \W]\\$ "
-    # You might want to have e.g. tty in prompt (e.g. more virtual machines)
-    # and console windows
-    # If you want to do so, just add e.g.
-    # if [ "$PS1" ]; then
-    #   PS1="[\u@\h:\l \W]\\$ "
-    # fi
-    # to your custom modification shell script in /etc/profile.d/ directory
   fi
 
   if ! shopt -q login_shell; then # We're not a login shell
