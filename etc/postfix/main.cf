@@ -38,4 +38,4 @@ myhostname = myserverdomainname
 
 luser_relay = root
 
-relayhost = [smtp-relay.cajay.email]:465
+relayhost = [smtp-relay.casjay.email]:465
