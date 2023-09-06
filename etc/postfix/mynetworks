@@ -1,6 +1,52 @@
+# local
+[::1]/128
 127.0.0.0/8
 10.0.0.0/8
-172.16.0.0/12 
+172.16.0.0/12
 192.168.0.0/16
 
-[::1]/128
+# oracle
+129.153.223.16
+129.146.212.56
+141.148.153.228
+132.226.33.75
+129.153.152.11
+150.230.183.65
+[2603:c020:9:4c01:265a:5da7:4f2b:6fdb]
+[2603:c020:9:4c01:b38b:4398:558d:7617]
+[2603:c020:9:4c01:dd5c:c86c:cd46:3f5d]
+[2603:c020:4005:4d00:3c49:c239:91c9:74c3]
+[2603:c020:4005:4d00:6e70:8e31:88e:7a4]
+[2603:c020:4005:4d00:69b2:176b:3485:c51e]
+
+# kamareta
+66.55.65.115
+
+# home
+24.194.148.155
+
+# Dynamic
+35.167.74.121
+35.166.202.113
+35.160.3.103
+
+# duckdns
+*.casjay.duckdns.org
+*.mpm7tkm.duckdns.org
+
+# Domains
+*.apmpproject.org
+*.casjay.cc
+*.casjay.coffee
+*.casjay.email
+*.casjay.in
+*.casjay.info
+*.casjay.link
+*.casjay.org
+*.casjay.pro
+*.casjay.us
+*.casjay.xyz
+*.casjaydns.com
+*.casjaysdev.pro
+*.sqldb.us
+
