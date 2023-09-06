@@ -77,7 +77,7 @@ if [ "$RELEASE_TYPE" = "centos" ] && [ "$(hostname -s)" != "pbx" ]; then
 else
   printf '%b\n' "No repos specified"
   yum clean all >/dev/null 2>&1
-  yum makecache >/dev/null 2>&1
+  yum makecache -y >/dev/null 2>&1
   exit $?
 fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -90,7 +90,7 @@ if [ -n "$RELEASE_FILE" ]; then
     sed -i 's|http://mirrors.elrepo.org/mirrors-elrepo.*|https://rpm-devel.sourceforge.io/repo/RHEL/$releasever/$basearch/empty|g' /etc/yum.repos.d/casjay.repo
     sed -i 's|https://mirror.usi.edu/pub/remi/enterprise/.*|https://rpm-devel.sourceforge.io/repo/RHEL/$releasever/$basearch/empty|g' /etc/yum.repos.d/casjay.repo
   fi
-  yum makecache >/dev/null 2>&1 || FETCH_REPO_FILE_EXIT_STATUS=1
+  yum makecache -y >/dev/null 2>&1 || FETCH_REPO_FILE_EXIT_STATUS=1
 fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 if grep -sq "^SELINUX=" "/etc/selinux/config"; then

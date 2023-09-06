@@ -61,7 +61,7 @@ __repo_file() {
       RELEASE_FILE=""
     fi
   else
-    yum makecache &>/dev/null
+    yum makecache -y &>/dev/null
     return
   fi
   if [ -n "$RELEASE_FILE" ]; then
@@ -73,7 +73,7 @@ __repo_file() {
       sed -i 's|http://mirrors.elrepo.org/mirrors-elrepo.*|https://rpm-devel.sourceforge.io/repo/RHEL/$releasever/$basearch/empty|g' /etc/yum.repos.d/casjay.repo
       sed -i 's|https://mirror.usi.edu/pub/remi/enterprise/.*|https://rpm-devel.sourceforge.io/repo/RHEL/$releasever/$basearch/empty|g' /etc/yum.repos.d/casjay.repo
     fi
-    yum makecache &>/dev/null || statusCode=1
+    yum makecache -y &>/dev/null || statusCode=1
   fi
   [ "$statusCode" -ne 0 ] || printf '%b\n' "${YELLOW}Done updating repos${NC}"
   return $statusCode
