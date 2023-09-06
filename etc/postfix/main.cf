@@ -36,6 +36,6 @@ local_transport=error: local delivery disabled
 myorigin = myserverdomainname
 myhostname = myserverdomainname
 
-luser_relay = root
+luser_relay = root@myserverdomainname
 
 relayhost = [smtp-relay.casjay.email]:465
