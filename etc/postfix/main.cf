@@ -1,4 +1,4 @@
-###
+### Main postfix config
 compatibility_level = 2
 alias_maps = hash:/etc/aliases
 alias_database = hash:/etc/aliases
@@ -9,6 +9,7 @@ relay_domains = hash:/etc/postfix/mydomains, regexp:/etc/postfix/mydomains.pcre
 smtp_sasl_password_maps = hash:/etc/postfix/sasl_passwd
 
 tls_random_source = dev:/dev/urandom
+
 smtp_use_tls = yes
 smtp_tls_wrappermode = yes
 smtp_tls_security_level = encrypt
@@ -35,6 +36,6 @@ local_transport=error: local delivery disabled
 myorigin = myserverdomainname
 myhostname = myserverdomainname
 
-#relayhost = [casjay.helioho.st]:465
-relayhost = [casjay.email]:465
+luser_relay = root
 
+relayhost = [smtp-relay.cajay.email]:465
