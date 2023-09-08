@@ -52,12 +52,15 @@ __repo_file() {
       RELEASE_FILE="https://github.com/rpm-devel/casjay-release/raw/main/casjay.rh9.repo"
     elif [ "$RELEASE_VER" -ge "8" ]; then
       YUM_DELETE="yes"
+      REPO_REPLACE="yes"
       RELEASE_FILE="https://github.com/rpm-devel/casjay-release/raw/main/casjay.rh8.repo"
     elif [ "$RELEASE_VER" -lt "8" ]; then
       YUM_DELETE="yes"
+      REPO_REPLACE="yes"
       RELEASE_FILE="https://github.com/rpm-devel/casjay-release/raw/main/casjay.rh.repo"
     else
       YUM_DELETE="no"
+      REPO_REPLACE="no"
       RELEASE_FILE=""
     fi
   else
