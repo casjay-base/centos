@@ -57,6 +57,7 @@ RELEASE_NAME="$(grep --no-filename -s '^NAME=' /etc/*-release | awk -F'=' '{prin
 RELEASE_TYPE="$(grep --no-filename -s '^ID_LIKE=' /etc/*-release | awk -F'=' '{print $2}' | sed 's|"||g' | tr '[:upper:]' '[:lower:]' | tr ' ' '\n' | grep 'centos' | grep '^')"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Main application
+__save_remote_file "https://raw.githubusercontent.com/rpm-devel/casjay-release/main/RPM-GPG-KEY-casjay" "/etc/pki/rpm-gpg/RPM-GPG-KEY-casjay" 
 if [ "$RELEASE_TYPE" = "centos" ] && [ "$(hostname -s)" != "pbx" ]; then
   printf '%b\n' "Updating yum repo info"
   yum clean all >/dev/null 2>&1
