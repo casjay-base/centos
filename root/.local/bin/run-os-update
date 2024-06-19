@@ -130,6 +130,7 @@ export RELEASE_TYPE="$(grep --no-filename -s '^ID_LIKE=' /etc/*-release | awk -F
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 hostnamefull="$(hostname -f 2>/dev/null || echo "$HOSTNAME")"
 hostnameshort="$(hostname -s 2>/dev/null || echo "$HOSTNAME")"
+myserverdomainname="${hostnamefull:-${hostnameshort:-$HOSTNAME}}"
 domainname="$(echo "$hostnamefull" | awk -F'.' '{$1="";OFS="."; print $0}' | grep -v '^$' | sed 's|^\.||g;s|^ /*||g;s| |.|g' | grep '^' || echo 'local')"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 [ "$ARCH" = "x86_64" ] || yum_opts="--disablerepo casjay-remi-php,casjay-remi-safe"
