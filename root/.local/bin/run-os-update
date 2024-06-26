@@ -35,7 +35,7 @@ __yum() { yum "$@" $yum_opts -yy -q &>/dev/null || return 1; }
 __repo_file() {
   local statusCode=0
   bash -c "$(curl -q -LSsf "https://github.com/casjay-base/centos/raw/main/root/.local/bin/fetch-repo-file" || return 10)"
-  statusCode=#?
+  statusCode=$?
   [ "$statusCode" -ne 0 ] || printf '%b\n' "${YELLOW}Done updating repos${NC}"
   return $statusCode
 }
