@@ -45,19 +45,31 @@ __function_exists() { builtin type $1 >/dev/null 2>&1 || return 1; }
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # custom functions
 __save_remote_file() { curl -q -SLs "$1" | tee "$2" >/dev/null 2>&1 || return 1; }
-__backup_repo_files() { cp -Rf "/etc/yum.repos.d/." "$BACKUP_DIR" 2>/dev/null || return 0; }
 __rm_repo_files() { [ "${1:-$YUM_DELETE}" = "yes" ] && rm -Rf "/etc/yum.repos.d"/* >/dev/null 2>&1 || return 0; }
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+__backup_repo_files() {
+  [ -d "$BACKUP_DIR" ] || mkdir -p "$BACKUP_DIR"
+  cp -Rf "/etc/yum.repos.d/." "$BACKUP_DIR" 2>/dev/null || return 0
+}
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+__restore_repo_files() {
+  [ -n "$(ls -A "$BACKUP_DIR/" 2>/dev/null)" ] || return 0
+  cp -Rf "$BACKUP_DIR/${1:-}"* "/etc/yum.repos.d/" 2>/dev/null || return 0
+}
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Define variables
 YUM_DELETE="true"
 DEFAULT_COLOR="254"
+SET_DAY="$(date +'%d')"
+SET_MONTH="$(date +'%m')"
 FETCH_REPO_FILE_EXIT_STATUS=0
+BACKUP_DIR="${BACKUP_DIR:-$HO<R/.local/backups/$APPNAME}/repos/$SET_MONTH/$SET_DAY"
 RELEASE_VER="$(grep --no-filename -s 'VERSION_ID=' /etc/*-release | awk -F '=' '{print $2}' | sed 's#"##g' | awk -F '.' '{print $1}' | grep '^')"
 RELEASE_NAME="$(grep --no-filename -s '^NAME=' /etc/*-release | awk -F'=' '{print $2}' | sed 's|"||g;s| .*||g' | tr '[:upper:]' '[:lower:]' | grep '^')"
 RELEASE_TYPE="$(grep --no-filename -s '^ID_LIKE=' /etc/*-release | awk -F'=' '{print $2}' | sed 's|"||g' | tr '[:upper:]' '[:lower:]' | tr ' ' '\n' | grep 'centos' | grep '^')"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Main application
-__save_remote_file "https://raw.githubusercontent.com/rpm-devel/casjay-release/main/RPM-GPG-KEY-casjay" "/etc/pki/rpm-gpg/RPM-GPG-KEY-casjay" 
+__save_remote_file "https://raw.githubusercontent.com/rpm-devel/casjay-release/main/RPM-GPG-KEY-casjay" "/etc/pki/rpm-gpg/RPM-GPG-KEY-casjay"
 if [ "$RELEASE_TYPE" = "centos" ] && [ "$(hostname -s)" != "pbx" ]; then
   printf '%b\n' "Updating yum repo info"
   yum clean all >/dev/null 2>&1
