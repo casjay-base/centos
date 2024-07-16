@@ -390,6 +390,16 @@ else
     echo -e "done setting up the dns server\n"
   fi
 
+  if [ -d "/etc/cockpit/ws-certs.d" ]; then
+    if [ -f "/etc/letsencrypt/live/domain/fullchain.pem" ] && [ -f "/etc/letsencrypt/live/domain/privkey.pem" ]; then
+      echo "Updating certs for cockpit"
+      rm -Rf "/etc/cockpit/ws-certs.d"/*
+      cat /etc/letsencrypt/live/domain/{fullchain.pem,privkey.pem} >/etc/cockpit/ws-certs.d/1-my-cert.cert
+      systemctl restart cockpit
+      echo "Done updating certs for cockpit"
+    fi
+  fi
+
   echo "Fixing files"
   [ -d "/var/log/munin-node" ] && mv -f "/var/log/munin-node" "/var/log/munin" && systemctl restart munin-node &>/dev/null
 
