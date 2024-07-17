@@ -401,6 +401,7 @@ else
   fi
 
   echo "Fixing files"
+  [ -f "/etc/rc.local" ] && chmod -f 755 "/etc/rc.local"
   [ -d "/var/log/munin-node" ] && mv -f "/var/log/munin-node" "/var/log/munin" && systemctl restart munin-node &>/dev/null
 
   echo -e "Cleaning up files and history"
