@@ -19,7 +19,7 @@ bash -c "$(curl -q -LSsf "https://github.com/casjay-base/centos/raw/main/root/.l
 yum install - yy remi-release
 PHP_VER="7.4"
 dnf module reset php
-dnf module install php:remi-$PHP_VER
+dnf module install -y php:remi-$PHP_VER
 ```
 
 ## Install php nginx apache
