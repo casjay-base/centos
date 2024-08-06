@@ -13,6 +13,14 @@ yum install -y git curl wget
 bash -c "$(curl -q -LSsf "https://github.com/casjay-base/centos/raw/main/root/.local/bin/fetch-repo-file")" && reboot
 ```
 
+## Set PHP Version  
+
+```shell
+PHP_VER="7.4"
+dnf module reset php
+dnf module install php:remi-$PHP_VER
+```
+
 ## Install scripts
 
 ```shell
@@ -20,14 +28,6 @@ bash -c "$(curl -q -LSsf "https://github.com/casjay-base/centos/raw/main/root/.l
 echo cloning "https://github.com/casjay-dotfiles/scripts >/usr/local/share/CasjaysDev/scripts" &&
 sudo git clone -q https://github.com/casjay-dotfiles/scripts "/usr/local/share/CasjaysDev/scripts" && \
 sudo /usr/local/share/CasjaysDev/scripts/install.sh && reboot
-```
-
-## Set PHP Version  
-
-```shell
-PHP_VER="7.4"
-dnf module reset php
-dnf module install php:remi-$PHP_VER
 ```
 
 ## Automated Install  
