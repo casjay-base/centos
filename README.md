@@ -24,7 +24,7 @@ dnf module install php:remi-$PHP_VER
 
 ## Install php nginx apache
 ```shell
-yum install -yy php php-fpm httpd nginx && reboot 
+yum install -yy php-cli php-cgi php-fpm httpd nginx && reboot 
 ```
 
 ## Install scripts
