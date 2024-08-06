@@ -17,7 +17,7 @@ sudo git clone -q https://github.com/casjay-dotfiles/scripts "/usr/local/share/C
 sudo /usr/local/share/CasjaysDev/scripts/install.sh && reboot
 ```
 
-# Set PHP Version  
+## Set PHP Version  
 
 ```shell
 PHP_VER="7.4"
