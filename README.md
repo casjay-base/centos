@@ -21,6 +21,11 @@ dnf module reset php
 dnf module install php:remi-$PHP_VER
 ```
 
+## Install php nginx apache
+```shell
+yum install -yy php php-fpm httpd nginx && reboot 
+```
+
 ## Install scripts
 
 ```shell
