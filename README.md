@@ -17,7 +17,7 @@ bash -c "$(curl -q -LSsf "https://github.com/casjay-base/centos/raw/main/root/.l
 
 ```shell
 PHP_VER="7.4
-yum install - yy remi-release"
+yum install -yy remi-release"
 dnf module reset php
 dnf module install php:remi-$PHP_VER
 ```
