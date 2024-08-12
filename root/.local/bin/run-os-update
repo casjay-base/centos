@@ -397,7 +397,7 @@ else
       rm -Rf "/etc/cockpit/ws-certs.d"/*
       cat /etc/letsencrypt/live/domain/{fullchain.pem,privkey.pem} >/etc/cockpit/ws-certs.d/1-my-cert.cert
       systemctl restart cockpit
-      echo "Done updating certs for cockpit"
+      echo -e "Done updating certs for cockpit\n"
     fi
   fi
 
@@ -408,14 +408,14 @@ else
     mv -f "/var/log/munin-node"/* "/var/log/munin/"
     rm -Rf "/var/log/munin-node"
     systemctl restart munin-node &>/dev/null
-    echo "Done Fixing files"
+    echo -e "Done Fixing files\n"
   fi
 
   echo -e "Cleaning up files and history"
-  rm -Rf "/tmp/dns-update"
-  find / -type f -name '*.rpmnew' -exec rm -Rf {} \;
-  find / -type f -name '*.rpmsave' -exec rm -Rf {} \;
+  rm -Rf "/tmp/dns-update" 2>/dev/null
   bash -c "/root/.local/bin/root_clean.sh" &>/dev/null
+  find /etc /var /usr -type f -iname '*.rpmnew' -exec rm -Rf {} \; 2>/dev/null
+  find /etc /var /usr -type f -iname '*.rpmsave' -exec rm -Rf {} \; 2>/dev/null
   echo -e "Updated to version $REMOTE_VERSION from $INSTALLED_VERSION"
   echo -e "Last updated on $DATE" >"/var/log/run_update"
   echo -e "Done updating system\n\n"
