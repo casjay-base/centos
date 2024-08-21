@@ -2,6 +2,11 @@
   
 Setup a base almalinux server with my system scripts
 
+## Change settings
+```shell
+hostnamectl set-hostname host
+passwd
+```
 ## Update Packages
 ```shell
 rpm -ev --nodeps initscripts
