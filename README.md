@@ -2,6 +2,11 @@
   
 Setup a base almalinux server with my system scripts
 
+## Update Packages
+```shell
+yum update -y
+```
+
 ## Install Packages
 ```shell
 yum install -y git curl wget
