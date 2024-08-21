@@ -4,6 +4,8 @@ Setup a base almalinux server with my system scripts
 
 ## Update Packages
 ```shell
+rpm -ev --nodeps initscripts
+yum -yy install initscripts
 yum update -y && reboot
 ```
 
@@ -28,7 +30,6 @@ dnf module -y install php:remi-$PHP_VER
 
 ## Install php nginx apache
 ```shell
-rpm -ev --nodeps initscripts;yum -yy install initscripts
 yum install -yy php-cli php-cgi php-fpm httpd nginx && reboot 
 ```
 
