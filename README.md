@@ -4,7 +4,7 @@ Setup a base almalinux server with my system scripts
 
 ## Update Packages
 ```shell
-yum update -y
+yum update -y && reboot
 ```
 
 ## Install Packages
