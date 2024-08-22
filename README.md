@@ -2,6 +2,18 @@
   
 Setup a base almalinux server with my system scripts
 
+## Change settings
+```shell
+hostnamectl set-hostname host
+passwd
+```
+## Update Packages
+```shell
+rpm -ev --nodeps initscripts
+yum -yy install initscripts
+yum update -y && reboot
+```
+
 ## Install Packages
 ```shell
 yum install -y git curl wget
