@@ -92,7 +92,7 @@ internal_domain="${INTERNAL_DOMAIN_NAME:-internal}"
 hostnamefull="$(hostname -f 2>/dev/null | grep '^' || echo "$HOSTNAME")"
 hostnameshort="$(hostname -s 2>/dev/null | grep '^' || echo "$HOSTNAME")"
 myserverdomainname="$(hostname -f 2>/dev/null | grep '^' || hostname -s 2>/dev/null | grep '^' || echo "$HOSTNAME")"
-domainname="$(echo "$hostnamefull" | awk -F'.' '{$1="";OFS="."; print $0}' | grep -v '^$' | sed 's|^\.||g;s|^ /*||g;s| |.|g' | grep '^' || echo "$internal_domain")"
+domainname="$(hostname -d | grep '^' || echo "$hostnamefull" | awk -F'.' '{$1="";OFS="."; print $0}' | grep -v '^$' | sed 's|^\.||g;s|^ /*||g;s| |.|g' | grep '^' || echo "$internal_domain")"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 [ "$ARCH" = "x86_64" ] || yum_opts="--disablerepo casjay-remi-php,casjay-remi-safe"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
