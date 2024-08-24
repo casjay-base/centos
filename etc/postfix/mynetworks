@@ -5,25 +5,71 @@
 172.16.0.0/12
 192.168.0.0/16
 
-# oracle
-129.153.223.16
-129.146.212.56
-141.148.153.228
-132.226.33.75
+# cloud.oracle.com [casjay]
+## tbd
 129.153.152.11
-150.230.183.65
-[2603:c020:9:4c01:265a:5da7:4f2b:6fdb]
-[2603:c020:9:4c01:b38b:4398:558d:7617]
-[2603:c020:9:4c01:dd5c:c86c:cd46:3f5d]
-[2603:c020:4005:4d00:3c49:c239:91c9:74c3]
 [2603:c020:4005:4d00:6e70:8e31:88e:7a4]
+## tbd
+150.230.183.65
 [2603:c020:4005:4d00:69b2:176b:3485:c51e]
+## tbd
+132.226.33.75
+[2603:c020:4005:4d00:3c49:c239:91c9:74c3]
+
+# hosteons.com [casjay]
+## dns1
+103.124.104.174
+[2402:d0c0:0015:0087:0000:0000:63d9:19c9]
+## dns2
+204.93.201.47
+[2402:d0c0:0012:07ab:0000:0000:72cb:cd67]
+
+# racknerd.com [casjay]
+## mail
+148.135.101.109
+[2607:f130:0:ea:ff:ff:78ce:5e7f]
+## docker
+148.135.101.108
+[2607:f130:0:ea:ff:ff:1b68:f9b2]
+## hosting
+172.245.70.133
+
+#ssdnodes.com [casjay]
+## build
+172.93.54.93
+[2602:ff16:11:0:1:a:0:1]
+## server
+104.225.219.29
+[2602:ff16:15:0:1:dc:0:1]
+## git
+208.87.128.163
+[2602:ff16:3:0:1:2fa:0:1]
+## tbd
+208.87.128.143
+[2602:ff16:3:0:1:278:0:1]
+
+# ionos
+## tbd
+74.208.9.238
+[2607:f1c0:f00a:f300::1]
+
+# hivelocity
+## sql
+74.50.113.149
+[2604:4500:0009:003d:1c00:efff:fe00:0411]
 
 # kamareta
+## tbd
 66.55.65.115
+
+# heliohost
+## ftp
+65.19.191.150
+[2001:470:1:1ee::67]
 
 # home
 24.194.148.155
+74.78.220.55
 
 # Dynamic
 35.167.74.121
@@ -35,7 +81,26 @@
 *.mpm7tkm.duckdns.org
 
 # Domains
+apmpproject.org
+csj.lol
+casjay.cc
+casjay.coffee
+casjay.email
+casjay.in
+casjay.info
+casjay.link
+casjay.org
+casjay.pro
+casjay.us
+casjay.work
+casjay.xyz
+casjaydns.com
+casjaysdev.pro
+sqldb.us
+
+# Subdomains
 *.apmpproject.org
+*.csj.lol
 *.casjay.cc
 *.casjay.coffee
 *.casjay.email
@@ -45,8 +110,8 @@
 *.casjay.org
 *.casjay.pro
 *.casjay.us
+*.casjay.work
 *.casjay.xyz
 *.casjaydns.com
 *.casjaysdev.pro
 *.sqldb.us
-

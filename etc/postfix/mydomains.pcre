@@ -1,4 +1,5 @@
 /.*\.apmpproject\.org/                     ACCEPT
+/.*\.csj\.lol/                             ACCEPT
 /.*\.casjay\.cc/                           ACCEPT
 /.*\.casjay\.coffee/                       ACCEPT
 /.*\.casjay\.email/                        ACCEPT
@@ -8,10 +9,10 @@
 /.*\.casjay\.org/                          ACCEPT
 /.*\.casjay\.pro/                          ACCEPT
 /.*\.casjay\.us/                           ACCEPT
+/.*\.casjay\.work/                         ACCEPT
 /.*\.casjay\.xyz/                          ACCEPT
 /.*\.casjaydns\.com/                       ACCEPT
 /.*\.casjaysdev\.pro/                      ACCEPT
 /.*\.sqldb\.us/                            ACCEPT
 /.*\.casjay\.duckdns\.org/                 ACCEPT
 /.*\.mpm7tkm\.duckdns\.org/                ACCEPT
-
