@@ -21,7 +21,7 @@ APPNAME="$(basename "$0")"
 VERSION="202308102203-git"
 HOME="${USER_HOME:-$HOME}"
 USER="${SUDO_USER:-$USER}"
-RUN_USER="${SUDO_USER:-$USER}"
+RUN_USER="${RUN_USER:-$USER}"
 SRC_DIR="${BASH_SOURCE%/*}"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Set bash options
@@ -69,6 +69,7 @@ DATE="$(date +'%y-%m-%d at %H:%M')"
 ARCH="$(uname -m | tr '[:upper:]' '[:lower:]')"
 BACKUP_DIR="$HOME/.local/backups/system/$(date +'%Y/%m/%d')"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+set -x
 export FORCE_INST="${FORCE_INST:-}"
 export TIME_ZONE="${TZ:-America/New_York}"
 export STATICSITE="${STATICSITE:-$(hostnamecli -f)}"
@@ -88,7 +89,6 @@ export RELEASE_VER="${RELEASE_VER:-$(grep --no-filename -s 'VERSION_ID=' /etc/*-
 export RELEASE_NAME="$(grep --no-filename -s '^NAME=' /etc/*-release | awk -F'=' '{print $2}' | sed 's|"||g;s| .*||g' | tr '[:upper:]' '[:lower:]' | grep '^')"
 export RELEASE_TYPE="$(grep --no-filename -s '^ID_LIKE=' /etc/*-release | awk -F'=' '{print $2}' | sed 's|"||g' | tr '[:upper:]' '[:lower:]' | tr ' ' '\n' | grep 'centos' | grep '^')"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-set -x
 internal_domain="${INTERNAL_DOMAIN_NAME:-internal}"
 hostnamefull="$(hostname -f 2>/dev/null | grep '^' || echo "$HOSTNAME")"
 hostnameshort="$(hostname -s 2>/dev/null | grep '^' || echo "$HOSTNAME")"
