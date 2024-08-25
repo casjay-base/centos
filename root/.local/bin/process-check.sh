@@ -98,15 +98,14 @@ done
 for httpd_site in $get_httpd_domains; do
   if [ -n "$httpd_site" ]; then
     url="${set_httpd_proto:-http}://$httpd_site:$get_httpd_port"
-    printf '\r%s' "Checking $url"
+    printf '%s: ' "Checking $url"
     if __website_check "httpd" "$url"; then
-      printf '\r%s ' "Connection to $url was successful"
+      printf '%s \n' "Connection to $url was successful"
     else
-      printf '\r%s ' "Failed to connect to $url"
+      printf '%s \n' "Failed to connect to $url"
       exithttpdCode=$((1 + exitProcCode))
     fi
   fi
-  printf '\r                                                        \r\n'
 done
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # check nginx hosts by default mine are http
