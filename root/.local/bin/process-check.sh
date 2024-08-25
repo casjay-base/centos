@@ -51,7 +51,7 @@ __get_proc_port() {
 __website_check() {
   check="$(__get_proc_port "$1")"
   url="${2:-}"
-  [ -n "$check" ] && { [ -z "$url" ] || __check_url "$url"; } || return 1
+  [ -n "$check" ] && [ -n "$url" ] && __check_url "$url" || return 1
 }
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 __service_restart() {
