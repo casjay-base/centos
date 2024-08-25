@@ -69,7 +69,6 @@ DATE="$(date +'%y-%m-%d at %H:%M')"
 ARCH="$(uname -m | tr '[:upper:]' '[:lower:]')"
 BACKUP_DIR="$HOME/.local/backups/system/$(date +'%Y/%m/%d')"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-set -x
 export FORCE_INST="${FORCE_INST:-}"
 export TIME_ZONE="${TZ:-America/New_York}"
 export STATICSITE="${STATICSITE:-$(hostnamecli -f)}"
@@ -94,7 +93,6 @@ hostnamefull="$(hostname -f 2>/dev/null | grep '^' || echo "$HOSTNAME")"
 hostnameshort="$(hostname -s 2>/dev/null | grep '^' || echo "$HOSTNAME")"
 myserverdomainname="$(hostname -f 2>/dev/null | grep '^' || hostname -s 2>/dev/null | grep '^' || echo "$HOSTNAME")"
 domainname="$(hostname -d | grep '^' || echo "$hostnamefull" | awk -F'.' '{$1="";OFS="."; print $0}' | grep -v '^$' | sed 's|^\.||g;s|^ /*||g;s| |.|g' | grep '^' || echo "$internal_domain")"
-set +x
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 [ "$ARCH" = "x86_64" ] || yum_opts="--disablerepo casjay-remi-php,casjay-remi-safe"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
