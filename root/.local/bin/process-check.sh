@@ -100,9 +100,9 @@ for httpd_site in $get_httpd_domains; do
     url="${set_httpd_proto:-http}://$httpd_site:$get_httpd_port"
     printf '%s: ' "Checking $url"
     if __website_check "httpd" "$url"; then
-      printf '%s \n' "Connection to $url was successful"
+      printf '%s\n' "Success"
     else
-      printf '%s \n' "Failed to connect to $url"
+      printf '%s\n' "Failed"
       exithttpdCode=$((1 + exitProcCode))
     fi
   fi
@@ -112,10 +112,11 @@ done
 for nginx_site in $get_nginx_domains; do
   if [ -n "$nginx_site" ]; then
     url="${set_nginx_proto:-https}://$nginx_site:$get_nginx_port"
+    printf '%s: ' "Checking $url"
     if __website_check "nginx" "$url"; then
-      printf '%s\n' "Checking $url"
+      printf '%s\n' "Success"
     else
-      printf '%s\n' "Failed to connect to $url"
+      printf '%s\n' "Failed"
       exitnginxCode=$((1 + exitProcCode))
     fi
   fi
