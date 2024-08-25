@@ -103,7 +103,7 @@ for httpd_site in $get_httpd_domains; do
       printf '%s\n' "Success"
     else
       printf '%s\n' "Failed"
-      exithttpdCode=$((1 + exitProcCode))
+      exithttpdCode=$((exitProcCode++))
     fi
   fi
 done
@@ -117,7 +117,7 @@ for nginx_site in $get_nginx_domains; do
       printf '%s\n' "Success"
     else
       printf '%s\n' "Failed"
-      exitnginxCode=$((1 + exitProcCode))
+      exitnginxCode=$((exitProcCode++))
     fi
   fi
 done
