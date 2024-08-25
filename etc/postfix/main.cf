@@ -6,7 +6,10 @@ mynetworks = /etc/postfix/mynetworks
 transport_maps = hash:/etc/postfix/transport
 virtual_alias_maps = hash:/etc/postfix/virtual
 relay_domains = hash:/etc/postfix/mydomains, regexp:/etc/postfix/mydomains.pcre
-smtp_sasl_password_maps = hash:/etc/postfix/sasl_passwd
+smtp_sasl_password_maps = hash:/etc/postfix/sasl/passwd
+
+inet_protocols = all
+inet_interfaces = 127.0.0.1,[::1]
 
 tls_random_source = dev:/dev/urandom
 
@@ -28,13 +31,11 @@ smtpd_tls_cert_file = /etc/letsencrypt/live/domain/fullchain.pem
 smtpd_relay_restrictions = permit_mynetworks, permit_sasl_authenticated, defer_unauth_destination
 
 mydestination =
-inet_interfaces = all
-inet_protocols = ipv4
-append_dot_mydomain = yes
-local_transport=error: local delivery disabled
-
 myorigin = myserverdomainname
 myhostname = myserverdomainname
+
+append_dot_mydomain = yes
+local_transport=error: local delivery disabled
 
 luser_relay = root@myserverdomainname
 
