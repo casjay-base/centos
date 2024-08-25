@@ -98,7 +98,7 @@ done
 for httpd_site in $get_httpd_domains; do
   if [ -n "$httpd_site" ]; then
     url="${set_httpd_proto:-http}://$httpd_site:$get_httpd_port"
-    printf '%s: ' "Checking $url"
+    printf '%s: ' "Checking httpd: $url"
     if __website_check "httpd" "$url"; then
       printf '%s\n' "Success"
     else
@@ -112,7 +112,7 @@ done
 for nginx_site in $get_nginx_domains; do
   if [ -n "$nginx_site" ]; then
     url="${set_nginx_proto:-https}://$nginx_site:$get_nginx_port"
-    printf '%s: ' "Checking $url"
+    printf '%s: ' "Checking nginx: $url"
     if __website_check "nginx" "$url"; then
       printf '%s\n' "Success"
     else
@@ -126,7 +126,7 @@ done
 [ $exithttpdCode -eq 0 ] || __service_restart "httpd"
 [ $exitnginxCode -eq 0 ] || __service_restart "nginx"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-exitCode=$exitProcCode
+exitCode=$((exitProcCode + exithttpdCode + exitnginxCode))
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # End application
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
