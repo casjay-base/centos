@@ -134,8 +134,8 @@ if [ -d "$HOME/.local/bin" ]; then
 fi
 
 # set prompt
-if [ -f "$HOME/.config/bash/server-prompt.sh" ]; then
-  . "$HOME/.config/bash/server-prompt.sh"
+if [ -f "$HOME/.config/bash/prompt/server.sh" ]; then
+  . "$HOME/.config/bash/prompt/server.sh"
 fi
 
 # unset variables
