@@ -411,6 +411,17 @@ else
     echo -e "Done Fixing files\n"
   fi
 
+  if [ "$myhostnameshort" = "mail" ]; then
+    echo "Running installer script for email server"
+    [ -f "$HOME/Projects/github/dfprivate/email/install.sh" ] && eval "$HOME/Projects/github/dfprivate/email/install.sh"
+  elif [ "$myhostnameshort" = "db" ] || [ "$set_domainname" = "sqldb.us" ]; then
+    echo "Running installer script for database server"
+    [ -f "$HOME/Projects/github/dfprivate/sql/install.sh" ] && eval "$HOME/Projects/github/dfprivate/sql/install.sh"
+  elif [ "$myhostnameshort" = "dns" ] || [ "$myhostnameshort" = "dns1" ] || [ "$myhostnameshort" = "dns2" ]; then
+    echo "Running installer script for dns server"
+    [ -f "$HOME/Projects/github/dfprivate/dns/install.sh" ] && eval "$HOME/Projects/github/dfprivate/dns/install.sh"
+  fi
+
   echo -e "Cleaning up files and history"
   rm -Rf "/tmp/dns-update" 2>/dev/null
   bash -c "/root/.local/bin/root_clean.sh" &>/dev/null
