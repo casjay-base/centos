@@ -88,11 +88,13 @@ export RELEASE_VER="${RELEASE_VER:-$(grep --no-filename -s 'VERSION_ID=' /etc/*-
 export RELEASE_NAME="$(grep --no-filename -s '^NAME=' /etc/*-release | awk -F'=' '{print $2}' | sed 's|"||g;s| .*||g' | tr '[:upper:]' '[:lower:]' | grep '^')"
 export RELEASE_TYPE="$(grep --no-filename -s '^ID_LIKE=' /etc/*-release | awk -F'=' '{print $2}' | sed 's|"||g' | tr '[:upper:]' '[:lower:]' | tr ' ' '\n' | grep 'centos' | grep '^')"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+set -x
 internal_domain="${INTERNAL_DOMAIN_NAME:-internal}"
 hostnamefull="$(hostname -f 2>/dev/null | grep '^' || echo "$HOSTNAME")"
 hostnameshort="$(hostname -s 2>/dev/null | grep '^' || echo "$HOSTNAME")"
 myserverdomainname="$(hostname -f 2>/dev/null | grep '^' || hostname -s 2>/dev/null | grep '^' || echo "$HOSTNAME")"
 domainname="$(hostname -d | grep '^' || echo "$hostnamefull" | awk -F'.' '{$1="";OFS="."; print $0}' | grep -v '^$' | sed 's|^\.||g;s|^ /*||g;s| |.|g' | grep '^' || echo "$internal_domain")"
+set +x
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 [ "$ARCH" = "x86_64" ] || yum_opts="--disablerepo casjay-remi-php,casjay-remi-safe"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
