@@ -70,14 +70,14 @@ exitnginxCode=0
 # get apache domains and port
 if [ -d "/etc/httpd" ] && __proc_check "httpd"; then
   set_httpd_proto="http"
-  get_httpd_domains="$(grep --no-filename -R 'ServerName ' /etc/httpd | grep -Ev '#|localhost' | sed 's|.* ||g;s|;||g;s|server_name ||g' | grep -v '\*' | grep '[a-z0-9]' | sort -u | grep '^' || echo '')"
+  get_httpd_domains="$(grep --no-filename -R 'ServerName ' /etc/httpd | grep -Ev '#|localhost|unknown' | sed 's|.* ||g;s|;||g;s|server_name ||g' | grep -v '\*' | grep '[a-z0-9]' | sort -u | grep '^' || echo '')"
   get_httpd_port="$(grep -R --no-filename 'Listen ' /etc/httpd/conf/httpd.conf | grep -v '#' | awk -F ' ' '{print $2}' | sort -u | head -n1 | grep '^' || echo '')"
 fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # get nginx domains and port
 if [ -d "/etc/nginx" ] && __proc_check "nginx"; then
   set_nginx_proto="https"
-  get_nginx_domains="$(grep -R --no-filename 'server_name ' /etc/nginx | grep -Ev '#|localhost' | sed 's|.* ||g;s|;||g;s|server_name ||g' | grep -v '\*' | grep '[a-z0-9]' | sort -u | grep '^' || echo '')"
+  get_nginx_domains="$(grep -R --no-filename 'server_name ' /etc/nginx | grep -Ev '#|localhost|unknown' | sed 's|.* ||g;s|;||g;s|server_name ||g' | grep -v '\*' | grep '[a-z0-9]' | sort -u | grep '^' || echo '')"
   get_nginx_port="$(grep -R --no-filename 'listen ' /etc/nginx | grep ' [0-9][0-9]' | awk -F ' ' '{print $2}' | sort -u | head -n1 | grep '^' || echo '')"
 fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
