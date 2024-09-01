@@ -2,6 +2,11 @@
   
 Setup a base almalinux server with my system scripts
 
+## Install vnstat and enable it
+```shell
+yum install -yy epel-release && yum install -y vnstat && systemctl enable --now vnstat
+```
+
 ## Change settings
 ```shell
 hostnamectl set-hostname host
