@@ -10,7 +10,7 @@ kilobit="1000000"
 mem="$(free|grep ':'|awk '{print $2}'|head -n1||echo "1")"
 if [ $mem -le $kilobit ]; then
   sudo mkdir -p "$swap_dir"
-  if sudo dd if=/dev/zero of=$swap_dir/$swap_file bs=1024 count=1048576; then
+  if sudo dd if=/dev/zero of=$swap_dir/$swap_file bs=2048 count=1048576; then
     sudo chmod 600 $swap_dir/$swap_file
     sudo mkswap $swap_dir/$swap_file
     sudo swapon $swap_dir/$swap_file
