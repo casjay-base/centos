@@ -10,8 +10,7 @@ passwd
 ## Update Packages
 ```shell
 rpm -ev --nodeps initscripts
-yum -yy install initscripts NetworkManager-initscripts-updown
-yum update -y && reboot
+yum update -y && yum -yy install initscripts NetworkManager-initscripts-updown && reboot
 ```
 
 ## Install Packages
