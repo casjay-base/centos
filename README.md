@@ -8,7 +8,7 @@ swap_file="os.swap"
 swap_dir="/var/lib/swap"
 kilobit="1000000"
 mem="$(free|grep ':'|awk '{print $2}'|head -n1||echo "1")"
-if [ $mem -le $kilobit ]; then
+if [ $mem -le $kilobit ] && [ ! -f "$swap_dir/$swap_file" ]; then
   echo "Setting up swap in $swap_dir/$swap_file"
   echo "This may take a few minutes so enjoy your coffee"
   sudo mkdir -p "$swap_dir"
