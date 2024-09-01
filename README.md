@@ -4,11 +4,11 @@ Setup a base almalinux server with my system scripts
 
 ## Enable swap if system has than 2 gigs of memory
 ```shell
-swap_dir="/var/cache"
 swap_file="os.swap"
+swap_dir="/var/lib/swap"
 mem="$(free -g -t|grep ':'|awk '{print $2}'|head -n1||echo "1")"
 if [ $mem -le 2 ]; then
-  mkdir -p "$swap_dir"
+  sudo mkdir -p "$swap_dir"
   if sudo dd if=/dev/zero of=$swap_dir/$swap_file bs=1024 count=1048576; then
     sudo chmod 600 $swap_dir/$swap_file
     sudo mkswap $swap_dir/$swap_file
