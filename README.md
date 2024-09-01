@@ -9,6 +9,8 @@ swap_dir="/var/lib/swap"
 kilobit="1000000"
 mem="$(free|grep ':'|awk '{print $2}'|head -n1||echo "1")"
 if [ $mem -le $kilobit ]; then
+  echo "Setting up swap in $swap_dir/$swap_file"
+  echo "This may take a few minutes so enjoy your coffee"
   sudo mkdir -p "$swap_dir"
   if sudo dd if=/dev/zero of=$swap_dir/$swap_file bs=2048 count=1048576; then
     sudo chmod 600 $swap_dir/$swap_file
