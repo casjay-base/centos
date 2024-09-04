@@ -38,7 +38,8 @@ yum install -yy epel-release && yum install -y vnstat && systemctl enable --now 
 ```shell
 rpm -ev --nodeps initscripts
 yum update -y && \
-#yum -yy install initscripts NetworkManager-initscripts-updown net-tools && \
+yum -yy install initscripts net-tools && \
+#yum install -y NetworkManager-initscripts-updown && \
 reboot
 ```
 
