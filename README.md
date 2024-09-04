@@ -12,12 +12,12 @@ if [ $mem -le $kilobit ] && [ ! -f "$swap_dir/$swap_file" ]; then
   echo "Setting up swap in $swap_dir/$swap_file"
   echo "This may take a few minutes so enjoy your coffee"
   sudo mkdir -p "$swap_dir"
-  if sudo dd if=/dev/zero of=$swap_dir/$swap_file bs=2048 count=1048576; then
+  if sudo dd if=/dev/zero of=$swap_dir/$swap_file bs=2048 count=1048576 >/dev/null; then
     sudo chmod 600 $swap_dir/$swap_file
     sudo mkswap $swap_dir/$swap_file
     sudo swapon $swap_dir/$swap_file
-    if ! grep -qs "$swap_dir/$swap_file"; then
-      echo "$swap_dir/$swap_file          swap        swap             defaults          0 0" |sudo tee -a $swap_file >/dev/null
+    if ! grep -qs "$swap_dir/$swap_file" /etc/fstab; then
+      echo "$swap_dir/$swap_file          swap        swap             defaults          0 0" |sudo tee -a /etc/fstab >/dev/null
     fi
   fi
 fi
@@ -37,7 +37,7 @@ yum install -yy epel-release && yum install -y vnstat && systemctl enable --now 
 ## Update Packages
 ```shell
 rpm -ev --nodeps initscripts
-yum update -y && yum -yy install initscripts NetworkManager-initscripts-updown && reboot
+yum update -y && yum -yy install initscripts NetworkManager-initscripts-updown net-tools && reboot
 ```
 
 ## Install Packages
