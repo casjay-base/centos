@@ -76,6 +76,11 @@ sudo git clone -q https://github.com/casjay-dotfiles/scripts "/usr/local/share/C
 sudo /usr/local/share/CasjaysDev/scripts/install.sh && reboot
 ```
 
+## Install your personal dotfiles
+```shell
+git clone -q "url_to_dotfiles" "$HOME/dotfiles_dir"
+```
+
 ## Automated Install  
   
 ```shell
