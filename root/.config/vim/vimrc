@@ -76,6 +76,11 @@ if ! filereadable(expand('~/.local/share/vim/bundle/vim-airline-themes/.gitignor
     silent !git clone -q "https://github.com/vim-airline/vim-airline-themes" ~/.local/share/vim/bundle/vim-airline-themes
 endif
 
+if ! filereadable(expand('~/.local/share/vim/bundle/dracula/.gitignore'))
+    echoe "installing dracula..."
+    silent !git clone -q "https://github.com/dracula/vim" ~/.local/share/vim/bundle/dracula
+endif
+
 if ! filereadable(expand('~/.local/share/vim/bundle/Vundle.vim/.gitignore'))
     echoe "Downloading Vundle to manage plugins..."
     silent !git clone -q "https://github.com/VundleVim/Vundle.vim" ~/.local/share/vim/bundle/Vundle.vim
