@@ -30,7 +30,10 @@ trap 'exitCode=${exitCode:-$?};[ -n "$RUN_OS_UPDATE_TEMP_FILE" ] && [ -f "$RUN_O
 [ "$1" = "--raw" ] && shift 1 && export SHOW_RAW="true"
 set -o pipefail
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+devnull() { eval "$@" >/dev/null 2>&1; }
 __yum() { yum "$@" $yum_opts -yy -q &>/dev/null || return 1; }
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+if ! type -p execute &>/dev/null; then execute() { echo "$2" && eval "$1" || return 1; }; fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 __repo_file() {
   local statusCode=0
@@ -91,6 +94,15 @@ run_grub() {
       done
     fi
   fi
+}
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+rm_if_exists() {
+  local file_loc=("$@") && shift $#
+  for file in "${file_loc[@]}"; do
+    if [ -e "$file" ]; then
+      execute "rm -Rf $file" "Removing $file"
+    fi
+  done
 }
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 [ "$USER" = "root" ] || [ "$EUID" = 0 ] || exit 1
