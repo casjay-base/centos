@@ -59,7 +59,8 @@ __kernel_ml() {
     echo "You are already running kernel-ml: $kernel"
   else
     echo "switch to the newest kernel from elrepo"
-    for p in $(rpm -qa --queryformat "%{NAME}\n" | grep 'kernel' | sort -u); do rpm -ev --nodeps $p; done >/dev/null
+    pkgs="$(rpm -qa | grep -v 'kernel-ml' | grep '^kernel')"
+    [ -n "$pkgs" ] && for pkg in $pkgs; do rpm -ev --nodeps $pkg >/dev/null 2>&1; done
     yum install -yyq kernel-ml* >/dev/null || exitC=1
     run_grub
   fi
@@ -72,8 +73,9 @@ __kernel_lt() {
   if [ -n "$kernel" ]; then
     echo "You are already running kernel-lt: $kernel"
   else
-    echo "switch to the newest lts kernel from elrepo"
-    for p in $(rpm -qa --queryformat "%{NAME}\n" | grep 'kernel' | sort -u); do rpm -ev --nodeps $p; done >/dev/null
+    echo "switch to the newest kernel from elrepo"
+    pkgs="$(rpm -qa | grep -v 'kernel-lt' | grep '^kernel')"
+    [ -n "$pkgs" ] && for pkg in $pkgs; do rpm -ev --nodeps $pkg >/dev/null 2>&1; done
     yum install -yyq kernel-lt* >/dev/null || exitC=1
     run_grub
   fi
@@ -88,6 +90,14 @@ run_grub() {
   grub_bin="$(builtin type -P grub-mkconfig 2>/dev/null || builtin type -P grub2-mkconfig 2>/dev/null || false)"
   grub_bin_name="$(basename "$grub_bin" 2>/dev/null)"
   if [ -n "$grub_bin" ]; then
+    for opt in 'biosdevname=0' 'net.ifnames=0'; do
+      if ! grep -shq "$opt" '/etc/default/grub'; then
+        sed '/GRUB_CMDLINE_LINUX=/ / s/"$/ /'$opt'"' /etc/default/grub
+      fi
+    done
+    if ! stat -fc %T '/sys/fs/cgroup' | grep 'cgroup2fs' || ! grep -shq 'systemd.unified_cgroup_hierarchy=1' /etc/default/grub; then
+      sed '/GRUB_CMDLINE_LINUX=/ / s/"$/ /systemd.unified_cgroup_hierarchy=1"' /etc/default/grub
+    fi
     rm_if_exists /boot/*rescue*
     if [ -n "$grub_cfg" ]; then
       for cfg in $grub_cfg; do
