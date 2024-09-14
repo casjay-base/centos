@@ -55,31 +55,37 @@ __run_updater() {
 __kernel_ml() {
   local exitC=0
   local kernel="$(uname -r 2>/dev/null | grep -F 'elrepo')"
-  if [ -n "$kernel" ]; then
-    echo "You are already running kernel-ml: $kernel"
-  else
-    echo "switch to the newest kernel from elrepo"
-    pkgs="$(rpm -qa | grep -v 'kernel-ml' | grep '^kernel')"
-    [ -n "$pkgs" ] && for pkg in $pkgs; do rpm -ev --nodeps $pkg >/dev/null 2>&1; done
-    yum install -yyq kernel-ml* >/dev/null || exitC=1
-    run_grub
-  fi
-  exit $exitC
-}
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-__kernel_lt() {
-  local exitC=0
-  local kernel="$(uname -r 2>/dev/null | grep -F 'elrepo')"
+  local kernel_avail="$(yum search kernel-ml 2>&1 | awk '{print $1}' | grep '^kernel-ml\.' || return)"
   if [ -n "$kernel" ]; then
     echo "You are already running kernel-lt: $kernel"
-  else
+  elif [ -n "$kernel_avail" ]; then
     echo "switch to the newest kernel from elrepo"
     pkgs="$(rpm -qa | grep -v 'kernel-lt' | grep '^kernel')"
     [ -n "$pkgs" ] && for pkg in $pkgs; do rpm -ev --nodeps $pkg >/dev/null 2>&1; done
     yum install -yyq kernel-lt* >/dev/null || exitC=1
     run_grub
+  else
+    printf_yellow "kernel-lt doesn't seem to be avaliable"
   fi
-  exit $exitC
+  return $exitC
+}
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+__kernel_lt() {
+  local exitC=0
+  local kernel="$(uname -r 2>/dev/null | grep -F 'elrepo')"
+  local kernel_avail="$(yum search kernel-lt 2>&1 | awk '{print $1}' | grep '^kernel-lt\.' || return)"
+  if [ -n "$kernel" ]; then
+    echo "You are already running kernel-lt: $kernel"
+  elif [ -n "$kernel_avail" ]; then
+    echo "switch to the newest kernel from elrepo"
+    pkgs="$(rpm -qa | grep -v 'kernel-lt' | grep '^kernel')"
+    [ -n "$pkgs" ] && for pkg in $pkgs; do rpm -ev --nodeps $pkg >/dev/null 2>&1; done
+    yum install -yyq kernel-lt* >/dev/null || exitC=1
+    run_grub
+  else
+    printf_yellow "kernel-lt doesn't seem to be avaliable"
+  fi
+  return $exitC
 }
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 run_grub() {
@@ -193,8 +199,15 @@ fi
 { [ "$1" = "--scripts" ] || [ "$1" = "-s" ] || [ "$1" = "scripts" ] || [ "$1" = "script" ]; } && shift 1 && SCRIPTS_UPDATE="true"
 { [ "$1" = "--check" ] || [ "$1" = "-c" ] || [ "$1" = "check" ]; } && shift 1 && echo "Old version is $INSTALLED_VERSION and new version is $REMOTE_VERSION" && exit
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-if [ "$1" = "--kernel-ml" ]; then __kernel_ml; fi
-if [ "$1" = "--kernel-lt" ]; then __kernel_lt; fi
+if [ "$1" = "--kernel-ml" ]; then
+  __kernel_ml
+  exit $?
+fi
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+if [ "$1" = "--kernel-lt" ]; then
+  __kernel_lt
+  exit $?
+fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 if [ ! -f "/tmp/run-os-update" ] && ping -c 2 1.1.1.1 &>/dev/null; then
   export DOCKER_UPDATE INSTALLED_VERSION SCRIPTS_UPDATE STATICSITE USER FORCE_INST REPO_UPDATE
