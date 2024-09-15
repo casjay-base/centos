@@ -62,7 +62,7 @@ bash -c "$(curl -q -LSsf "https://github.com/casjay-base/centos/raw/main/root/.l
 ## install kernel
 
 ```shell
-curl -q -LSsf "https://github.com/casjay-base/centos/raw/main/root/.local/bin/run-os-update |bash -s -- --kernel-ml 
+curl -q -LSsf "https://github.com/casjay-base/centos/raw/main/root/.local/bin/run-os-update | bash -s -- --kernel-ml  && reboot
 
 ```
 ## Set PHP Version  
