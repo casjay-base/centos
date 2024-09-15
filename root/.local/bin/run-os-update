@@ -78,7 +78,7 @@ __kernel_lt() {
   if [ -n "$kernel" ]; then
     echo "You are already running kernel-lt: $kernel"
   elif [ -n "$kernel_avail" ]; then
-    echo "switch to the newest kernel from elrepo"
+    echo "switch to the newest LTS kernel from elrepo"
     pkgs="$(rpm -qa | grep -v 'kernel-lt' | grep '^kernel')"
     [ -n "$pkgs" ] && for pkg in $pkgs; do rpm -ev --nodeps $pkg >/dev/null 2>&1; done
     yum install -yyq kernel-lt* >/dev/null || exitC=1
