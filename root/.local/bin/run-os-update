@@ -60,12 +60,12 @@ __kernel_ml() {
     echo "You are already running kernel-lt: $kernel"
   elif [ -n "$kernel_avail" ]; then
     echo "switch to the newest kernel from elrepo"
-    pkgs="$(rpm -qa | grep -v 'kernel-lt' | grep '^kernel')"
+    pkgs="$(rpm -qa | grep -v 'kernel-ml' | grep '^kernel')"
     [ -n "$pkgs" ] && for pkg in $pkgs; do rpm -ev --nodeps $pkg >/dev/null 2>&1; done
-    yum install -yyq kernel-lt* >/dev/null || exitC=1
+    yum install -yyq kernel-ml* >/dev/null || exitC=1
     run_grub
   else
-    printf_yellow "kernel-lt doesn't seem to be avaliable"
+    printf_yellow "kernel-ml doesn't seem to be avaliable"
   fi
   return $exitC
 }
