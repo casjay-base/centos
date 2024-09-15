@@ -65,7 +65,7 @@ __kernel_ml() {
     yum install -yyq kernel-ml* >/dev/null || exitC=1
     run_grub
   else
-    printf_yellow "kernel-ml doesn't seem to be avaliable"
+    echo "kernel-ml doesn't seem to be avaliable"
     exitC=1
   fi
   return $exitC
@@ -84,7 +84,7 @@ __kernel_lt() {
     yum install -yyq kernel-lt* >/dev/null || exitC=1
     run_grub
   else
-    printf_yellow "kernel-lt doesn't seem to be avaliable"
+    echo "kernel-lt doesn't seem to be avaliable"
     exitC=1
   fi
   return $exitC
