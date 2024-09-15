@@ -3,6 +3,7 @@
 Setup a base almalinux server with my system scripts
 
 ## Enable swap if system has than 2 gigs of memory
+
 ```shell
 swap_file="os.swap"
 swap_dir="/var/lib/swap"
@@ -24,17 +25,20 @@ fi
 ```
 
 ## Change settings
+
 ```shell
 hostnamectl set-hostname host
 passwd
 ```
 
 ## Install vnstat and enable it
+
 ```shell
 yum install -yy epel-release && yum install -y vnstat && systemctl enable --now vnstat && reboot
 ```
 
 ## Update Packages
+
 ```shell
 rpm -ev --nodeps initscripts
 yum update -y && \
@@ -44,6 +48,7 @@ reboot
 ```
 
 ## Install Packages
+
 ```shell
 yum install -y git curl wget
 ```
@@ -54,6 +59,12 @@ yum install -y git curl wget
 bash -c "$(curl -q -LSsf "https://github.com/casjay-base/centos/raw/main/root/.local/bin/fetch-repo-file")" && reboot
 ```
 
+## install kernel
+
+```shell
+curl -q -LSsf "https://github.com/casjay-base/centos/raw/main/root/.local/bin/run-os-update |bash -s -- --kernel-ml 
+
+```
 ## Set PHP Version  
 
 ```shell
