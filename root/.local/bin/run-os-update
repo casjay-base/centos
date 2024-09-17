@@ -103,7 +103,7 @@ run_grub() {
         sed -i '/^GRUB_CMDLINE_LINUX=/ s/"$/ '$opt'"/' /etc/default/grub
       fi
     done
-    if ! stat -fc %T '/sys/fs/cgroup' | grep 'cgroup2fs' || ! grep -shq 'systemd.unified_cgroup_hierarchy=1' /etc/default/grub; then
+    if ! stat -fc %T '/sys/fs/cgroup' | grep -q 'cgroup2fs' || ! grep -shq 'systemd.unified_cgroup_hierarchy=1' /etc/default/grub; then
       sed -i '/^GRUB_CMDLINE_LINUX=/ s/"$/ systemd.unified_cgroup_hierarchy=1"/' /etc/default/grub
     fi
     rm_if_exists /boot/*rescue*
