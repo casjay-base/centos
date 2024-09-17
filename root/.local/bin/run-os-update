@@ -62,7 +62,7 @@ __kernel_ml() {
     echo "Switching to the newest kernel from elrepo - This may take a few minutes"
     pkgs="$(rpm -qa | grep -v 'kernel-ml' | grep '^kernel')"
     [ -n "$pkgs" ] && for pkg in $pkgs; do rpm -ev --nodeps $pkg >/dev/null 2>&1; done
-    yum install -yyq kernel-ml* >/dev/null || exitC=1
+    yum install -yyq kernel-ml >/dev/null || exitC=1
     run_grub
   else
     echo "kernel-ml doesn't seem to be avaliable"
@@ -81,7 +81,7 @@ __kernel_lt() {
     echo "Switching to the newest LTS kernel from elrepo - This may take a few minutes"
     pkgs="$(rpm -qa | grep -v 'kernel-lt' | grep '^kernel')"
     [ -n "$pkgs" ] && for pkg in $pkgs; do rpm -ev --nodeps $pkg >/dev/null 2>&1; done
-    yum install -yyq kernel-lt* >/dev/null || exitC=1
+    yum install -yyq kernel-lt >/dev/null || exitC=1
     run_grub
   else
     echo "kernel-lt doesn't seem to be avaliable"
@@ -208,6 +208,11 @@ fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 if [ "$1" = "--kernel-lt" ]; then
   __kernel_lt
+  exit $?
+fi
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+if [ "$1" = "grub" ]; then
+  run_grub
   exit $?
 fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
