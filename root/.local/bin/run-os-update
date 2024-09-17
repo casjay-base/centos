@@ -211,7 +211,7 @@ if [ "$1" = "--kernel-lt" ]; then
   exit $?
 fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-if [ "$1" = "grub" ]; then
+if [ "$1" = "--grub" ]; then
   run_grub
   exit $?
 fi
