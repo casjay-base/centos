@@ -20,6 +20,16 @@ if !isdirectory($HOME . '/.config/vim')
     call mkdir($HOME . '/.config/vim')
 endif
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" => create directories
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+if exists("*mkdir")
+    for dir in ["templates", "spell", "plugin", "snippets", ".undo", ".backup", ".swp", ".info"]
+        if !isdirectory($HOME . "/.config/vim/" . dir)
+            call mkdir($HOME . "/.config/vim/" . dir)
+        endif
+    endfor
+endif
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " => Paths
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 set runtimepath+=~/.config/vim/
@@ -41,16 +51,6 @@ elseif has('python')
     let g:UltiSnipsUsePythonVersion = 2"
     let g:powerline_pycmd="py"
     let g:python_host_prog = "/usr/bin/python2"
-endif
-""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" => create directories
-""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-if exists("*mkdir")
-    for dir in ["templates", "spell", "plugin", "snippets", ".undo", ".backup", ".swp", ".info"]
-        if !isdirectory($HOME . "/.config/vim/" . dir)
-            call mkdir($HOME . "/.config/vim/" . dir)
-        endif
-    endfor
 endif
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " => Include plugins and install if needed
