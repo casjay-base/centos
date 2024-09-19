@@ -50,7 +50,7 @@ reboot
 ## Install Packages
 
 ```shell
-yum install -y git curl wget
+yum install -y git curl wget bash bash-completion
 ```
 
 ## Update the system
