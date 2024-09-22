@@ -465,9 +465,13 @@ else
   echo -e "Done setting up ip addresses\n"
 
   echo -e "Updating motd and issue files"
+  [ -f "/etc/casjaysdev/.legal_updated" ] || rm -Rf "/etc/casjaysdev/messages/legal/000.txt" 2>/dev/null
   mkdir -p /etc/casjaysdev/banners &>/dev/null
   chmod -f 777 /etc/casjaysdev /etc/casjaysdev/banners/ /etc/casjaysdev/banners/* &>/dev/null
   bash -c "/usr/local/share/CasjaysDev/scripts/bin/update-motd" &>/dev/null
+  echo "$(date)" >"/etc/casjaysdev/.issue_updated"
+  echo "$(date)" >"/etc/casjaysdev/.motd_updated"
+  echo "$(date)" >"/etc/casjaysdev/.legal_updated"
   echo -e "Done updating motd and issue files \n"
 
   echo -e "Setting up the services"
