@@ -50,7 +50,7 @@ reboot
 ## Install Packages
 
 ```shell
-yum install -y git curl wget bash bash-completion
+yum install -y git curl wget bash bash-completion glibc-all-langpacks
 ```
 
 ## Update the system
