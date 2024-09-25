@@ -163,8 +163,8 @@ export SERVICES_DISABLE="firewalld auditd kdump iscsid.socket lvm2-lvmpolld.sock
 export SERVICES_DISABLE+="iscsi.service iscsiuio.socket lvm2-lvmetad.socket radvd "
 export SERVICES_DISABLE+="fail2ban shorewall shorewall6 named dhcpd dhcpd6 mdmonitor "
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export INSTALLED_VERSION="$(head -n1 <"/etc/casjaysdev/updates/versions/configs.txt" 2>/dev/null)"
 export REMOTE_VERSION="$(curl -q -LSsf "https://github.com/casjay-base/centos/raw/main/version.txt" | head -n1)"
+[ -f "/etc/casjaysdev/updates/versions/configs.txt" ] && export INSTALLED_VERSION="$(head -n1 <"/etc/casjaysdev/updates/versions/configs.txt" 2>/dev/null)"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 [ -f "/etc/casjaysdev/updates/versions/os_version.txt" ] && RELEASE_VER="$(<"/etc/casjaysdev/updates/versions/os_version.txt")"
