@@ -206,12 +206,12 @@ fi
 { [ "$1" = "--check" ] || [ "$1" = "-c" ] || [ "$1" = "check" ]; } && shift 1 && echo "Old version is $INSTALLED_VERSION and new version is $REMOTE_VERSION" && exit
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 if [ "$1" = "--kernel-ml" ]; then
-  __kernel_ml
+  __yum makecache && __yum update --exclude 'kernel*' && __kernel_ml
   exit $?
 fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 if [ "$1" = "--kernel-lt" ]; then
-  __kernel_lt
+  __yum makecache && __yum update --exclude 'kernel*' && __kernel_lt
   exit $?
 fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
