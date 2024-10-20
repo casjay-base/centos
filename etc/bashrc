@@ -8,7 +8,7 @@
 # /etc/profile.d/ to make custom changes to your environment, as this
 # will prevent the need for merging in future updates.
 
-PS1="${PS1:-[\u@\h:\l \W]\\$ }"
+export PS1="${PS1:-[\u@\h:\l \W]\\$ }"
 # are we an interactive shell?
 if [ -n "$PS1" ]; then
   if [ -z "$PROMPT_COMMAND" ]; then
@@ -33,7 +33,7 @@ if [ -n "$PS1" ]; then
       [ -e "/etc/sysconfig/bash-prompt-default" ] && PROMPT_COMMAND="/etc/sysconfig/bash-prompt-default"
       ;;
     esac
-    export PROMPT_COMMAND PS1
+    export PROMPT_COMMAND
   fi
   # Turn on parallel history
   shopt -s histappend
@@ -71,11 +71,7 @@ if ! shopt -q login_shell; then # We're not a login shell
   # and interactive - otherwise just process them to set envvars
   for i in /etc/profile.d/*.sh; do
     if [ -r "$i" ]; then
-      if [ "$PS1" ]; then
-        . "$i"
-      else
-        . "$i" >/dev/null
-      fi
+      . "$i" >/dev/null
     fi
   done
 
