@@ -59,7 +59,7 @@ __kernel_ml() {
   if [ -n "$kernel" ]; then
     echo "You are already running kernel-lt: $kernel"
     echo "Ensuring the kernel-ml modules packages are installed"
-    yum install -yy -q kernel-ml-modules kernel-ml-modules-extra
+    yum install -yy -q kernel-ml-modules kernel-ml-modules-extra >/dev/null
     echo "You should be all set with the kernel"
   elif [ -n "$kernel_avail" ]; then
     echo "Switching to the newest kernel from elrepo - This may take a few minutes"
@@ -81,7 +81,7 @@ __kernel_lt() {
   if [ -n "$kernel" ]; then
     echo "You are already running kernel-lt: $kernel"
     echo "Ensuring the kernel-lt modules packages are installed"
-    yum install -yy -q kernel-lt-modules kernel-lt-modules-extra
+    yum install -yy -q kernel-lt-modules kernel-lt-modules-extra >/dev/null
     echo "You should be all set with the kernel"
   elif [ -n "$kernel_avail" ]; then
     echo "Switching to the newest kernel from elrepo - This may take a few minutes"
