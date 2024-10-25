@@ -1,7 +1,10 @@
 /.*\.apmpproject\.org/                     ACCEPT
 /.*\.csj\.lol/                             ACCEPT
+/.*\.casjay\.app/                          ACCEPT
 /.*\.casjay\.cc/                           ACCEPT
+/.*\.casjay\.dev/                          ACCEPT
 /.*\.casjay\.coffee/                       ACCEPT
+/.*\.casjay\.gdn/                          ACCEPT
 /.*\.casjay\.email/                        ACCEPT
 /.*\.casjay\.in/                           ACCEPT
 /.*\.casjay\.info/                         ACCEPT

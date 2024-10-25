@@ -5,17 +5,6 @@
 172.16.0.0/12
 192.168.0.0/16
 
-# cloud.oracle.com [casjay]
-## tbd
-129.153.152.11
-[2603:c020:4005:4d00:6e70:8e31:88e:7a4]
-## tbd
-150.230.183.65
-[2603:c020:4005:4d00:69b2:176b:3485:c51e]
-## tbd
-132.226.33.75
-[2603:c020:4005:4d00:3c49:c239:91c9:74c3]
-
 # hosteons.com [casjay]
 ## dns1
 103.124.104.174
@@ -29,47 +18,73 @@
 148.135.101.109
 [2607:f130:0:ea:ff:ff:78ce:5e7f]
 ## docker
+142.171.133.138
+[2607:f130:0:ee:ff:ff:a7c6:35f2]
+## msp
+142.171.254.123
+[2607:f130:0:f8:ff:ff:4238:2d3e]
+## lab
 148.135.101.108
 [2607:f130:0:ea:ff:ff:1b68:f9b2]
-## hosting
+## panel
 172.245.70.133
 
 #ssdnodes.com [casjay]
+## db
+172.93.49.72
+[2602:ff16:3:0:1:266:0:1]
+## git
+208.87.133.28
+[2602:ff16:3:0:1:344:0:1]
+## kasm
+104.225.216.21
+[2602:ff16:3:0:1:474:0:1]
 ## build
 172.93.54.93
 [2602:ff16:11:0:1:a:0:1]
-## server
-104.225.219.29
-[2602:ff16:15:0:1:dc:0:1]
-## git
+## devel
 208.87.128.163
 [2602:ff16:3:0:1:2fa:0:1]
-## tbd
+## coolify
+23.29.118.136
+[2602:ff16:3:0:1:234:0:1]
+## ci
+104.225.219.29
+[2602:ff16:15:0:1:dc:0:1]
+## hosting
 208.87.128.143
 [2602:ff16:3:0:1:278:0:1]
 
-# ionos
-## tbd
-74.208.9.238
-[2607:f1c0:f00a:f300::1]
-
 # hivelocity
-## sql
+## vpn
 74.50.113.149
 [2604:4500:0009:003d:1c00:efff:fe00:0411]
 
-# kamareta
-## tbd
-66.55.65.115
+# servarica
+## registry
+162.250.189.147
 
 # heliohost
 ## ftp
 65.19.191.150
 [2001:470:1:1ee::67]
 
-# home
-24.194.148.155
-74.78.220.55
+## casjay
+65.19.154.90
+[2001:470:1:1ee::1002]
+casjay.helioho.st
+*.casjay.helioho.st
+
+# cloud.oracle.com [casjay]
+## pastebin
+129.153.152.11
+[2603:c020:4005:4d00:6e70:8e31:88e:7a4]
+## shortner
+150.230.183.65
+[2603:c020:4005:4d00:69b2:176b:3485:c51e]
+## aws
+132.226.33.75
+[2603:c020:4005:4d00:3c49:c239:91c9:74c3]
 
 # Dynamic
 35.167.74.121
@@ -77,15 +92,21 @@
 35.160.3.103
 
 # duckdns
+bashit.duckdns.org
+casjay.duckdns.org
+mpm7tkm.duckdns.org
+*.bashit.duckdns.org
 *.casjay.duckdns.org
 *.mpm7tkm.duckdns.org
 
 # Domains
 apmpproject.org
-csj.lol
+casjay.app
 casjay.cc
 casjay.coffee
+casjay.dev
 casjay.email
+casjay.gdn
 casjay.in
 casjay.info
 casjay.link
@@ -95,15 +116,21 @@ casjay.us
 casjay.work
 casjay.xyz
 casjaydns.com
+casjaydns.fyi
 casjaysdev.pro
+csj.lol
+dockersrc.us
+malaks.us
+onhealth.xyz
 sqldb.us
 
 # Subdomains
 *.apmpproject.org
-*.csj.lol
 *.casjay.cc
 *.casjay.coffee
+*.casjay.dev
 *.casjay.email
+*.casjay.gdn
 *.casjay.in
 *.casjay.info
 *.casjay.link
@@ -113,5 +140,10 @@ sqldb.us
 *.casjay.work
 *.casjay.xyz
 *.casjaydns.com
+*.casjaydns.fyi
 *.casjaysdev.pro
+*.csj.lol
+*.dockersrc.us
+*.malaks.us
+*.onhealth.xyz
 *.sqldb.us
