@@ -57,7 +57,7 @@ __kernel_ml() {
   local kernel="$(uname -r 2>/dev/null | grep -F 'elrepo')"
   local kernel_avail="$(yum search kernel-ml 2>&1 | awk '{print $1}' | grep '^kernel-ml-.*[.]' || return)"
   if [ -n "$kernel" ]; then
-    echo "You are already running kernel-lt: $kernel"
+    echo "You are already running kernel-ml: $kernel"
     echo "Ensuring the kernel-ml modules packages are installed"
     yum install -yy -q kernel-ml-modules kernel-ml-modules-extra >/dev/null
     echo "You should be all set with the kernel"
@@ -65,7 +65,9 @@ __kernel_ml() {
     echo "Switching to the newest kernel from elrepo - This may take a few minutes"
     pkgs="$(rpm -qa | grep -v 'kernel-ml' | grep '^kernel')"
     [ -n "$pkgs" ] && for pkg in $pkgs; do rpm -ev --nodeps $pkg >/dev/null 2>&1; done
-    yum install -yyq kernel-ml kernel-ml-modules kernel-ml-modules-extra >/dev/null || exitC=1
+    devnull yum install -yyq kernel-ml kernel-ml-modules kernel-ml-modules-extra >/dev/null || exitC=1
+    devnull yum update -yyq --exclude 'kernel*' >/dev/null
+    devnull yum update -yyq kernel-ml kernel-ml-modules kernel-ml-modules-extra >/dev/null
     run_grub
   else
     echo "kernel-ml doesn't seem to be avaliable"
@@ -87,7 +89,9 @@ __kernel_lt() {
     echo "Switching to the newest kernel from elrepo - This may take a few minutes"
     pkgs="$(rpm -qa | grep -v 'kernel-lt' | grep '^kernel')"
     [ -n "$pkgs" ] && for pkg in $pkgs; do rpm -ev --nodeps $pkg >/dev/null 2>&1; done
-    yum install -yyq kernel-lt kernel-lt-modules kernel-lt-modules-extra >/dev/null || exitC=1
+    devnull yum install -yyq kernel-lt kernel-lt-modules kernel-lt-modules-extra >/dev/null || exitC=1
+    devnull yum update -yyq --exclude 'kernel*' >/dev/null
+    devnull yum update -yyq kernel-lt kernel-lt-modules kernel-lt-modules-extra >/dev/null
     run_grub
   else
     echo "kernel-lt doesn't seem to be avaliable"
@@ -106,17 +110,17 @@ run_grub() {
   if [ -n "$grub_bin" ]; then
     for opt in 'biosdevname=0' 'net.ifnames=0'; do
       if ! grep -shq "$opt" '/etc/default/grub'; then
-        sed -i '/^GRUB_CMDLINE_LINUX=/ s/"$/ '$opt'"/' /etc/default/grub
+        sed -i '/^GRUB_CMDLINE_LINUX=/ s/"$/ '$opt'"/' /etc/default/grub >/dev/null
       fi
     done
     if ! stat -fc %T '/sys/fs/cgroup' | grep -q 'cgroup2fs' || ! grep -shq 'systemd.unified_cgroup_hierarchy=1' /etc/default/grub; then
-      sed -i '/^GRUB_CMDLINE_LINUX=/ s/"$/ systemd.unified_cgroup_hierarchy=1"/' /etc/default/grub
+      sed -i '/^GRUB_CMDLINE_LINUX=/ s/"$/ systemd.unified_cgroup_hierarchy=1"/' /etc/default/grub >/dev/null
     fi
     if grep -sq 'GRUB_ENABLE_BLSCFG' "/etc/default/grub"; then
-      sed -i 's|GRUB_ENABLE_BLSCFG=.*|GRUB_ENABLE_BLSCFG=false|g' '/etc/default/grub'
+      sed -i 's|GRUB_ENABLE_BLSCFG=.*|GRUB_ENABLE_BLSCFG=false|g' '/etc/default/grub' >/dev/null
     fi
-    rm_if_exists /boot/*rescue*
-    rm_if_exists /boot/loader/entries/*
+    rm_if_exists /boot/*rescue* >/dev/null
+    rm_if_exists /boot/loader/entries/* >/dev/null
     if [ -n "$grub_cfg" ]; then
       for cfg in $grub_cfg; do
         if [ -e "$cfg" ]; then
