@@ -14,19 +14,25 @@
 [2402:d0c0:0012:07ab:0000:0000:72cb:cd67]
 
 # racknerd.com [casjay]
+## ns
+148.135.35.244
+[2607:f130:0:ea:ff:ff:fd65:b05a]
+## node
+142.171.185.77
+[2607:f130:0:f8:ff:ff:41bf:5e1]
 ## mail
 148.135.101.109
 [2607:f130:0:ea:ff:ff:78ce:5e7f]
-## docker
-142.171.133.138
-[2607:f130:0:ee:ff:ff:a7c6:35f2]
-## msp
-142.171.254.123
-[2607:f130:0:f8:ff:ff:4238:2d3e]
-## lab
+## node1
 148.135.101.108
 [2607:f130:0:ea:ff:ff:1b68:f9b2]
-## panel
+## node2
+142.171.254.123
+[2607:f130:0:f8:ff:ff:4238:2d3e]
+## node3
+142.171.133.138
+[2607:f130:0:ee:ff:ff:a7c6:35f2]
+## client
 172.245.70.133
 
 #ssdnodes.com [casjay]
@@ -36,24 +42,30 @@
 ## git
 208.87.133.28
 [2602:ff16:3:0:1:344:0:1]
-## kasm
+## workspace
 104.225.216.21
 [2602:ff16:3:0:1:474:0:1]
 ## build
 172.93.54.93
 [2602:ff16:11:0:1:a:0:1]
-## devel
+## services
 208.87.128.163
 [2602:ff16:3:0:1:2fa:0:1]
-## coolify
+## chat
 23.29.118.136
 [2602:ff16:3:0:1:234:0:1]
-## ci
+## jenkins
 104.225.219.29
 [2602:ff16:15:0:1:dc:0:1]
 ## hosting
 208.87.128.143
 [2602:ff16:3:0:1:278:0:1]
+## ai
+104.225.216.129
+[2602:ff16:3:0:1:133:0:1]
+## reg
+208.87.133.101
+[2602:ff16:3:0:1:33b:0:1]
 
 # hivelocity
 ## vpn
@@ -61,8 +73,9 @@
 [2604:4500:0009:003d:1c00:efff:fe00:0411]
 
 # servarica
-## registry
-162.250.189.7
+## aws
+209.209.10.59
+[2602:ffd5:0001:1eb:0000:0000:0000:0001]
 
 # heliohost
 ## ftp
@@ -76,13 +89,13 @@ casjay.helioho.st
 *.casjay.helioho.st
 
 # cloud.oracle.com [casjay]
-## pastebin
+## auth
 129.153.152.11
 [2603:c020:4005:4d00:6e70:8e31:88e:7a4]
-## shortner
+## testing
 150.230.183.65
 [2603:c020:4005:4d00:69b2:176b:3485:c51e]
-## aws
+## apps
 132.226.33.75
 [2603:c020:4005:4d00:3c49:c239:91c9:74c3]
 
@@ -101,7 +114,7 @@ mpm7tkm.duckdns.org
 
 # Domains
 apmpproject.org
-casjay.app
+casjay.casa
 casjay.cc
 casjay.coffee
 casjay.dev
@@ -111,7 +124,9 @@ casjay.in
 casjay.info
 casjay.link
 casjay.org
+casjay.nl
 casjay.pro
+casjay.social
 casjay.us
 casjay.work
 casjay.xyz
@@ -121,11 +136,11 @@ casjaysdev.pro
 csj.lol
 dockersrc.us
 malaks.us
-onhealth.xyz
 sqldb.us
 
 # Subdomains
 *.apmpproject.org
+*.casjay.casa
 *.casjay.cc
 *.casjay.coffee
 *.casjay.dev
@@ -135,7 +150,9 @@ sqldb.us
 *.casjay.info
 *.casjay.link
 *.casjay.org
+*.casjay.nl
 *.casjay.pro
+*.casjay.social
 *.casjay.us
 *.casjay.work
 *.casjay.xyz
@@ -145,5 +162,4 @@ sqldb.us
 *.csj.lol
 *.dockersrc.us
 *.malaks.us
-*.onhealth.xyz
 *.sqldb.us

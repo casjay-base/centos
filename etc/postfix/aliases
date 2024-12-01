@@ -158,6 +158,7 @@ ssl-admin:          pager
 www-admin:          admin
 dns-admin:          admin
 ca-admin:           admin
+domain-admin:       admin
 radio-admin:        admin
 ftpadm:             ftp
 ftpadmin:           ftp
