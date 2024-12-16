@@ -89,14 +89,15 @@ casjay.helioho.st
 *.casjay.helioho.st
 
 # cloud.oracle.com [casjay]
-## auth
-129.153.152.11
-[2603:c020:4005:4d00:6e70:8e31:88e:7a4]
-## testing
+## redxt.us
 150.230.183.65
 [2603:c020:4005:4d00:69b2:176b:3485:c51e]
-## apps
+## amd64.us
 132.226.33.75
+[2603:c020:4005:4d00:6e70:8e31:88e9:7a42]
+## arm64.us
+141.148.37.55
+129.153.152.11
 [2603:c020:4005:4d00:3c49:c239:91c9:74c3]
 
 # Dynamic
@@ -113,6 +114,9 @@ mpm7tkm.duckdns.org
 *.mpm7tkm.duckdns.org
 
 # Domains
+redxt.us
+amd64.us
+arm64.us
 apmpproject.org
 casjay.casa
 casjay.cc
@@ -139,6 +143,9 @@ malaks.us
 sqldb.us
 
 # Subdomains
+*.redxt.us
+*.amd64.us
+*.arm64.us
 *.apmpproject.org
 *.casjay.casa
 *.casjay.cc

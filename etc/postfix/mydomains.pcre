@@ -1,3 +1,6 @@
+/.*\.redxt\.us/                            ACCEPT
+/.*\.amd64\.us/                            ACCEPT
+/.*\.arm64\.us/                            ACCEPT
 /.*\.apmpproject\.org/                     ACCEPT
 /.*\.casjay\.app/                          ACCEPT
 /.*\.casjay\.casa/                         ACCEPT
