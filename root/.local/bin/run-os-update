@@ -455,7 +455,7 @@ else
     cat "/var/lib/tor/hidden_service/*/hostname" >"/var/www/html/tor_hostname" 2>/dev/null
   fi
   if grep -qs "^apache:" "/etc/passwd"; then
-    chown -Rf apache:apache "/var/www" "/usr/share/httpd"
+    chown -Rf apache:apache "/var/www" "/usr/local/share/httpd"
   fi
   echo -e "Done setting up web server\n"
 
