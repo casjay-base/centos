@@ -1,10 +1,8 @@
 # $HOME/.bashrc: executed by bash(1) for non-login shells.
+PS1='[\u@\h \W]\$ '
 
 # If not running interactively, don't do anything
-case $- in
-*i*) ;;
-*) return ;;
-esac
+case $- in *i*) ;; *) return ;; esac
 
 if [ -z "$BASHRCSOURCED" ] && [ -f "/etc/bashrc" ]; then
   . /etc/bashrc && export BASHRCSOURCED="Y"
@@ -85,7 +83,8 @@ __git_pull() { for d in "$@"; do printf '%-40s' "Pulling $d" && git -C "$d" pull
 __git_push() { for d in "$@"; do printf '%-40s' "Pulling $d" && git -C "$d" push; done; }
 __git_clone() {
   local dir="${2:-$HOME/Projects/$(echo "${1//*:\/\//}" | cut -d'.' -f1)/$(echo "${1//*:\/\//}" | awk -F'/' '{print $(NF-1)"/"$NF}')}"
-  [ -d "$dir/.git" ] && printf '%-40s' "Pulling $dir" && git -C "$dir" pull || printf '%-40s' "cloning $1" && git clone "$1" "$dir"
+  [ -d "$dir/.git" ] && printf '%-40s' "Pulling $dir" && git -C "$dir" pull || printf '%-40s' "cloning $1" && git clone "$1" "$dir" -q
+  return $?
 }
 
 # enable color support of ls and also add handy aliases
@@ -108,11 +107,20 @@ alias la='ls -A'
 alias lla='ls -laA'
 alias em='emacs -nw'
 alias dd='dd status=progress'
+alias cd..='cd ..'
+alias pdw='pwd'
 
 # sudo aliases
 alias _='sudo -n true && sudo'
 alias _i='sudo -n true && sudo -i'
 alias systemctl='sudo -n true && sudo \systemctl '
+
+alias df='df -h'
+alias free="free -mt"
+alias wget="wget -c"
+alias curl="curl -q -LSsf"
+alias listusers="cut -d: -f1 /etc/passwd | sort -u"
+alias listgroups="cut -d: -f1 /etc/group | sort -u"
 
 # Alias definitions.
 if [ -f "$HOME/.bash_aliases" ]; then
@@ -136,7 +144,11 @@ fi
 # set prompt
 if [ -f "$HOME/.config/bash/server-prompt.sh" ]; then
   . "$HOME/.config/bash/server-prompt.sh"
+elif [ -n "$(type -P starship)" ]; then
+  eval -- "$(/usr/bin/starship init bash --print-full-init)"
 fi
+
+[ -r "$HOME/.config/bash/bash.local" ] && . "$HOME/.config/bash/bash.local"
 
 # unset variables
 unset color_prompt force_color_prompt

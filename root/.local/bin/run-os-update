@@ -39,7 +39,7 @@ __repo_file() {
   local statusCode=0
   bash -c "$(curl -q -LSsf "https://github.com/casjay-base/centos/raw/main/root/.local/bin/fetch-repo-file" || return 10)"
   statusCode=$?
-  [ "$statusCode" -ne 0 ] || printf '%b\n' "${YELLOW}Done updating repos${NC}"
+  [ "$statusCode" -eq 0 ] && printf '%b\n' "${YELLOW}Done updating repos${NC}"
   return $statusCode
 }
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -55,7 +55,7 @@ __run_updater() {
 __kernel_ml() {
   local exitC=0
   local kernel="$(uname -r 2>/dev/null | grep -F 'elrepo')"
-  local kernel_avail="$(yum search kernel-ml 2>&1 | awk '{print $1}' | grep '^kernel-ml-.*[.]' || return)"
+  local kernel_avail="$(yum search kernel-ml 2>&1 | awk '{print $1}' | grep '^kernel-ml-.*[.]' | grep -Ev 'devel|headers' || return)"
   if [ -n "$kernel" ]; then
     echo "You are already running kernel-ml: $kernel"
     echo "Ensuring the kernel-ml modules packages are installed"
@@ -65,9 +65,9 @@ __kernel_ml() {
     echo "Switching to the newest kernel from elrepo - This may take a few minutes"
     pkgs="$(rpm -qa | grep -v 'kernel-ml' | grep '^kernel')"
     [ -n "$pkgs" ] && for pkg in $pkgs; do rpm -ev --nodeps $pkg >/dev/null 2>&1; done
-    devnull yum install -yyq kernel-ml kernel-ml-modules kernel-ml-modules-extra >/dev/null || exitC=1
     devnull yum update -yyq --exclude 'kernel*' >/dev/null
-    devnull yum update -yyq kernel-ml kernel-ml-modules kernel-ml-modules-extra >/dev/null
+    devnull yum install -yyq kernel-ml kernel-ml-modules kernel-ml-modules-extra >/dev/null || exitC=1
+    devnull yum update -yyq kernel-ml kernel-ml-modules kernel-ml-modules-extra >/dev/null || exitC=1
     run_grub
   else
     echo "kernel-ml doesn't seem to be avaliable"
@@ -79,7 +79,7 @@ __kernel_ml() {
 __kernel_lt() {
   local exitC=0
   local kernel="$(uname -r 2>/dev/null | grep -F 'elrepo')"
-  local kernel_avail="$(yum search kernel-lt 2>&1 | awk '{print $1}' | grep '^kernel-lt-.*[.]' || return)"
+  local kernel_avail="$(yum search kernel-lt 2>&1 | awk '{print $1}' | grep '^kernel-lt-.*[.]' | grep -Ev 'devel|headers' || return)"
   if [ -n "$kernel" ]; then
     echo "You are already running kernel-lt: $kernel"
     echo "Ensuring the kernel-lt modules packages are installed"
@@ -89,9 +89,9 @@ __kernel_lt() {
     echo "Switching to the newest kernel from elrepo - This may take a few minutes"
     pkgs="$(rpm -qa | grep -v 'kernel-lt' | grep '^kernel')"
     [ -n "$pkgs" ] && for pkg in $pkgs; do rpm -ev --nodeps $pkg >/dev/null 2>&1; done
-    devnull yum install -yyq kernel-lt kernel-lt-modules kernel-lt-modules-extra >/dev/null || exitC=1
     devnull yum update -yyq --exclude 'kernel*' >/dev/null
-    devnull yum update -yyq kernel-lt kernel-lt-modules kernel-lt-modules-extra >/dev/null
+    devnull yum install -yyq kernel-lt kernel-lt-modules kernel-lt-modules-extra >/dev/null || exitC=1
+    devnull yum update -yyq kernel-lt kernel-lt-modules kernel-lt-modules-extra >/dev/null || exitC=1
     run_grub
   else
     echo "kernel-lt doesn't seem to be avaliable"
@@ -394,6 +394,12 @@ else
   find -L /tmp/configs -type f -iname "*.pl" -exec chmod 755 {} \; &>/dev/null
   find -L /tmp/configs -type f -iname "*.cgi" -exec chmod 755 {} \; &>/dev/null
 
+  echo -e "Setting NetWork device to to $NETDEV"
+  find -L /tmp/configs -type f -exec sed -i "s#mynetworkdevice#$NETDEV#g" {} \; &>/dev/null
+  if [ -f "/etc/sysconfig/network-scripts/ifcfg-eth0.sample" ]; then
+    mv -f "/etc/sysconfig/network-scripts/ifcfg-eth0.sample" "/etc/sysconfig/network-scripts/ifcfg-$NETDEV.sample"
+  fi
+
   echo -e "Setting IP to $mycurrentipaddress_4"
   find -L /tmp/configs -type f -exec sed -i "s#mycurrentipaddress_4#$mycurrentipaddress_4#g" {} \; &>/dev/null
   echo -e "Setting IP to $mycurrentipaddress_6"
@@ -408,7 +414,7 @@ else
   cp -Rf /tmp/configs/{etc,root,usr,var}* / 2>/dev/null
 
   if grep -qs "^named:" "/etc/passwd"; then
-    mkdir -p /var/log/named && chown -Rf named:named /etc/named* /var/named /var/log/named
+    mkdir -p /var/named /var/log/named && chown -Rf named:named /etc/named* /var/named /var/log/named
   fi
 
   if [ -f "/etc/sysconfig/network" ]; then
@@ -438,15 +444,19 @@ else
     fi
     mkdir -p /etc/postfix/sasl
     touch /etc/postfix/sasl/passwd
-    touch "/etc/postfix/sasl_passwd"
     touch "/etc/postfix/mydomains.pcre"
-    touch "/etc/aliases" && newaliases
-    postmap="access canonical relocated transport virtual sasl_passwd sasl/passwd"
-    for f in $postmap; do postmap /etc/postfix/$f &>/dev/null; done
+    touch "/etc/aliases" && newaliases 2>/dev/null
+    [ -f "/etc/postfix/sasl_passwd" ] && rm -Rf "/etc/postfix/sasl_passwd"
+    postmap="access canonical relocated mydomains transport virtual sasl/passwd"
+    for f in $postmap; do [ -f "/etc/postfix/$f" ] && postmap /etc/postfix/$f &>/dev/null; done
   fi
 
   chattr +i "/etc/resolv.conf"
-  rm -Rf /tmp/*.tar "/tmp/dotfiles" "/tmp/configs" "/root/bin/linuxcounter.sh"
+  rm -Rf /tmp/*.tar "/tmp/dotfiles" "/tmp/configs"
+  [ -f "/usr/bin/linuxcounter.sh" ] && rm -Rf "/usr/bin/linuxcounter.sh"
+  [ -f "/root/bin/linuxcounter.sh" ] && rm -Rf "/root/bin/linuxcounter.sh"
+  [ -f "/root/.local/bin/linuxcounter.sh" ] && rm -Rf "/root/.local/bin/linuxcounter.sh"
+  [ -f "/usr/local/bin/linuxcounter.sh" ] && rm -Rf "/usr/local/bin/linuxcounter.sh"
   echo -e "Done configuring files\n"
 
   echo -e "Setting up web server"
@@ -455,11 +465,13 @@ else
     cat "/var/lib/tor/hidden_service/*/hostname" >"/var/www/html/tor_hostname" 2>/dev/null
   fi
   if grep -qs "^apache:" "/etc/passwd"; then
-    chown -Rf apache:apache "/var/www" "/usr/local/share/httpd"
+    for apache_dir in "/var/www/html" "/var/www/mrtg" "/usr/local/share/httpd"; do
+      [ -d "$apache_dir" ] && chown -Rf apache:apache "$apache_dir"
+    done
   fi
   echo -e "Done setting up web server\n"
 
-  if [ -f "$HOME/.local/dotfiles/personal/install.sh" ]; then
+  if [ -x "$HOME/.local/dotfiles/personal/install.sh" ]; then
     echo -e "Updating personal dotfiles"
     bash -c "$HOME/.local/dotfiles/personal/install.sh" &>/dev/null
     echo -e "dotfiles have been updated\n"
@@ -494,6 +506,16 @@ else
   for s in $SERVICES_DISABLE; do systemctl disable "$s" &>/dev/null; done
   echo -e "Done setting up the services\n"
 
+  if [ -d "/etc/cockpit/ws-certs.d" ]; then
+    if [ -f "/etc/letsencrypt/live/domain/fullchain.pem" ] && [ -f "/etc/letsencrypt/live/domain/privkey.pem" ]; then
+      echo "Updating certs for cockpit"
+      rm -Rf "/etc/cockpit/ws-certs.d"/*
+      cat /etc/letsencrypt/live/domain/{fullchain.pem,privkey.pem} >/etc/cockpit/ws-certs.d/1-my-cert.cert
+      systemctl restart cockpit &>/dev/null
+      echo -e "Done updating certs for cockpit\n"
+    fi
+  fi
+
   if [ -f "$HOME/dns/docker.sh" ]; then
     echo -e "Setting up the dns server"
     bash -c "$HOME/dns/docker.sh"
@@ -510,14 +532,15 @@ else
     echo -e "done setting up the dns server\n"
   fi
 
-  if [ -d "/etc/cockpit/ws-certs.d" ]; then
-    if [ -f "/etc/letsencrypt/live/domain/fullchain.pem" ] && [ -f "/etc/letsencrypt/live/domain/privkey.pem" ]; then
-      echo "Updating certs for cockpit"
-      rm -Rf "/etc/cockpit/ws-certs.d"/*
-      cat /etc/letsencrypt/live/domain/{fullchain.pem,privkey.pem} >/etc/cockpit/ws-certs.d/1-my-cert.cert
-      systemctl restart cockpit
-      echo -e "Done updating certs for cockpit\n"
-    fi
+  if [ "$myhostnameshort" = "mail" ]; then
+    echo "Running installer script for email server"
+    [ -f "$HOME/Projects/github/dfprivate/email/install.sh" ] && eval "$HOME/Projects/github/dfprivate/email/install.sh"
+  elif [ "$myhostnameshort" = "db" ] || [ "$set_domainname" = "sqldb.us" ]; then
+    echo "Running installer script for database server"
+    [ -f "$HOME/Projects/github/dfprivate/sql/install.sh" ] && eval "$HOME/Projects/github/dfprivate/sql/install.sh"
+  elif [ "$myhostnameshort" = "dns" ] || [ "$myhostnameshort" = "dns1" ] || [ "$myhostnameshort" = "dns2" ]; then
+    echo "Running installer script for dns server"
+    [ -f "$HOME/Projects/github/dfprivate/dns/install.sh" ] && eval "$HOME/Projects/github/dfprivate/dns/install.sh"
   fi
 
   echo "Fixing files"
@@ -528,17 +551,6 @@ else
     rm -Rf "/var/log/munin-node"
     systemctl restart munin-node &>/dev/null
     echo -e "Done Fixing files\n"
-  fi
-
-  if [ "$myhostnameshort" = "mail" ]; then
-    echo "Running installer script for email server"
-    [ -f "$HOME/Projects/github/dfprivate/email/install.sh" ] && eval "$HOME/Projects/github/dfprivate/email/install.sh"
-  elif [ "$myhostnameshort" = "db" ] || [ "$set_domainname" = "sqldb.us" ]; then
-    echo "Running installer script for database server"
-    [ -f "$HOME/Projects/github/dfprivate/sql/install.sh" ] && eval "$HOME/Projects/github/dfprivate/sql/install.sh"
-  elif [ "$myhostnameshort" = "dns" ] || [ "$myhostnameshort" = "dns1" ] || [ "$myhostnameshort" = "dns2" ]; then
-    echo "Running installer script for dns server"
-    [ -f "$HOME/Projects/github/dfprivate/dns/install.sh" ] && eval "$HOME/Projects/github/dfprivate/dns/install.sh"
   fi
 
   echo -e "Cleaning up files and history"

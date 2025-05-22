@@ -2,10 +2,8 @@
 compatibility_level = 2
 alias_maps = hash:/etc/aliases
 alias_database = hash:/etc/aliases
-mynetworks = /etc/postfix/mynetworks
 transport_maps = hash:/etc/postfix/transport
 virtual_alias_maps = hash:/etc/postfix/virtual
-relay_domains = hash:/etc/postfix/mydomains, regexp:/etc/postfix/mydomains.pcre
 smtp_sasl_password_maps = hash:/etc/postfix/sasl/passwd
 
 inet_protocols = all
@@ -23,20 +21,18 @@ smtpd_use_tls = yes
 smtpd_tls_session_cache_database = btree:/etc/postfix/smtpd_scache
 smtpd_tls_dh1024_param_file = /etc/ssl/dhparam/1024.pem
 smtpd_tls_exclude_ciphers = aNULL, eNULL, EXPORT, DES, RC4, MD5, PSK, aECDH, EDH-DSS-DES-CBC3-SHA, EDH-RSA-DES-CBC3-SHA, KRB5-DES, CBC3-SHA
-# LECerts
+
 smtp_tls_key_file = /etc/letsencrypt/live/domain/privkey.pem
 smtp_tls_cert_file = /etc/letsencrypt/live/domain/fullchain.pem
 smtpd_tls_key_file = /etc/letsencrypt/live/domain/privkey.pem
 smtpd_tls_cert_file = /etc/letsencrypt/live/domain/fullchain.pem
 smtpd_relay_restrictions = permit_mynetworks, permit_sasl_authenticated, defer_unauth_destination
 
-mydestination =
 myorigin = myserverdomainname
 myhostname = myserverdomainname
+mydestination =
 
 append_dot_mydomain = yes
 local_transport=error: local delivery disabled
 
-luser_relay = root@myserverdomainname
-
-relayhost = [smtp-relay.casjay.email]:465
+relayhost = [smtp-relay.casjay.email]:587

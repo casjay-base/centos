@@ -20,6 +20,7 @@
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # colors initialization
 color_prompt=yes
+OS_TYPE="$(uname -s)"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Reset
 NC="$(tput sgr0 2>/dev/null)"
@@ -206,7 +207,7 @@ if [ -n "$DISPLAY" ] && which xset >/dev/null 2>&1; then
 fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # enable control alt backspace
-if [ -n "$DISPLAY" ] && [ "$(uname -s)" = "Linux" ]; then
+if [ -n "$DISPLAY" ] && [ "$OS_TYPE" = "Linux" ]; then
   XKBOPTIONS="terminate:ctrl_alt_bksp"
   if which setxkbmap >/dev/null 2>&1; then
     setxkbmap -model pc104 -layout us -option "terminate:ctrl_alt_bksp" 2>/dev/null
@@ -229,7 +230,7 @@ fi
 export XMODIFIERS GTK_IM_MODULE QT_IM_MODULE
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # xserver settings
-if [ -n "$DISPLAY" ] && [ "$(uname -s)" = "Linux" ]; then
+if [ -n "$DISPLAY" ] && [ "$OS_TYPE" = "Linux" ]; then
   if [ ! -f "$HOME/.Xdefaults" ]; then
     touch "$HOME/.Xdefaults"
   fi
@@ -437,7 +438,7 @@ TMP_BIN_PATH="$DENO_INSTALL/bin:$TMP_BIN_PATH"
 if [ -z "$PYTHONPATH" ]; then
   export PYTHONPATH="/usr/local"
 else
-  PYTHONPATH="$(echo "$PYTHONPATH" | sed 's|:/usr/local||g')"
+  PYTHONPATH="$(echo "$PYTHONPATH" | grep -v '/usr/local')"
   export PYTHONPATH="$PYTHONPATH:/usr/local"
 fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -647,7 +648,7 @@ else
     MYFILEMANAGER="se"
   fi
 fi
-if [ "$(uname -s)" = Darwin ]; then
+if [ "$OS_TYPE" = Darwin ]; then
   MYFILEMANAGER="open"
 fi
 export FILEMANAGER="$MYFILEMANAGER"
@@ -868,7 +869,7 @@ if which multi_clipboard >/dev/null 2>&1; then
   export CLIPBOARD="$HOME/.cache/.clipboard"
   export CLMAXHIST="20"
   export CLSEP='\x07'
-  if [ "$(uname -s)" = Linux ]; then
+  if [ "$OS_TYPE" = Linux ]; then
     if which xsel >/dev/null 2>&1; then
       export CLXOS="xsel"
       export CLX="xsel"
@@ -876,7 +877,7 @@ if which multi_clipboard >/dev/null 2>&1; then
       export CLXOS="xclip"
       export CLX="xclip"
     fi
-  elif [ "$(uname -s)" = cygwin ]; then
+  elif [ "$OS_TYPE" = cygwin ]; then
     if which xsel >/dev/null 2>&1; then
       export CLXOS="xsel"
       export CLX="xsel"
@@ -884,7 +885,7 @@ if which multi_clipboard >/dev/null 2>&1; then
       export CLXOS="xclip"
       export CLX="xclip"
     fi
-  elif [ "$(uname -s)" = Darwin ]; then
+  elif [ "$OS_TYPE" = Darwin ]; then
     if which pbcopy >/dev/null 2>&1; then
       export CLXOS="pbcopy"
       export CLX="pbcopy"
@@ -893,8 +894,10 @@ if which multi_clipboard >/dev/null 2>&1; then
 fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # fix - https://brew.sh
-export HOMEBREW_INSTALL_BADGE="☕️ 🐸"
-export HOMEBREW_CASK_OPTS="--appdir=/Applications"
+if [ "$OS_TYPE" = Darwin ]; then
+  export HOMEBREW_INSTALL_BADGE="☕️ 🐸"
+  export HOMEBREW_CASK_OPTS="--appdir=/Applications"
+fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # cursor
 if [ -n "$BASH_VERSION" ] || [ -n "$ZSH_VERSION" ]; then
@@ -925,7 +928,7 @@ fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # create env vars from shell files
 if [ $(find -L "$HOME/.config/secure/inc" -type f -name '*.sh' 2>/dev/null | grep '^' || false) ]; then
-  cat "$HOME/.config/secure/inc"/*.sh 2>/dev/null >"$HOME/.config/secure/env"
+  cat "$HOME/.config/secure/inc"/*.sh 2>/dev/null >"$HOME/.config/secure/env.sh"
   [ -f "$HOME/.config/secure/env.sh" ] && . "$HOME/.config/secure/env.sh"
 else
   rm -Rf "$HOME/.config/secure/env.sh" >/dev/null 2>&1
@@ -941,14 +944,14 @@ fi
 # Create directories
 [ -d "$HOME/.config/local" ] || mkdir -p "$HOME/.config/local"
 [ -d "$HOME/.config/secure/inc" ] || mkdir -p "$HOME/.config/secure/inc"
-[ -n "$TMPDIR" ] && { [ -d "$TMPDIR" ] || mkdir -p "$TMPDIR"; }
-[ -n "$LOGDIR" ] && { [ -d "$LOGDIR" ] || mkdir -p "$LOGDIR"; }
-[ -n "$ICON_DIR" ] && { [ -d "$ICON_DIR" ] || mkdir -p "$ICON_DIR"; }
-[ -n "$FONT_DIR" ] && { [ -d "$FONT_DIR" ] || mkdir -p "$FONT_DIR"; }
-[ -n "$THEME_DIR" ] && { [ -d "$THEME_DIR" ] || mkdir -p "$THEME_DIR"; }
-[ -n "$USRBINDIR" ] && { [ -d "$USRBINDIR" ] || mkdir -p "$USRBINDIR"; }
-[ -n "$WALLPAPER_DIR" ] && { [ -d "$WALLPAPER_DIR" ] || mkdir -p "$WALLPAPER_DIR"; }
-[ -n "$SETV_VIRTUAL_DIR_PATH" ] && { [ -d "$SETV_VIRTUAL_DIR_PATH" ] || mkdir -p "$SETV_VIRTUAL_DIR_PATH"; }
+[ -z "$TMPDIR" ] || { [ -d "$TMPDIR" ] || mkdir -p "$TMPDIR"; }
+[ -z "$LOGDIR" ] || { [ -d "$LOGDIR" ] || mkdir -p "$LOGDIR"; }
+[ -z "$ICON_DIR" ] || { [ -d "$ICON_DIR" ] || mkdir -p "$ICON_DIR"; }
+[ -z "$FONT_DIR" ] || { [ -d "$FONT_DIR" ] || mkdir -p "$FONT_DIR"; }
+[ -z "$THEME_DIR" ] || { [ -d "$THEME_DIR" ] || mkdir -p "$THEME_DIR"; }
+[ -z "$USRBINDIR" ] || { [ -d "$USRBINDIR" ] || mkdir -p "$USRBINDIR"; }
+[ -z "$WALLPAPER_DIR" ] || { [ -d "$WALLPAPER_DIR" ] || mkdir -p "$WALLPAPER_DIR"; }
+[ -z "$SETV_VIRTUAL_DIR_PATH" ] || { [ -d "$SETV_VIRTUAL_DIR_PATH" ] || mkdir -p "$SETV_VIRTUAL_DIR_PATH"; }
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # bring in apps
 
@@ -973,6 +976,6 @@ fi
 export PATH
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # unset unneeded vars
-unset SET_PATH SET_TMP_PATH TMP_BIN_PATH
+unset SET_PATH SET_TMP_PATH TMP_BIN_PATH OS_TYPE
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # end

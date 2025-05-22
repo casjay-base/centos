@@ -36,7 +36,7 @@ set -o pipefail
 PROCS="nginx httpd postfix crond dockerd sshd php-fpm "
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # User defined functions
-__check_url() { curl -q -LSsIf --max-time 3 "$1" &>/dev/null || return 1; }
+__check_url() { curl -q -LSsfI --max-time 3 --max-time 2 --retry 1 "$1" >/dev/null 2>&1 || return 1; }
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 __proc_check() {
   proc="$(ps aux 2>&1 | grep -v 'grep' | grep -w "$1" | head -n1 | grep -q "$1" && echo "$1" || false)"

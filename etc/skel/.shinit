@@ -18,15 +18,22 @@
 # @@sudo/root        :  no
 # @@Template         :  template
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-[ -f "$HOME/.profile" ] && . "$HOME/.profile"
+if [ -r "$HOME/.profile" ]; then
+  . "$HOME/.profile"
+elif [ -r "/etc/profile" ]; then
+  . "/etc/profile"
+fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # get hostname info
 if which hostname >/dev/null 2>&1; then
   HOSTNAME_FULL="$(hostname -f)"
   HOSTNAME_SHORT="$(hostname -s)"
-else
+elif which >/dev/null; then
   HOSTNAME_FULL="$(hostnamecli -f)"
   HOSTNAME_SHORT="$(hostnamecli -s)"
+else
+  HOSTNAME_FULL="$(hostnamectl hostname)"
+  HOSTNAME_SHORT="$(hostnamectl hostname | awk -F. '{print $1}')"
 fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 [ -n "$HOSTNAME_FULL" ] && HOSTNAME="$HOSTNAME_FULL" || HOSTNAME="$HOSTNAME_SHORT"

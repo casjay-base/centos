@@ -1,8 +1,8 @@
 # CronTab config
 PATH=/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 HOSTNAME="$(hostname -f || echo "$HOSTNAME")"
-SHELL="$(type -P bash || echo "$SHELL")"
-LOGDIR="${LOGDIR:-/usr/local/log}"
+SHELL="$(type -P bash || type -P "sh")"
+LOGDIR="${LOGDIR:-/var/log}"
 MAILTO=no-reply@$HOSTNAME
 HOME="${HOME:-/}"
 

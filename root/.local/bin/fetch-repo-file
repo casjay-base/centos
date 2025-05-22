@@ -114,8 +114,8 @@ if grep -sq "^SELINUX=" "/etc/selinux/config"; then
 fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 if [ "$FETCH_REPO_FILE_EXIT_STATUS" -eq 0 ]; then
-  printf '%b\n' "Done updating repos - now running yum update -y --skip-broken"
-  yum update -y --skip-broken
+  printf '%b\n' "Done updating repos - now running yum update -y --skip-broken --nogpgcheck"
+  yum update -y --skip-broken --nogpgcheck
 else
   printf '%b\n' "Failed to update the repos"
 fi

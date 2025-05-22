@@ -1,6 +1,5 @@
 [INCLUDES]
 before = paths-fedora.conf
-before = ips.txt
 
 # Fail2Ban configuration file
 [DEFAULT]

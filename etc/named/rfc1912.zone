@@ -1,5 +1,4 @@
-// Provided by Red Hat caching-nameserver package
-
+//
 zone "localhost.localdomain" IN {
   type master;
   file "named.localhost";
@@ -12,9 +11,9 @@ zone "localhost" IN {
   allow-update { none; };
 };
 
-zone "1.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.ip6.arpa" IN {
+zone "0.in-addr.arpa" IN {
   type master;
-  file "named.loopback";
+  file "named.empty";
   allow-update { none; };
 };
 
@@ -24,8 +23,8 @@ zone "1.0.0.127.in-addr.arpa" IN {
     allow-update { none; };
 };
 
-zone "0.in-addr.arpa" IN {
+zone "1.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.ip6.arpa" IN {
   type master;
-  file "named.empty";
+  file "named.loopback";
   allow-update { none; };
 };

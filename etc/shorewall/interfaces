@@ -1,3 +1,3 @@
 #ZONE		INTERFACE		OPTIONS
-net         eth0            detect          dhcp,tcpflags,nosmurfs
+net         mynetworkdevice            detect          dhcp,tcpflags,nosmurfs
 dock        docker0

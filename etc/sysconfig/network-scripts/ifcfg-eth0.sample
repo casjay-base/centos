@@ -1,6 +1,6 @@
 # dhcp
-#DEVICE=eth0
-#NAME=eth0
+#DEVICE=mynetworkdevice
+#NAME=mynetworkdevice
 #ONBOOT=yes
 #TYPE=Ethernet
 #BOOTPROTO=dhcp
@@ -28,8 +28,8 @@
 #IPV6_PEERDNS=no
 #IPV6_FAILURE_FATAL=no
 #IPV6_ADDR_GEN_MODE=stable-privacy
-#NAME=eth0
-#DEVICE=eth0
+#NAME=mynetworkdevice
+#DEVICE=mynetworkdevice
 #ONBOOT=yes
 #AUTOCONNECT_PRIORITY=-999
 #DHCPV6C=yes
