@@ -388,12 +388,19 @@ else
   rm -Rf /tmp/configs/var/named*
   rm -Rf /tmp/configs/root/.bashrc
   rm -Rf /tmp/configs/etc/sysconfig/network-scripts
-  rm -Rf /tmp/configs/etc/{hosts,tor,cockpit,fail2ban,shorewall,shorewall6,samba,postfix,named*}
-  mkdir -p "/etc/rsync.d"
+  rm -Rf /tmp/configs/etc/{hosts,tor,cockpit,samba,postfix,named*}
   find -L /tmp/configs -type f -iname "*.sh" -exec chmod 755 {} \; &>/dev/null
   find -L /tmp/configs -type f -iname "*.pl" -exec chmod 755 {} \; &>/dev/null
   find -L /tmp/configs -type f -iname "*.cgi" -exec chmod 755 {} \; &>/dev/null
-
+  mkdir -p "/etc/rsync.d"
+  for dir in fail2ban shorewall shorewall6; do
+    if [ -d "/etc/$d" ]; then
+      if [ -f "/etc/$d/.installed" ]; then
+        rm -Rf "/tmp/configs/$d"
+      fi
+    fi
+    echo "$(date)" >"/etc/$d/.installed"
+  done
   echo -e "Setting NetWork device to to $NETDEV"
   find -L /tmp/configs -type f -exec sed -i "s#mynetworkdevice#$NETDEV#g" {} \; &>/dev/null
   if [ -f "/etc/sysconfig/network-scripts/ifcfg-eth0.sample" ]; then
