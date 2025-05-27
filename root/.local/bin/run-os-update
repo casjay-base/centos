@@ -181,7 +181,7 @@ export REMOTE_VERSION="$(curl -q -LSsf "https://github.com/casjay-base/centos/ra
 [ -f "/etc/casjaysdev/updates/versions/configs.txt" ] && export INSTALLED_VERSION="$(head -n1 <"/etc/casjaysdev/updates/versions/configs.txt" 2>/dev/null)"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 if [ -f "/etc/httpd/conf/httpd.conf" ]; then 
-  sed -i 's|ServerTokens|ServerTokens Prod|g' /etc/httpd/conf/httpd.conf
+  sed -i 's|ServerTokens .*|ServerTokens Prod|g' /etc/httpd/conf/httpd.conf
   systemctl restart httpd 2>/dev/null
 fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -480,7 +480,7 @@ else
       [ -d "$apache_dir" ] && chown -Rf apache:apache "$apache_dir"
     done
   fi
-  sed -i 's|ServerTokens|ServerTokens Prod|g' /etc/httpd/conf/httpd.conf
+  sed -i 's|ServerTokens. *|ServerTokens Prod|g' /etc/httpd/conf/httpd.conf
   echo -e "Done setting up web server\n"
 
   if [ -x "$HOME/.local/dotfiles/personal/install.sh" ]; then
