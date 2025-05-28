@@ -182,7 +182,7 @@ export REMOTE_VERSION="$(curl -q -LSsf "https://github.com/casjay-base/centos/ra
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # fixes
 if [ -f "/etc/httpd/conf/httpd.conf" ]; then 
-  if ! grep -qi 'ServerTokens.*Prod' /etc/httpd/conf/httpd.conf; then
+  if ! grep -qi 'ServerTokens Prod$' /etc/httpd/conf/httpd.conf; then
     sed -i 's|ServerTokens .*|ServerTokens Prod|g' /etc/httpd/conf/httpd.conf
     systemctl restart httpd 2>/dev/null
   fi
