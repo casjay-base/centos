@@ -497,44 +497,52 @@ else
   if [ -d "/etc/letsencrypt/live/domain" ]; then
     if [ -d "/etc/letsencrypt/renewal-hooks/post" ]; then
       if [ ! -f "/etc/letsencrypt/renewal-hooks/post/exec.sh" ]; then
-        cat <<EOF | tee "/etc/letsencrypt/renewal-hooks/post/system.sh" >/dev/null
+        cat <<EOF | tee "/etc/letsencrypt/renewal-hooks/post/exec.sh" >/dev/null
 #!/usr/bin/env sh
 # Insert any custom commands you want executed after a new cert or upon renewal
 
 EOF
       fi
-      cat <<EOF | tee "/etc/letsencrypt/renewal-hooks/post/system.sh" >/dev/null
+      if [ ! -f "/etc/letsencrypt/renewal-hooks/post/system.sh" ]; then
+        cat <<EOF | tee "/etc/letsencrypt/renewal-hooks/post/system.sh" >/dev/null
 #!/usr/bin/env sh
 cat "/etc/letsencrypt/live/domain/privkey.pem" >"/etc/ssl/certs/\$HOSTNAME.key"
 cat "/etc/letsencrypt/live/domain/fullchain.pem" >"/etc/ssl/certs/\$HOSTNAME.cert"
 EOF
-
-      cat <<EOF | tee "/etc/letsencrypt/renewal-hooks/post/cockpit.sh" >/dev/null
+      fi
+      if [ ! -f "/etc/letsencrypt/renewal-hooks/post/cockpit.sh" ]; then
+        cat <<EOF | tee "/etc/letsencrypt/renewal-hooks/post/cockpit.sh" >/dev/null
 #!/usr/bin/env sh
 cat "/etc/letsencrypt/live/domain/privkey.pem" >"/etc/cockpit/ws-certs.d/1-my-cert.key"
 cat "/etc/letsencrypt/live/domain/fullchain.pem" >"/etc/cockpit/ws-certs.d/1-my-cert.cert"
 systemctl is-enabled cockpit >/dev/null 2>&1 && systemctl restart cockpit >/dev/null 2>&1
 
 EOF
-      cat <<EOF | tee "/etc/letsencrypt/renewal-hooks/post/nginx.sh" >/dev/null
+      fi
+      if [ ! -f "/etc/letsencrypt/renewal-hooks/post/nginx.sh" ]; then
+        cat <<EOF | tee "/etc/letsencrypt/renewal-hooks/post/nginx.sh" >/dev/null
 #!/usr/bin/env sh
 systemctl is-enabled nginx >/dev/null 2>&1 && systemctl reload nginx >/dev/null 2>&1
 
 EOF
-
-      cat <<EOF | tee "/etc/letsencrypt/renewal-hooks/post/httpd.sh" >/dev/null
+      fi
+      if [ ! -f "/etc/letsencrypt/renewal-hooks/post/httpd.sh" ]; then
+        cat <<EOF | tee "/etc/letsencrypt/renewal-hooks/post/httpd.sh" >/dev/null
 #!/usr/bin/env sh
 systemctl is-enabled httpd >/dev/null 2>&1 && systemctl reload httpd >/dev/null 2>&1
 
 EOF
-
-      cat <<EOF | tee "/etc/letsencrypt/renewal-hooks/post/postfix.sh" >/dev/null
+      fi
+      if [ ! -f "/etc/letsencrypt/renewal-hooks/post/postfix.sh" ]; then
+        cat <<EOF | tee "/etc/letsencrypt/renewal-hooks/post/postfix.sh" >/dev/null
 #!/usr/bin/env sh
 systemctl is-enabled postfix >/dev/null 2>&1 && systemctl reload postfix >/dev/null 2>&1
 
 EOF
-      if [ -d "/opt/openfire/resources/security" ]; then
-        cat <<EOF | tee "/etc/letsencrypt/renewal-hooks/post/openfire.sh" >/dev/null
+      fi
+      if [ ! -f "/etc/letsencrypt/renewal-hooks/post/openfire.sh" ]; then
+        if [ -d "/opt/openfire/resources/security" ]; then
+          cat <<EOF | tee "/etc/letsencrypt/renewal-hooks/post/openfire.sh" >/dev/null
 #!/usr/bin/env sh
 privkey="\$(realpath "/etc/letsencrypt/live/domain/privkey.pem")"
 fullchain="\$(realpath "/etc/letsencrypt/live/domain/fullchain.pem")"
@@ -546,6 +554,7 @@ chown -R daemon /opt/openfire/resources/security/hotdeploy
 #systemctl restart openfire
 
 EOF
+        fi
       fi
       chmod +x "/etc/letsencrypt/renewal-hooks/post"/*
     fi
