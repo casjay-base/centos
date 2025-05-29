@@ -197,7 +197,7 @@ internal_domain="${INTERNAL_DOMAIN_NAME:-internal}"
 hostnamefull="$(hostname -f 2>/dev/null | grep '^' || echo "$HOSTNAME")"
 hostnameshort="$(hostname -s 2>/dev/null | grep '^' || echo "$HOSTNAME")"
 myserverdomainname="$(hostname -f 2>/dev/null | grep '^' || hostname -s 2>/dev/null | grep '^' || echo "$HOSTNAME")"
-domainname="$(hostname -d | grep '^' || echo "$hostnamefull" | awk -F'.' '{$1="";OFS="."; print $0}' | grep -v '^$' | sed 's|^\.||g;s|^ /*||g;s| |.|g' | grep '^' || echo "$internal_domain")"
+mydomainname="$(hostname -d | grep '^' || echo "$hostnamefull" | awk -F'.' '{$1="";OFS="."; print $0}' | grep -v '^$' | sed 's|^\.||g;s|^ /*||g;s| |.|g' | grep '^' || echo "$internal_domain")"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 [ "$ARCH" = "x86_64" ] || yum_opts="--disablerepo casjay-remi-php,casjay-remi-safe"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -422,8 +422,8 @@ else
   find -L /tmp/configs -type f -exec sed -i "s#myserverdomainname#$hostnamefull#g" {} \; &>/dev/null
   echo -e "Setting short hostname to $hostnameshort"
   find -L /tmp/configs -type f -exec sed -i "s#myhostnameshort#$hostnameshort#g" {} \; &>/dev/null
-  echo -e "Setting the domain name to $domainname"
-  find -L /tmp/configs -type f -exec sed -i "s#mydomainname#$domainname#g" {} \; &>/dev/null
+  echo -e "Setting the domain name to $mydomainname"
+  find -L /tmp/configs -type f -exec sed -i "s#mydomainname#$mydomainname#g" {} \; &>/dev/null
 
   cp -Rf /tmp/configs/{etc,root,usr,var}* / 2>/dev/null
 
@@ -432,14 +432,14 @@ else
   fi
 
   if [ -f "/etc/sysconfig/network" ]; then
-    sed -i "s#mydomain#$domainname#g" /etc/sysconfig/network
+    sed -i "s#mydomain#$mydomainname#g" /etc/sysconfig/network
     sed -i "s#myserverdomainname#$HOSTNAME#g" /etc/sysconfig/network
   fi
 
   if grep '^kernel.domainname' '/etc/sysctl.conf'; then
-    sed -i 's|kernel.domainname=.*|kernel.domainname='$domainname'|g' /etc/sysctl.conf
+    sed -i 's|kernel.domainname=.*|kernel.domainname='$mydomainname'|g' /etc/sysctl.conf
   else
-    echo -e "kernel.domainname=$domainname" >>/etc/sysctl.conf
+    echo -e "kernel.domainname=$mydomainname" >>/etc/sysctl.conf
   fi
 
   echo "PRESERVE_HOSTINFO=2" >"/etc/oci-hostname.conf"
