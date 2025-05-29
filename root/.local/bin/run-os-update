@@ -238,6 +238,7 @@ if [ "$1" = "--grub" ]; then
 fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 if [ ! -f "/tmp/run-os-update" ] && ping -c 2 1.1.1.1 &>/dev/null; then
+  echo "Updating the installer before proceeding"
   export DOCKER_UPDATE INSTALLED_VERSION SCRIPTS_UPDATE STATICSITE USER FORCE_INST REPO_UPDATE
   curl -q -LSsf "https://raw.githubusercontent.com/casjay-base/centos/main/root/.local/bin/run-os-update" -o "/tmp/run-os-update" 2>/dev/null
   if [ -f "/tmp/run-os-update" ]; then
