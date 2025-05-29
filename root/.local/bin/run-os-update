@@ -146,6 +146,21 @@ rm_if_exists() {
     fi
   done
 }
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+__show_help() {
+  cat <<EOF
+available options for $APPNAME: version $VERSION
+$APPNAME --kernel-ml           - switch to the newest kernel from elrepo
+$APPNAME --kernel-lt           - switch to the newest lts kernel from elrepo
+$APPNAME --force               - Force the update
+$APPNAME --scripts             - Update scripts
+$APPNAME --check               - Check for update
+$APPNAME --version             - Show version
+$APPNAME --help                - This message
+
+EOF
+  exit
+}
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 [ "$USER" = "root" ] || [ "$EUID" = 0 ] || exit 1
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -201,44 +216,34 @@ mydomainname="$(hostname -d | grep '^' || echo "$hostnamefull" | awk -F'.' '{$1=
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 [ "$ARCH" = "x86_64" ] || yum_opts="--disablerepo casjay-remi-php,casjay-remi-safe"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-if [ "$1" = "--help" ]; then
-  shift 1
-  echo "available options for $APPNAME: version $VERSION
-$APPNAME --kernel-ml           - switch to the newest kernel from elrepo
-$APPNAME --kernel-lt           - switch to the newest lts kernel from elrepo
-$APPNAME --force               - Force the update
-$APPNAME --scripts             - Update scripts
-$APPNAME --check               - Check for update
-$APPNAME --version             - Show version
-$APPNAME --help                - This message
-"
-  exit
-fi
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 while [ $# -ne 0 ]; do
   case "$1" in
+  --help | -h | help | \?) __show_help ;;
+  --grub) UPDATE_GRUB="yes" ;;
   --force) FORCE_INST="true" ;;
   --docker) DOCKER_UPDATE="true" ;;
   --repo | repo) REPO_UPDATE="true" ;;
+  --kernel-ml) KERNEL_ML_INSTALL="yes" ;;
+  --kernel-lt) KERNEL_LT_INSTALL="yes" ;;
   --version | -v | version) echo "$INSTALLED_VERSION" && exit ;;
   --scripts | -s | scripts | script) SCRIPTS_UPDATE="true" ;;
   --check | -c | check) echo "Old version is $INSTALLED_VERSION and new version is $REMOTE_VERSION" && exit ;;
-  *) echo "$1 is an invalid argument" ;;
+  *) echo "$1 is an invalid argument" && exit 1 ;;
   esac
   shift
 done
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-if [ "$1" = "--kernel-ml" ]; then
+if [ "$KERNEL_ML_INSTALL" = "yes" ]; then
   __yum makecache && __yum update --exclude 'kernel*' && __kernel_ml
   exit $?
 fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-if [ "$1" = "--kernel-lt" ]; then
+if [ "$KERNEL_LT_INSTALL" = "yes" ]; then
   __yum makecache && __yum update --exclude 'kernel*' && __kernel_lt
   exit $?
 fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-if [ "$1" = "--grub" ]; then
+if [ "$UPDATE_GRUB" = "yes" ]; then
   run_grub
   exit $?
 fi
