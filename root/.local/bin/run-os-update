@@ -215,12 +215,18 @@ $APPNAME --help                - This message
   exit
 fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-[ "$1" = "--force" ] && shift 1 && FORCE_INST="true"
-[ "$1" = "--docker" ] && shift 1 && DOCKER_UPDATE="true"
-{ [ "$1" = "--repo" ] || [ "$1" = "repo" ]; } && shift 1 && REPO_UPDATE="true"
-{ [ "$1" = "--version" ] || [ "$1" = "-v" ] || [ "$1" = "version" ]; } && shift 1 && echo "$INSTALLED_VERSION" && exit
-{ [ "$1" = "--scripts" ] || [ "$1" = "-s" ] || [ "$1" = "scripts" ] || [ "$1" = "script" ]; } && shift 1 && SCRIPTS_UPDATE="true"
-{ [ "$1" = "--check" ] || [ "$1" = "-c" ] || [ "$1" = "check" ]; } && shift 1 && echo "Old version is $INSTALLED_VERSION and new version is $REMOTE_VERSION" && exit
+while [ $# -ne 0 ]; do
+  case "$1" in
+  --force) FORCE_INST="true" ;;
+  --docker) DOCKER_UPDATE="true" ;;
+  --repo | repo) REPO_UPDATE="true" ;;
+  --version | -v | version) echo "$INSTALLED_VERSION" && exit ;;
+  --scripts | -s | scripts | script) SCRIPTS_UPDATE="true" ;;
+  --check | -c | check) echo "Old version is $INSTALLED_VERSION and new version is $REMOTE_VERSION" && exit ;;
+  *) echo "$1 is an invalid argument" ;;
+  esac
+  shift
+done
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 if [ "$1" = "--kernel-ml" ]; then
   __yum makecache && __yum update --exclude 'kernel*' && __kernel_ml
