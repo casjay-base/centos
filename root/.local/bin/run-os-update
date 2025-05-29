@@ -181,7 +181,7 @@ export REMOTE_VERSION="$(curl -q -LSsf "https://github.com/casjay-base/centos/ra
 [ -f "/etc/casjaysdev/updates/versions/configs.txt" ] && export INSTALLED_VERSION="$(head -n1 <"/etc/casjaysdev/updates/versions/configs.txt" 2>/dev/null)"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # fixes
-if [ -f "/etc/httpd/conf/httpd.conf" ]; then 
+if [ -f "/etc/httpd/conf/httpd.conf" ]; then
   if ! grep -qi 'ServerTokens Prod$' /etc/httpd/conf/httpd.conf; then
     sed -i 's|ServerTokens .*|ServerTokens Prod|g' /etc/httpd/conf/httpd.conf
     systemctl restart httpd 2>/dev/null
@@ -495,8 +495,60 @@ else
   echo -e "Setting up the ssl certs"
   [ -f "/etc/named/certbot-update.conf" ] && chmod 600 /etc/named/certbot-update.conf
   if [ -d "/etc/letsencrypt/live/domain" ]; then
-    cat "/etc/letsencrypt/live/domain/privkey.pem" >"/etc/cockpit/ws-certs.d/1-my-cert.key"
-    cat "/etc/letsencrypt/live/domain/fullchain.pem" >"/etc/cockpit/ws-certs.d/1-my-cert.cert"
+    if [ -d "/etc/letsencrypt/renewal-hooks/post" ]; then
+      if [ ! -f "/etc/letsencrypt/renewal-hooks/post/exec.sh" ]; then
+        cat <<EOF | tee "/etc/letsencrypt/renewal-hooks/post/system.sh" >/dev/null
+#!/usr/bin/env sh
+# Insert any custom commands you want executed after a new cert or upon renewal
+
+EOF
+      fi
+      cat <<EOF | tee "/etc/letsencrypt/renewal-hooks/post/system.sh" >/dev/null
+#!/usr/bin/env sh
+cat "/etc/letsencrypt/live/domain/privkey.pem" >"/etc/ssl/certs/\$HOSTNAME.key"
+cat "/etc/letsencrypt/live/domain/fullchain.pem" >"/etc/ssl/certs/\$HOSTNAME.cert"
+EOF
+
+      cat <<EOF | tee "/etc/letsencrypt/renewal-hooks/post/cockpit.sh" >/dev/null
+#!/usr/bin/env sh
+cat "/etc/letsencrypt/live/domain/privkey.pem" >"/etc/cockpit/ws-certs.d/1-my-cert.key"
+cat "/etc/letsencrypt/live/domain/fullchain.pem" >"/etc/cockpit/ws-certs.d/1-my-cert.cert"
+systemctl is-enabled cockpit >/dev/null 2>&1 && systemctl restart cockpit >/dev/null 2>&1
+
+EOF
+      cat <<EOF | tee "/etc/letsencrypt/renewal-hooks/post/nginx.sh" >/dev/null
+#!/usr/bin/env sh
+systemctl is-enabled nginx >/dev/null 2>&1 && systemctl reload nginx >/dev/null 2>&1
+
+EOF
+
+      cat <<EOF | tee "/etc/letsencrypt/renewal-hooks/post/httpd.sh" >/dev/null
+#!/usr/bin/env sh
+systemctl is-enabled httpd >/dev/null 2>&1 && systemctl reload httpd >/dev/null 2>&1
+
+EOF
+
+      cat <<EOF | tee "/etc/letsencrypt/renewal-hooks/post/postfix.sh" >/dev/null
+#!/usr/bin/env sh
+systemctl is-enabled postfix >/dev/null 2>&1 && systemctl reload postfix >/dev/null 2>&1
+
+EOF
+      if [ -d "/opt/openfire/resources/security" ]; then
+        cat <<EOF | tee "/etc/letsencrypt/renewal-hooks/post/openfire.sh" >/dev/null
+#!/usr/bin/env sh
+privkey="\$(realpath "/etc/letsencrypt/live/domain/privkey.pem")"
+fullchain="\$(realpath "/etc/letsencrypt/live/domain/fullchain.pem")"
+openfireSSL="/opt/openfire/resources/security/hotdeploy"
+[ -d "\$openfireSSL" ] || mkdir -p "\$openfireSSL"
+cat "\$fullchain" "\$openfireSSL/casjay-social-cert.pem"
+cat "\$privkey" "\$openfireSSL/casjay-social-privkey.pem"
+chown -R daemon /opt/openfire/resources/security/hotdeploy
+#systemctl restart openfire
+
+EOF
+      fi
+      chmod +x "/etc/letsencrypt/renewal-hooks/post"/*
+    fi
   fi
   update-ca-trust && update-ca-trust extract
   echo -e "Done setting up the ssl certs\n"
@@ -524,8 +576,8 @@ else
   if [ -d "/etc/cockpit/ws-certs.d" ]; then
     if [ -f "/etc/letsencrypt/live/domain/fullchain.pem" ] && [ -f "/etc/letsencrypt/live/domain/privkey.pem" ]; then
       echo "Updating certs for cockpit"
-      rm -Rf "/etc/cockpit/ws-certs.d"/*
-      cat /etc/letsencrypt/live/domain/{fullchain.pem,privkey.pem} >/etc/cockpit/ws-certs.d/1-my-cert.cert
+      cat "/etc/letsencrypt/live/domain/privkey.pem" >"/etc/cockpit/ws-certs.d/1-my-cert.key"
+      cat "/etc/letsencrypt/live/domain/fullchain.pem" >"/etc/cockpit/ws-certs.d/1-my-cert.cert"
       systemctl restart cockpit &>/dev/null
       echo -e "Done updating certs for cockpit\n"
     fi
