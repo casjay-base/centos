@@ -1,0 +1,6 @@
+/var/log/munin/*.log {
+        su munin
+        missingok
+        notifempty
+        copytruncate
+}
