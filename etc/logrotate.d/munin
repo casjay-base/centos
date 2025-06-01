@@ -1,5 +1,5 @@
 /var/log/munin/*.log {
-        su munin
+        su munin munin
         missingok
         notifempty
         copytruncate
