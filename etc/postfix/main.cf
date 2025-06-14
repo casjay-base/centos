@@ -35,4 +35,4 @@ mydestination =
 append_dot_mydomain = yes
 local_transport=error: local delivery disabled
 
-relayhost = [smtp-relay.casjay.email]:587
+relayhost = [smtp-relay.casjay.email]:465
