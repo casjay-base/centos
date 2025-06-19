@@ -17,7 +17,7 @@
 # @@sudo/root        :  no
 # @@Template         :  bash/system
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-APPNAME="$(basename "$0")"
+APPNAME="$(basename -- "$0")"
 VERSION="202506190941-git"
 HOME="${USER_HOME:-$HOME}"
 USER="${SUDO_USER:-$USER}"
@@ -267,15 +267,19 @@ fi
 if [ ! -f "/tmp/run-os-update" ] && ping -c 2 1.1.1.1 &>/dev/null; then
   echo "Updating the installer before proceeding"
   export DOCKER_UPDATE INSTALLED_VERSION SCRIPTS_UPDATE STATICSITE USER FORCE_INST REPO_UPDATE
-  curl -q -LSsf "https://raw.githubusercontent.com/casjay-base/centos/main/root/.local/bin/run-os-update" -o "/tmp/run-os-update" 2>/dev/null
-  if [ -f "/tmp/run-os-update" ]; then
-    chmod 755 "/tmp/run-os-update"
-    eval bash "/tmp/run-os-update" && exitCode=0 || exitCode=1
-    rm -Rf "/tmp/run-os-update"
+  if curl -q -LSsf "https://raw.githubusercontent.com/casjay-base/centos/main/root/.local/bin/run-os-update" -o "/tmp/run-os-update" 2>/dev/null; then
+    if [ -f "/tmp/run-os-update" ]; then
+      chmod 755 "/tmp/run-os-update"
+      eval "/tmp/run-os-update" && exitCode=0 || exitCode=1
+      eval "/tmp/run-os-update" --scripts
+      rm -Rf "/tmp/run-os-update"
+    else
+      exitCode=5
+    fi
   else
-    exitCode=5
+    exit 4
   fi
-  exit $exitCode
+  exit 8
 fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 MYSERVER_NET_DEVICE="$(ip route | grep default | sed -e "s/^.*dev.//" -e "s/.proto.*//")"
@@ -370,7 +374,7 @@ if [ -z "$FORCE_INST" ] && [ "$REMOTE_VERSION" = "$INSTALLED_VERSION" ]; then
   echo -e "Updating the cron file"
   cat <<EOF >"/etc/cron.d/run-os-update"
 # Update system configurations everyday at 4am
-0 4 * * * root [ -x "/root/.local/bin/run-os-update" ] && eval "/root/.local/bin/run-os-update" --cron >"$LOG_FILE" 2>&1 || bash -c "$(curl -q -LSsf "https://github.com/casjay-base/centos/raw/main/root/.local/bin/run-os-update")" -- --cron >"$LOG_FILE" 2>&1
+0 4 * * * root bash -c "$(curl -q -LSsf "https://github.com/casjay-base/centos/raw/main/root/.local/bin/run-os-update")" -- --cron >"$LOG_FILE" 2>&1
 EOF
   echo -e "Done updating the cron file"
   if [ "$CRON_UPDATE" = "yes" ]; then
