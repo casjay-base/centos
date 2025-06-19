@@ -738,12 +738,12 @@ EOF
   if [ -n "$(type -P web-notify 2>/dev/null)" ]; then
     if [ "$CRON_UPDATE" = "yes" ]; then
       if [ -f "$LOG_FILE" ]; then
-        cat "$LOG_FILE" | web-notify telegram
+        cat "$LOG_FILE" | web-notify telegram >/dev/null
       else
         echo "# The script for fixes has finished on $(date) for $HOSTNAME: bye 👋"
       fi
     else
-      web-notify telegram "$APP_NAME has ran on $HOSTNAME" "Updated to version $REMOTE_VERSION from $INSTALLED_VERSION"
+      web-notify telegram "$APP_NAME has ran on $HOSTNAME" "Updated to version $REMOTE_VERSION from $INSTALLED_VERSION" >/dev/null
     fi
   fi
   [ -n "$LOG_FILE" ] && [ -e "$LOG_FILE" ] && rm -Rf "$LOG_FILE"
