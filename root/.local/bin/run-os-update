@@ -649,6 +649,9 @@ EOF
   echo -e "Updated to version $REMOTE_VERSION from $INSTALLED_VERSION"
   echo -e "Last updated on $DATE" >"/var/log/run_update"
   echo -e "Done updating system\n\n"
+  if [ -n "$(type -P WEB-NOTIFY 2>/dev/null)" ] ;then
+    web-notify telegram "$APP_NAME has ran on $HOSTNAME"
+  fi
 fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 exit
