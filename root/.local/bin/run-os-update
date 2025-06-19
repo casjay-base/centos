@@ -541,6 +541,7 @@ else
   echo -e "Removing linuxcounter script completed\n"
 
   echo -e "Setting up web server"
+  [ -f "/usr/local/share/httpd/.env" ] && rm -Rf "/usr/local/share/httpd/.env"
   bash -c "$(curl -q -LSsf "https://github.com/casjay-templates/default-web-assets/raw/main/setup.sh")"
   if [ -f "/var/lib/tor/hidden_service/default/hostname" ]; then
     cat "/var/lib/tor/hidden_service/*/hostname" >"/var/www/html/tor_hostname" 2>/dev/null
