@@ -152,13 +152,13 @@ __systemctl_restart() { systemctl is-active "$1" >/dev/null 2>&1 && systemctl re
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 __get_www_user() {
   local user=""
-  user="$(grep -sh "www-data" "/etc/passwd" || grep -sh "apache" "/etc/passwd" || grep -sh "apache" "/etc/passwd")"
+  user="$(grep -sh "www-data" "/etc/passwd" || grep -sh "apache" "/etc/passwd" || grep -sh "nginx" "/etc/passwd")"
   [ -n "$user" ] && echo "$user" | awk -F ':' '{print $1}' || return 9
 }
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 __get_www_group() {
   local group=""
-  group="$(grep -sh "www-data" "/etc/group" || grep -sh "apache" "/etc/group" || grep -sh "apache" "/etc/group")"
+  group="$(grep -sh "www-data" "/etc/group" || grep -sh "apache" "/etc/group" || grep -sh "nginx" "/etc/group")"
   [ -n "$group" ] && echo "$group" | awk -F ':' '{print $1}' || return 9
 }
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -339,22 +339,22 @@ if [ -z "$FORCE_INST" ] && [ "$REMOTE_VERSION" = "$INSTALLED_VERSION" ]; then
   GET_WEB_USER="$(__get_www_user)"
   GET_WEB_GROUP="$(__get_www_group)"
   if [ -f "/etc/httpd/conf/httpd.conf" ]; then
-    if ! grep -qi 'ServerTokens Prod$' /etc/httpd/conf/httpd.conf; then
+    if ! grep -qi 'ServerTokens Prod$' "/etc/httpd/conf/httpd.conf"; then
       sed -i 's|ServerTokens .*|ServerTokens Prod|g' /etc/httpd/conf/httpd.conf
     fi
   fi
   if [ -n "$GET_WEB_USER" ]; then
-    [ -f "/etc/nginx/nginx.conf" ] && sed -i "s|user  apache|user  $GET_WEB_USER|g" "/etc/nginx/nginx.conf"
-    [ -f "/etc/httpd/conf/httpd.conf" ] && sed -i "s|User apache|User $GET_WEB_USER|g" "/etc/httpd/conf/httpd.conf"
-    [ -f "/etc/php-fpm.d/www.conf" ] && sed -i "s|user = apache|user = $GET_WEB_USER|g" "/etc/php-fpm.d/www.conf"
-    for apache_dir in "/var/www/mrtg" "/usr/local/share/httpd" "/var/www"; do
+    [ -f "/etc/nginx/nginx.conf" ] && sed -i "s|user .*|user  $GET_WEB_USER;|g" "/etc/nginx/nginx.conf"
+    [ -f "/etc/php-fpm.d/www.conf" ] && sed -i "s|user .*|user = $GET_WEB_USER|g" "/etc/php-fpm.d/www.conf"
+    [ -f "/etc/httpd/conf/httpd.conf" ] && sed -i "s|User .*|User $GET_WEB_USER|g" "/etc/httpd/conf/httpd.conf"
+    for apache_dir in "/usr/local/share/httpd" "/var/www"; do
       [ -d "$apache_dir" ] && chown -Rf $GET_WEB_USER "$apache_dir"
     done
   fi
   if [ -n "$GET_WEB_GROUP" ]; then
-    [ -f "/etc/php-fpm.d/www.conf" ] && sed -i "s|group = apache|group = $GET_WEB_GROUP|g" "/etc/php-fpm.d/www.conf"
-    [ -f "/etc/httpd/conf/httpd.conf" ] && sed -i "s|Group apache|Group $GET_WEB_GROUP|g" "/etc/httpd/conf/httpd.conf"
-    for apache_dir in "/var/www/mrtg" "/usr/local/share/httpd" "/var/www"; do
+    [ -f "/etc/php-fpm.d/www.conf" ] && sed -i "s|group .*|group = $GET_WEB_GROUP|g" "/etc/php-fpm.d/www.conf"
+    [ -f "/etc/httpd/conf/httpd.conf" ] && sed -i "s|Group .*|Group $GET_WEB_GROUP|g" "/etc/httpd/conf/httpd.conf"
+    for apache_dir in "/usr/local/share/httpd" "/var/www"; do
       [ -d "$apache_dir" ] && chgrp -Rf $GET_WEB_GROUP "$apache_dir"
     done
   fi
