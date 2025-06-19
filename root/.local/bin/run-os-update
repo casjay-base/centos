@@ -472,12 +472,12 @@ else
   find -L "$APP_TMP_DIR" -type f -iname "*.cgi" -exec chmod 755 {} \; &>/dev/null
   mkdir -p "/etc/rsync.d"
   for dir in fail2ban shorewall shorewall6; do
-    if [ -d "/etc/$d" ]; then
-      if [ -f "/etc/$d/.installed" ]; then
-        rm -Rf "${APP_TMP_DIR:?}/$d"
+    if [ -d "/etc/$dir" ]; then
+      if [ -f "/etc/$dir/.installed" ]; then
+        rm -Rf "${APP_TMP_DIR:?}/$dir"
       fi
     fi
-    echo "$(date)" >"/etc/$d/.installed"
+    echo "$(date)" >"/etc/$dir/.installed"
   done
   echo -e "Setting NetWork device to to $MYSERVER_NET_DEVICE"
   find -L "$APP_TMP_DIR" -type f -exec sed -i "s#mynetworkdevice#$MYSERVER_NET_DEVICE#g" {} \; &>/dev/null
