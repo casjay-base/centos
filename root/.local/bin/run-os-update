@@ -248,7 +248,7 @@ while [ $# -ne 0 ]; do
   shift
 done
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-[ "$CRON_UPDATE" = "yes" ] || clear
+[ "$CRON_UPDATE" = "yes" ] || [ -n "$IS_OS_UPDATE" ] || clear
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 if [ "$KERNEL_ML_INSTALL" = "yes" ]; then
   __yum makecache && __yum update --exclude 'kernel*' && __kernel_ml
