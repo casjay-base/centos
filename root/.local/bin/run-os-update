@@ -242,6 +242,7 @@ while [ $# -ne 0 ]; do
   --scripts | -s | scripts | script) SCRIPTS_UPDATE="true" ;;
   --check | -c | check) echo "Old version is $INSTALLED_VERSION and new version is $REMOTE_VERSION" && exit ;;
   cron | --cron) export CRON_UPDATE="yes" ;;
+  --) ;;
   *) echo "$1 is an invalid argument" && exit 1 ;;
   esac
   shift
