@@ -797,6 +797,7 @@ EOF
   find /etc /var /usr -type f -iname '*.rpmnew' -exec rm -Rf {} \; 2>/dev/null
   find /etc /var /usr -type f -iname '*.rpmsave' -exec rm -Rf {} \; 2>/dev/null
   find /etc /var /usr -type f -iname '*.default' -exec rm -Rf {} \; 2>/dev/null
+  [ -d "/tmp/dotfiles-personal-$USER" ] && rm -Rf "/tmp/dotfiles-personal-$USER"
   echo -e "Fininshed cleaning up files and history\n"
 
   echo -e "Last updated on $DATE" >"/var/log/run_update"
