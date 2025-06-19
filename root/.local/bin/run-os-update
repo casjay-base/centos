@@ -277,7 +277,8 @@ if [ ! -f "/tmp/run-os-update" ] && ping -c 2 1.1.1.1 &>/dev/null; then
       chmod 755 "/tmp/run-os-update"
       eval "/tmp/run-os-update" && exitCode=0 || exitCode=1
       eval "/tmp/run-os-update" --scripts >/dev/null 2>/dev/null
-      rm -Rf "/tmp/run-os-update"
+      if [ -e "/tmp/run-os-update" ]; then rm -Rf "/tmp/run-os-update"; fi
+      if [ -n "$APP_TMP_DIR" ] && [ -e "$APP_TMP_DIR" ]; then rm -Rf "$APP_TMP_DIR"; fi
       exit $exitCode
     else
       exit 2
