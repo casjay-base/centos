@@ -546,7 +546,11 @@ else
       [ -d "$apache_dir" ] && chgroup -Rf $GET_WEB_GROUP "$apache_dir"
     done
   fi
-  sed -i 's|ServerTokens. *|ServerTokens Prod|g' /etc/httpd/conf/httpd.conf
+  if [ -f "/etc/httpd/conf/httpd.conf" ]; then
+    if ! grep -qi 'ServerTokens Prod$' /etc/httpd/conf/httpd.conf; then
+      sed -i 's|ServerTokens.*|ServerTokens Prod|g' "/etc/httpd/conf/httpd.conf"
+    fi
+  fi
   echo -e "Done setting up web server\n"
 
   if [ -x "$HOME/.local/dotfiles/personal/install.sh" ]; then
