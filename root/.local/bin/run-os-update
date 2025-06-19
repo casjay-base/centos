@@ -217,6 +217,8 @@ export RELEASE_VER="${RELEASE_VER:-$(grep --no-filename -s 'VERSION_ID=' /etc/*-
 export RELEASE_NAME="$(grep --no-filename -s '^NAME=' /etc/*-release | awk -F'=' '{print $2}' | sed 's|"||g;s| .*||g' | tr '[:upper:]' '[:lower:]' | grep '^')"
 export RELEASE_TYPE="$(grep --no-filename -s '^ID_LIKE=' /etc/*-release | awk -F'=' '{print $2}' | sed 's|"||g' | tr '[:upper:]' '[:lower:]' | tr ' ' '\n' | grep 'centos' | grep '^')"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+GET_WEB_USER="$(__get_www_user)"
+GET_WEB_GROUP="$(__get_www_group)"
 INTERNAL_DOMAIN="${INTERNAL_DOMAIN_NAME:-internal}"
 HOSTNAME_FULL="$(hostname -f 2>/dev/null | grep '^' || echo "$HOSTNAME")"
 HOSTNAME_SHORT="$(hostname -s 2>/dev/null | grep '^' || echo "$HOSTNAME")"
@@ -343,8 +345,6 @@ fi
 if [ -z "$FORCE_INST" ] && [ "$REMOTE_VERSION" = "$INSTALLED_VERSION" ]; then
   echo -e "There are no updates available, however, I am going to run the fixes"
   echo -e "Fixing web servers"
-  GET_WEB_USER="$(__get_www_user)"
-  GET_WEB_GROUP="$(__get_www_group)"
   if [ -f "/etc/httpd/conf/httpd.conf" ]; then
     if ! grep -qi 'ServerTokens Prod$' "/etc/httpd/conf/httpd.conf"; then
       sed -i 's|ServerTokens .*|ServerTokens Prod|g' /etc/httpd/conf/httpd.conf
