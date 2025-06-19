@@ -390,10 +390,9 @@ EOF
   fi
   exit
 else
-  if [ -z "$IS_RERUNNING_SCRIPT" ]; then
-    echo -e "\nUpdating to version $REMOTE_VERSION from $INSTALLED_VERSION"
-    echo -e "Press control+c now to cancel update\n" && sleep 10
-  fi
+  echo -e "\nUpdating to version $REMOTE_VERSION from $INSTALLED_VERSION"
+  echo -e "Press control+c now to cancel update\n" && sleep 10
+
   mkdir -p "$BACKUP_DIR" &>/dev/null
 
   echo -e "Setting Timezone to $TIME_ZONE"
