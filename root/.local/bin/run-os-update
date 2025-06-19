@@ -355,7 +355,7 @@ if [ -z "$FORCE_INST" ] && [ "$REMOTE_VERSION" = "$INSTALLED_VERSION" ]; then
     [ -f "/etc/php-fpm.d/www.conf" ] && sed -i "s|group = apache|group = $GET_WEB_GROUP|g" "/etc/php-fpm.d/www.conf"
     [ -f "/etc/httpd/conf/httpd.conf" ] && sed -i "s|Group apache|Group $GET_WEB_GROUP|g" "/etc/httpd/conf/httpd.conf"
     for apache_dir in "/var/www/mrtg" "/usr/local/share/httpd" "/var/www"; do
-      [ -d "$apache_dir" ] && chgroup -Rf $GET_WEB_GROUP "$apache_dir"
+      [ -d "$apache_dir" ] && chgrp -Rf $GET_WEB_GROUP "$apache_dir"
     done
   fi
   for service in nginx httpd php-fpm; do __systemctl_restart "$service"; done
@@ -543,7 +543,7 @@ else
     [ -f "/etc/php-fpm.d/www.conf" ] && sed -i "s|group = apache|group = $GET_WEB_GROUP|g" "/etc/php-fpm.d/www.conf"
     [ -f "/etc/httpd/conf/httpd.conf" ] && sed -i "s|Group apache|Group $GET_WEB_GROUP|g" "/etc/httpd/conf/httpd.conf"
     for apache_dir in "/var/www/mrtg" "/usr/local/share/httpd" "/var/www"; do
-      [ -d "$apache_dir" ] && chgroup -Rf $GET_WEB_GROUP "$apache_dir"
+      [ -d "$apache_dir" ] && chgrp -Rf $GET_WEB_GROUP "$apache_dir"
     done
   fi
   if [ -f "/etc/httpd/conf/httpd.conf" ]; then
@@ -665,8 +665,12 @@ EOF
     echo -e "done setting up the dns server\n"
   elif [ -f "$HOME/dns/master/update.sh" ]; then
     echo -e "Setting up the dns server"
-    git -C "$HOME/dns" pull -q &>/dev/null
+    if [ -d "/tmp/dns-update" ]; then
+      rm -Rf "/tmp/dns-update"
+    fi
     cp -Rf "$HOME/dns" "/tmp/dns-update"
+    git -C "/tmp/dns-update" reset --hard &>/dev/null
+    git -C "/tmp/dns-update" pull -q &>/dev/null
     rm -Rf "/tmp/dns-update/master/etc/tor"
     rm -Rf "/tmp/dns-update/master/etc/nginx"
     rm -Rf "/tmp/dns-update/master/etc/httpd"
@@ -675,18 +679,18 @@ EOF
     echo -e "done setting up the dns server\n"
   fi
 
-  if [ "$myhostnameshort" = "mail" ]; then
-    echo "Running installer script for email server"
-    [ -f "$HOME/Projects/github/dfprivate/email/install.sh" ] && eval "$HOME/Projects/github/dfprivate/email/install.sh"
-  elif [ "$myhostnameshort" = "db" ] || [ "$set_domainname" = "sqldb.us" ]; then
-    echo "Running installer script for database server"
+  if [ "$myhostnameshort" = "db" ] || [ "$set_domainname" = "sqldb.us" ]; then
+    echo -e "Running installer script for database server"
     [ -f "$HOME/Projects/github/dfprivate/sql/install.sh" ] && eval "$HOME/Projects/github/dfprivate/sql/install.sh"
   elif [ "$myhostnameshort" = "dns" ] || [ "$myhostnameshort" = "dns1" ] || [ "$myhostnameshort" = "dns2" ]; then
-    echo "Running installer script for dns server"
+    echo -e "Running installer script for dns server"
     [ -f "$HOME/Projects/github/dfprivate/dns/install.sh" ] && eval "$HOME/Projects/github/dfprivate/dns/install.sh"
+  elif [ "$myhostnameshort" = "mail" ] || [ "$myhostnameshort" = "smtp" ] || [ "$myhostnameshort" = "box" ] || [ "$myhostnameshort" = "mailcow" ]; then
+    echo -e "Running installer script for email server"
+    [ -f "$HOME/Projects/github/dfprivate/email/install.sh" ] && eval "$HOME/Projects/github/dfprivate/email/install.sh"
   fi
 
-  echo "Fixing files"
+  echo -e "Fixing files"
   [ -f "/etc/rc.d/rc.local" ] && chmod -f +x "/etc/rc.d/rc.local"
   if [ -d "/var/log/munin-node" ]; then
     mkdir -p "/var/log/munin"
@@ -702,12 +706,12 @@ EOF
   bash -c "/root/.local/bin/root_clean.sh" &>/dev/null
   find /etc /var /usr -type f -iname '*.rpmnew' -exec rm -Rf {} \; 2>/dev/null
   find /etc /var /usr -type f -iname '*.rpmsave' -exec rm -Rf {} \; 2>/dev/null
-  echo -e "Updated to version $REMOTE_VERSION from $INSTALLED_VERSION"
   echo -e "Last updated on $DATE" >"/var/log/run_update"
   echo -e "Done updating system\n\n"
-  if [ -n "$(type -P WEB-NOTIFY 2>/dev/null)" ]; then
-    web-notify telegram "$APP_NAME has ran on $HOSTNAME"
+  if [ -n "$(type -P web-notify 2>/dev/null)" ]; then
+    web-notify telegram "$APP_NAME has ran on $HOSTNAME" "Updated to version $REMOTE_VERSION from $INSTALLED_VERSION"
   fi
+  echo -e "Updated to version $REMOTE_VERSION from $INSTALLED_VERSION"
 fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 exit
