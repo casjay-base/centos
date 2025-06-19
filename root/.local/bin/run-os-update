@@ -552,16 +552,31 @@ else
     cp -Rfa "$APP_TMP_DIR/var/www/html/sysinfo/." "/var/www/html/sysinfo/"
   fi
   if [ -n "$GET_WEB_USER" ]; then
-    [ -f "/etc/nginx/nginx.conf" ] && sed -i "s|user .*|user  $GET_WEB_USER;|g" "/etc/nginx/nginx.conf"
-    [ -f "/etc/php-fpm.d/www.conf" ] && sed -i "s|user .*|user = $GET_WEB_USER|g" "/etc/php-fpm.d/www.conf"
-    [ -f "/etc/httpd/conf/httpd.conf" ] && sed -i "s|User .*|User $GET_WEB_USER|g" "/etc/httpd/conf/httpd.conf"
+    if [ -f "/etc/nginx/nginx.conf" ]; then
+      sed -i "s|user .*|user  $GET_WEB_USER;|g" "/etc/nginx/nginx.conf"
+      grep -sqh "user  $GET_WEB_USER" "/etc/nginx/nginx.conf" || echo "Failed to change the user in /etc/nginx/nginx.conf"
+    fi
+    if [ -f "/etc/php-fpm.d/www.conf" ]; then
+      sed -i "s|user .*|user = $GET_WEB_USER|g" "/etc/php-fpm.d/www.conf"
+      grep -sqh "user = $GET_WEB_USER" "/etc/php-fpm.d/www.conf" || echo "Failed to change the user in /etc/php-fpm.d/www.conf"
+    fi
+    if [ -f "/etc/httpd/conf/httpd.conf" ]; then
+      sed -i "s|User .*|User $GET_WEB_USER|g" "/etc/httpd/conf/httpd.conf"
+      grep -sqh "User $GET_WEB_USER" "/etc/httpd/conf/httpd.conf" || echo "Failed to change the user in /etc/httpd/conf/httpd.conf"
+    fi
     for apache_dir in "/usr/local/share/httpd" "/var/www"; do
       [ -d "$apache_dir" ] && chown -Rf $GET_WEB_USER "$apache_dir"
     done
   fi
   if [ -n "$GET_WEB_GROUP" ]; then
-    [ -f "/etc/php-fpm.d/www.conf" ] && sed -i "s|group .*|group = $GET_WEB_GROUP|g" "/etc/php-fpm.d/www.conf"
-    [ -f "/etc/httpd/conf/httpd.conf" ] && sed -i "s|Group .*|Group $GET_WEB_GROUP|g" "/etc/httpd/conf/httpd.conf"
+    if [ -f "/etc/php-fpm.d/www.conf" ]; then
+      sed -i "s|group .*|group = $GET_WEB_GROUP|g" "/etc/php-fpm.d/www.conf"
+      grep -sqh "group = $GET_WEB_GROUP" "/etc/php-fpm.d/www.conf" || echo "Failed to change the group in /etc/php-fpm.d/www.conf"
+    fi
+    if [ -f "/etc/httpd/conf/httpd.conf" ]; then
+      sed -i "s|Group .*|Group $GET_WEB_GROUP|g" "/etc/httpd/conf/httpd.conf"
+      grep -sqh "Group $GET_WEB_GROUP" "/etc/httpd/conf/httpd.conf" || echo "Failed to change the group in /etc/httpd/conf/httpd.conf"
+    fi
     for apache_dir in "/usr/local/share/httpd" "/var/www"; do
       [ -d "$apache_dir" ] && chgrp -Rf $GET_WEB_GROUP "$apache_dir"
     done
