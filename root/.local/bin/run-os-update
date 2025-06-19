@@ -492,15 +492,19 @@ else
   echo -e "Setting the domain name to $MYSERVER_DOMAIN_NAME"
   find -L "$APP_TMP_DIR" -type f -exec sed -i "s#mydomainname#$MYSERVER_DOMAIN_NAME#g" {} \; &>/dev/null
 
-  for d in root etc usr var; do
-    if [ -d "$APP_TMP_DIR/$d" ]; then
-      echo -e "$APP_TMP_DIR/$d/. >/$d/"
-      cp -Rfa "$APP_TMP_DIR/$d/." /$d/ 2>/dev/null
-    else
-      echo -e "$APP_TMP_DIR/$d >/$d"
-      cp -Rfa "$APP_TMP_DIR/$d" /$d 2>/dev/null
-    fi
+  for sys_dir in root etc usr var; do
+    for new_conf in "$APP_TMP_DIR/$sys_dir"/*; do
+      etc_dir="/$sys_dir/$(basename -- "$new_conf")"
+      if [ -d "$new_conf" ]; then
+        echo -e "$new_conf/. >$etc_dir/"
+        cp -Rfa "$new_conf/." $etc_dir/ 2>/dev/null
+      else
+        echo -e "$new_conf >$etc_dir"
+        cp -Rfa "$new_conf" $etc_dir 2>/dev/null
+      fi
+    done
   done
+  unset sys_dir etc_dir new_conf
 
   if [ -f "$APP_TMP_DIR/etc/nginx/nginx.conf" ] && [ -d "/etc/nginx" ]; then
     cp -Rf "$APP_TMP_DIR/etc/nginx/nginx.conf" "/etc/nginx/nginx.conf"
