@@ -493,19 +493,21 @@ else
   echo -e "Setting the domain name to $MYSERVER_DOMAIN_NAME"
   find -L "$APP_TMP_DIR" -type f -exec sed -i "s#mydomainname#$MYSERVER_DOMAIN_NAME#g" {} \; &>/dev/null
 
+  echo -e "\nCopying the files from config dir to system dir"
   for sys_dir in root etc usr var; do
     for new_conf in "$APP_TMP_DIR/$sys_dir"/*; do
       etc_dir="/$sys_dir/$(basename -- "$new_conf")"
       if [ -d "$new_conf" ]; then
         echo -e "$new_conf/. >$etc_dir/"
-        cp -Rfa "$new_conf/." $etc_dir/ 2>/dev/null
-      else
+        cp -Rfa "$new_conf/." "$etc_dir/" 2>/dev/null
+      elif [ -e "$new_conf" ]; then
         echo -e "$new_conf >$etc_dir"
-        cp -Rfa "$new_conf" $etc_dir 2>/dev/null
+        cp -Rfa "$new_conf" "$etc_dir" 2>/dev/null
       fi
     done
   done
   unset sys_dir etc_dir new_conf
+  echo -e "Done copying the files from config dir to system dir\n"
 
   if [ -f "$APP_TMP_DIR/etc/nginx/nginx.conf" ] && [ -d "/etc/nginx" ]; then
     cp -Rf "$APP_TMP_DIR/etc/nginx/nginx.conf" "/etc/nginx/nginx.conf"
@@ -716,7 +718,7 @@ EOF
     chmod 755 -Rf "/usr/share/munin/plugins"/*
   fi
   if [ -d "/var/log/munin-node" ]; then
-    mv -f "/var/log/munin-node"/* "/var/log/munin/"
+    cp -Rfa "/var/log/munin-node/." "/var/log/munin/"
     rm -Rf "/var/log/munin-node"
   fi
   if [ ! -f "/var/log/munin/munin-node.log" ]; then
