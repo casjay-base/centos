@@ -217,11 +217,11 @@ export RELEASE_VER="${RELEASE_VER:-$(grep --no-filename -s 'VERSION_ID=' /etc/*-
 export RELEASE_NAME="$(grep --no-filename -s '^NAME=' /etc/*-release | awk -F'=' '{print $2}' | sed 's|"||g;s| .*||g' | tr '[:upper:]' '[:lower:]' | grep '^')"
 export RELEASE_TYPE="$(grep --no-filename -s '^ID_LIKE=' /etc/*-release | awk -F'=' '{print $2}' | sed 's|"||g' | tr '[:upper:]' '[:lower:]' | tr ' ' '\n' | grep 'centos' | grep '^')"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-internal_domain="${INTERNAL_DOMAIN_NAME:-internal}"
-hostnamefull="$(hostname -f 2>/dev/null | grep '^' || echo "$HOSTNAME")"
-hostnameshort="$(hostname -s 2>/dev/null | grep '^' || echo "$HOSTNAME")"
-myserverdomainname="$(hostname -f 2>/dev/null | grep '^' || hostname -s 2>/dev/null | grep '^' || echo "$HOSTNAME")"
-mydomainname="$(hostname -d | grep '^' || echo "$hostnamefull" | awk -F'.' '{$1="";OFS="."; print $0}' | grep -v '^$' | sed 's|^\.||g;s|^ /*||g;s| |.|g' | grep '^' || echo "$internal_domain")"
+INTERNAL_DOMAIN="${INTERNAL_DOMAIN_NAME:-internal}"
+HOSTNAME_FULL="$(hostname -f 2>/dev/null | grep '^' || echo "$HOSTNAME")"
+HOSTNAME_SHORT="$(hostname -s 2>/dev/null | grep '^' || echo "$HOSTNAME")"
+MYSERVER_HOST_NAME="$(hostname -f 2>/dev/null | grep '^' || hostname -s 2>/dev/null | grep '^' || echo "$HOSTNAME")"
+MYSERVER_DOMAIN_NAME="$(hostname -d | grep '^' || echo "$HOSTNAME_FULL" | awk -F'.' '{$1="";OFS="."; print $0}' | grep -v '^$' | sed 's|^\.||g;s|^ /*||g;s| |.|g' | grep '^' || echo "$INTERNAL_DOMAIN")"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 [ "$ARCH" = "x86_64" ] || yum_opts="--disablerepo casjay-remi-php,casjay-remi-safe"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -276,11 +276,11 @@ if [ ! -f "/tmp/run-os-update" ] && ping -c 2 1.1.1.1 &>/dev/null; then
   exit $exitCode
 fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-NETDEV="$(ip route | grep default | sed -e "s/^.*dev.//" -e "s/.proto.*//")"
-[ -n "$NETDEV" ] && [ -n "$(builtin type -P ifconfig)" ] && mycurrentipaddress_6="$(ifconfig $NETDEV | grep -E 'venet|inet' | grep -v 'docker' | grep inet6 | grep -i 'global' | awk '{print $2}' | head -n1 | grep '^')" || mycurrentipaddress_6=""
-[ -n "$NETDEV" ] && [ -n "$(builtin type -P ifconfig)" ] && mycurrentipaddress_4="$(ifconfig $NETDEV | grep -E 'venet|inet' | grep -v '127.0.0.' | grep inet | grep -v 'inet6' | awk '{print $2}' | sed 's#addr:##g' | head -n1 | grep '^')" || mycurrentipaddress_4=""
-[ -n "$mycurrentipaddress_6" ] || mycurrentipaddress_6="$(hostname -I | tr ' ' '\n' | grep -Ev '^::1|^$' | grep ':.*:' | head -n1 | grep '^' || echo '::1')"
-[ -n "$mycurrentipaddress_4" ] || mycurrentipaddress_4="$(hostname -I | tr ' ' '\n' | grep -vE '|127\.0\.0|172\.17\.0|:.*:|^$' | head -n1 | grep '[0-9]\.[0-9]' || echo '127.0.0.1')"
+MYSERVER_NET_DEVICE="$(ip route | grep default | sed -e "s/^.*dev.//" -e "s/.proto.*//")"
+[ -n "$MYSERVER_NET_DEVICE" ] && [ -n "$(builtin type -P ifconfig)" ] && MYSERVER_ADDRESS_IPV6="$(ifconfig $MYSERVER_NET_DEVICE | grep -E 'venet|inet' | grep -v 'docker' | grep inet6 | grep -i 'global' | awk '{print $2}' | head -n1 | grep '^')" || MYSERVER_ADDRESS_IPV6=""
+[ -n "$MYSERVER_NET_DEVICE" ] && [ -n "$(builtin type -P ifconfig)" ] && MYSERVER_ADDRESS_IPV4="$(ifconfig $MYSERVER_NET_DEVICE | grep -E 'venet|inet' | grep -v '127.0.0.' | grep inet | grep -v 'inet6' | awk '{print $2}' | sed 's#addr:##g' | head -n1 | grep '^')" || MYSERVER_ADDRESS_IPV4=""
+[ -n "$MYSERVER_ADDRESS_IPV6" ] || MYSERVER_ADDRESS_IPV6="$(hostname -I | tr ' ' '\n' | grep -Ev '^::1|^$' | grep ':.*:' | head -n1 | grep '^' || echo '::1')"
+[ -n "$MYSERVER_ADDRESS_IPV4" ] || MYSERVER_ADDRESS_IPV4="$(hostname -I | tr ' ' '\n' | grep -vE '|127\.0\.0|172\.17\.0|:.*:|^$' | head -n1 | grep '[0-9]\.[0-9]' || echo '127.0.0.1')"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 chattr -i /etc/hosts &>/dev/null
 chattr -i /etc/resolv.conf &>/dev/null
@@ -470,22 +470,22 @@ else
     fi
     echo "$(date)" >"/etc/$d/.installed"
   done
-  echo -e "Setting NetWork device to to $NETDEV"
-  find -L $APP_TMP_DIR -type f -exec sed -i "s#mynetworkdevice#$NETDEV#g" {} \; &>/dev/null
+  echo -e "Setting NetWork device to to $MYSERVER_NET_DEVICE"
+  find -L $APP_TMP_DIR -type f -exec sed -i "s#mynetworkdevice#$MYSERVER_NET_DEVICE#g" {} \; &>/dev/null
   if [ -f "/etc/sysconfig/network-scripts/ifcfg-eth0.sample" ]; then
-    mv -f "/etc/sysconfig/network-scripts/ifcfg-eth0.sample" "/etc/sysconfig/network-scripts/ifcfg-$NETDEV.sample"
+    mv -f "/etc/sysconfig/network-scripts/ifcfg-eth0.sample" "/etc/sysconfig/network-scripts/ifcfg-$MYSERVER_NET_DEVICE.sample"
   fi
 
-  echo -e "Setting IP to $mycurrentipaddress_4"
-  find -L $APP_TMP_DIR -type f -exec sed -i "s#mycurrentipaddress_4#$mycurrentipaddress_4#g" {} \; &>/dev/null
-  echo -e "Setting IP to $mycurrentipaddress_6"
-  find -L $APP_TMP_DIR -type f -exec sed -i "s#mycurrentipaddress_6#$mycurrentipaddress_6#g" {} \; &>/dev/null
-  echo -e "Setting full hostname to $myserverdomainname"
-  find -L $APP_TMP_DIR -type f -exec sed -i "s#myserverdomainname#$hostnamefull#g" {} \; &>/dev/null
-  echo -e "Setting short hostname to $hostnameshort"
-  find -L $APP_TMP_DIR -type f -exec sed -i "s#myhostnameshort#$hostnameshort#g" {} \; &>/dev/null
-  echo -e "Setting the domain name to $mydomainname"
-  find -L $APP_TMP_DIR -type f -exec sed -i "s#mydomainname#$mydomainname#g" {} \; &>/dev/null
+  echo -e "Setting IP to $MYSERVER_ADDRESS_IPV4"
+  find -L $APP_TMP_DIR -type f -exec sed -i "s#MYSERVER_ADDRESS_IPV4#$MYSERVER_ADDRESS_IPV4#g" {} \; &>/dev/null
+  echo -e "Setting IP to $MYSERVER_ADDRESS_IPV6"
+  find -L $APP_TMP_DIR -type f -exec sed -i "s#MYSERVER_ADDRESS_IPV6#$MYSERVER_ADDRESS_IPV6#g" {} \; &>/dev/null
+  echo -e "Setting full hostname to $MYSERVER_HOST_NAME"
+  find -L $APP_TMP_DIR -type f -exec sed -i "s#MYSERVER_HOST_NAME#$HOSTNAME_FULL#g" {} \; &>/dev/null
+  echo -e "Setting short hostname to $HOSTNAME_SHORT"
+  find -L $APP_TMP_DIR -type f -exec sed -i "s#myhostnameshort#$HOSTNAME_SHORT#g" {} \; &>/dev/null
+  echo -e "Setting the domain name to $MYSERVER_DOMAIN_NAME"
+  find -L $APP_TMP_DIR -type f -exec sed -i "s#MYSERVER_DOMAIN_NAME#$MYSERVER_DOMAIN_NAME#g" {} \; &>/dev/null
 
   for d in etc root usr var; do
     cp -Rfa $APP_TMP_DIR/$d/. /$d/ 2>/dev/null
@@ -496,14 +496,14 @@ else
   fi
 
   if [ -f "/etc/sysconfig/network" ]; then
-    sed -i "s#mydomain#$mydomainname#g" /etc/sysconfig/network
-    sed -i "s#myserverdomainname#$HOSTNAME#g" /etc/sysconfig/network
+    sed -i "s#mydomain#$MYSERVER_DOMAIN_NAME#g" /etc/sysconfig/network
+    sed -i "s#MYSERVER_HOST_NAME#$HOSTNAME#g" /etc/sysconfig/network
   fi
 
   if grep -qs '^kernel.domainname' '/etc/sysctl.conf'; then
-    sed -i 's|kernel.domainname=.*|kernel.domainname='$mydomainname'|g' /etc/sysctl.conf
+    sed -i 's|kernel.domainname=.*|kernel.domainname='$MYSERVER_DOMAIN_NAME'|g' /etc/sysctl.conf
   else
-    echo -e "kernel.domainname=$mydomainname" >>/etc/sysctl.conf
+    echo -e "kernel.domainname=$MYSERVER_DOMAIN_NAME" >>/etc/sysctl.conf
   fi
   if [ -f "/etc/oci-hostname.conf" ]; then
     echo "PRESERVE_HOSTINFO=2" >"/etc/oci-hostname.conf"
@@ -692,15 +692,15 @@ EOF
     echo -e "done setting up the dns server\n"
   fi
 
-  if [ "$mydomainname" = "sqldb.us" ] || [ "$myhostnameshort" = "db" ]; then
+  if [ "$MYSERVER_DOMAIN_NAME" = "sqldb.us" ] || [ "$myhostnameshort" = "db" ]; then
     echo -e "\nRunning installer script for database server"
     [ -f "$HOME/Projects/github/dfprivate/sql/install.sh" ] && eval "$HOME/Projects/github/dfprivate/sql/install.sh"
     echo -e "Running installer script for database server"
-  elif [ "$mydomainname" = "casjaydns.com" ] || [ "$myhostnameshort" = "dns" ] || [ "$myhostnameshort" = "dns1" ] || [ "$myhostnameshort" = "dns2" ]; then
+  elif [ "$MYSERVER_DOMAIN_NAME" = "casjaydns.com" ] || [ "$myhostnameshort" = "dns" ] || [ "$myhostnameshort" = "dns1" ] || [ "$myhostnameshort" = "dns2" ]; then
     echo -e "\nRunning installer script for dns server"
     [ -f "$HOME/Projects/github/dfprivate/dns/install.sh" ] && eval "$HOME/Projects/github/dfprivate/dns/install.sh"
     echo -e "Running installer script for dns server"
-  elif [ "$mydomainname" = "casjay.email" ] || [ "$myhostnameshort" = "mail" ] || [ "$myhostnameshort" = "smtp" ] || [ "$myhostnameshort" = "box" ] || [ "$myhostnameshort" = "mailcow" ]; then
+  elif [ "$MYSERVER_DOMAIN_NAME" = "casjay.email" ] || [ "$myhostnameshort" = "mail" ] || [ "$myhostnameshort" = "smtp" ] || [ "$myhostnameshort" = "box" ] || [ "$myhostnameshort" = "mailcow" ]; then
     echo -e "\nRunning installer script for email server"
     [ -f "$HOME/Projects/github/dfprivate/email/install.sh" ] && eval "$HOME/Projects/github/dfprivate/email/install.sh"
     echo -e "Fininshed running installer script for email server\n"
