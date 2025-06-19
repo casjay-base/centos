@@ -390,9 +390,7 @@ EOF
   exit
 else
   echo -e "\nUpdating to version $REMOTE_VERSION from $INSTALLED_VERSION"
-  echo -e "Running the automatic update script for $RELEASE_TYPE"
-  echo -e "Press control+c now to cancel update\n"
-  sleep 10
+  echo -e "Press control+c now to cancel update\n" && sleep 10
   mkdir -p "$BACKUP_DIR" &>/dev/null
 
   echo -e "Setting Timezone to $TIME_ZONE"
