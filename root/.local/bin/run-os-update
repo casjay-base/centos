@@ -24,6 +24,7 @@ USER="${SUDO_USER:-$USER}"
 RUN_USER="${RUN_USER:-$USER}"
 SRC_DIR="${BASH_SOURCE%/*}"
 APP_TMP_DIR="$(mktemp --directory --tmpdir --dry-run --quiet XXXXXXXXXXX)"
+CRON_START_MESSAGE="Running OS update script on $(date) for $HOSTNAME"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Set bash options
 trap 'exitCode=${exitCode:-$?};[ -n "$RUN_OS_UPDATE_TEMP_FILE" ] && [ -f "$RUN_OS_UPDATE_TEMP_FILE" ] && rm -Rf "$RUN_OS_UPDATE_TEMP_FILE" &>/dev/null' EXIT
@@ -261,7 +262,7 @@ if [ "$UPDATE_GRUB" = "yes" ]; then
 fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 if [ "$CRON_UPDATE" = "yes" ]; then
-  echo "# Running OS update script on $(date) for $HOSTNAME"
+  echo "$CRON_START_MESSAGE"
 fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 if [ ! -f "/tmp/run-os-update" ] && ping -c 2 1.1.1.1 &>/dev/null; then
