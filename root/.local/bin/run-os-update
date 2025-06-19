@@ -266,12 +266,12 @@ if [ "$UPDATE_GRUB" = "yes" ]; then
 fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 if [ "$CRON_UPDATE" = "yes" ]; then
-  echo "$CRON_START_MESSAGE"
+  [ -n "$IS_RERUNNING_SCRIPT" ] || echo "$CRON_START_MESSAGE"
 fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 if [ ! -f "/tmp/run-os-update" ] && ping -c 2 1.1.1.1 &>/dev/null; then
   echo "Updating the installer before proceeding"
-  export DOCKER_UPDATE INSTALLED_VERSION SCRIPTS_UPDATE STATICSITE USER FORCE_INST REPO_UPDATE
+  export DOCKER_UPDATE INSTALLED_VERSION SCRIPTS_UPDATE STATICSITE USER FORCE_INST REPO_UPDATE IS_RERUNNING_SCRIPT
   if curl -q -LSsf "https://raw.githubusercontent.com/casjay-base/centos/main/root/.local/bin/run-os-update" -o "/tmp/run-os-update" 2>/dev/null; then
     if [ -f "/tmp/run-os-update" ]; then
       chmod 755 "/tmp/run-os-update"
@@ -390,8 +390,10 @@ EOF
   fi
   exit
 else
-  echo -e "\nUpdating to version $REMOTE_VERSION from $INSTALLED_VERSION"
-  echo -e "Press control+c now to cancel update\n" && sleep 10
+  if [ -z "$IS_RERUNNING_SCRIPT" ]; then
+    echo -e "\nUpdating to version $REMOTE_VERSION from $INSTALLED_VERSION"
+    echo -e "Press control+c now to cancel update\n" && sleep 10
+  fi
   mkdir -p "$BACKUP_DIR" &>/dev/null
 
   echo -e "Setting Timezone to $TIME_ZONE"
