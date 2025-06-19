@@ -148,6 +148,20 @@ rm_if_exists() {
   done
 }
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+__systemctl_restart() { systemctl is-active "$1" >/dev/null 2>&1 && systemctl restart "$1" >/dev/null 2>&1 || return 5; }
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+__get_www_user() {
+  local user=""
+  user="$(grep -sh "www-data" "/etc/passwd" || grep -sh "apache" "/etc/passwd" || grep -sh "apache" "/etc/passwd")"
+  [ -n "$user" ] && echo "$user" | awk -F ':' '{print $1}' || return 9
+}
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+__get_www_group() {
+  local group=""
+  group="$(grep -sh "www-data" "/etc/group" || grep -sh "apache" "/etc/group" || grep -sh "apache" "/etc/group")"
+  [ -n "$group" ] && echo "$group" | awk -F ':' '{print $1}' || return 9
+}
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 __show_help() {
   cat <<EOF
 available options for $APPNAME: version $VERSION
@@ -196,14 +210,6 @@ export SERVICES_DISABLE+="fail2ban shorewall shorewall6 named dhcpd dhcpd6 mdmon
 export REMOTE_VERSION="$(curl -q -LSsf "https://github.com/casjay-base/centos/raw/main/version.txt" | head -n1)"
 [ -f "/etc/casjaysdev/updates/versions/configs.txt" ] && export INSTALLED_VERSION="$(head -n1 <"/etc/casjaysdev/updates/versions/configs.txt" 2>/dev/null)"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-# fixes
-if [ -f "/etc/httpd/conf/httpd.conf" ]; then
-  if ! grep -qi 'ServerTokens Prod$' /etc/httpd/conf/httpd.conf; then
-    sed -i 's|ServerTokens .*|ServerTokens Prod|g' /etc/httpd/conf/httpd.conf
-    systemctl restart httpd 2>/dev/null
-  fi
-fi
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 [ -f "/etc/casjaysdev/updates/versions/os_version.txt" ] && RELEASE_VER="$(<"/etc/casjaysdev/updates/versions/os_version.txt")"
 export RELEASE_VER="${RELEASE_VER:-$(grep --no-filename -s 'VERSION_ID=' /etc/*-release | awk -F '=' '{print $2}' | sed 's#"##g' | awk -F '.' '{print $1}' | grep '^')}"
 export RELEASE_NAME="$(grep --no-filename -s '^NAME=' /etc/*-release | awk -F'=' '{print $2}' | sed 's|"||g;s| .*||g' | tr '[:upper:]' '[:lower:]' | grep '^')"
@@ -328,7 +334,34 @@ fi
 [ $# -eq 0 ] || shift $#
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 if [ -z "$FORCE_INST" ] && [ "$REMOTE_VERSION" = "$INSTALLED_VERSION" ]; then
-  echo -e "There is no update available: $REMOTE_VERSION"
+  echo -e "There are no updates available, however, I am going to run the fixes"
+  echo -e "Fixing web servers"
+  GET_WEB_USER="$(__get_www_user)"
+  GET_WEB_GROUP="$(__get_www_group)"
+  if [ -f "/etc/httpd/conf/httpd.conf" ]; then
+    if ! grep -qi 'ServerTokens Prod$' /etc/httpd/conf/httpd.conf; then
+      sed -i 's|ServerTokens .*|ServerTokens Prod|g' /etc/httpd/conf/httpd.conf
+    fi
+  fi
+  if [ -n "$GET_WEB_USER" ]; then
+    [ -f "/etc/nginx/nginx.conf" ] && sed -i "s|user  apache|user  $GET_WEB_USER|g" "/etc/nginx/nginx.conf"
+    [ -f "/etc/httpd/conf/httpd.conf" ] && sed -i "s|User apache|User $GET_WEB_USER|g" "/etc/httpd/conf/httpd.conf"
+    [ -f "/etc/php-fpm.d/www.conf" ] && sed -i "s|user = apache|user = $GET_WEB_USER|g" "/etc/php-fpm.d/www.conf"
+    for apache_dir in "/var/www/mrtg" "/usr/local/share/httpd" "/var/www"; do
+      [ -d "$apache_dir" ] && chown -Rf $GET_WEB_USER "$apache_dir"
+    done
+  fi
+  if [ -n "$GET_WEB_GROUP" ]; then
+    [ -f "/etc/php-fpm.d/www.conf" ] && sed -i "s|group = apache|group = $GET_WEB_GROUP|g" "/etc/php-fpm.d/www.conf"
+    [ -f "/etc/httpd/conf/httpd.conf" ] && sed -i "s|Group apache|Group $GET_WEB_GROUP|g" "/etc/httpd/conf/httpd.conf"
+    for apache_dir in "/var/www/mrtg" "/usr/local/share/httpd" "/var/www"; do
+      [ -d "$apache_dir" ] && chgroup -Rf $GET_WEB_GROUP "$apache_dir"
+    done
+  fi
+  for service in nginx httpd php-fpm; do __systemctl_restart "$service"; done
+  echo -e "Fixing web servers has finished"
+
+  echo -e "The script for fixes has finished: bye 👋"
   exit
 else
   echo -e "\nUpdating to version $REMOTE_VERSION from $INSTALLED_VERSION"
@@ -492,16 +525,26 @@ else
   if [ -f "/var/lib/tor/hidden_service/default/hostname" ]; then
     cat "/var/lib/tor/hidden_service/*/hostname" >"/var/www/html/tor_hostname" 2>/dev/null
   fi
-  if grep -qs "^apache:" "/etc/passwd"; then
-    for apache_dir in "/var/www/html" "/var/www/mrtg" "/usr/local/share/httpd"; do
-      [ -d "$apache_dir" ] && chown -Rf apache:apache "$apache_dir"
-    done
-  fi
   if [ -d "$APP_TMP_DIR/var/www/html/vnstat" ] && [ -d "/var/www/html/vnstat" ]; then
     cp -Rfa "$APP_TMP_DIR/var/www/html/vnstat/." "/var/www/html/vnstat/"
   fi
   if [ -d "$APP_TMP_DIR/var/www/html/sysinfo" ] && [ -d "/var/www/html/sysinfo" ]; then
     cp -Rfa "$APP_TMP_DIR/var/www/html/sysinfo/." "/var/www/html/sysinfo/"
+  fi
+  if [ -n "$GET_WEB_USER" ]; then
+    [ -f "/etc/nginx/nginx.conf" ] && sed -i "s|user  apache|user  $GET_WEB_USER|g" "/etc/nginx/nginx.conf"
+    [ -f "/etc/httpd/conf/httpd.conf" ] && sed -i "s|User apache|User $GET_WEB_USER|g" "/etc/httpd/conf/httpd.conf"
+    [ -f "/etc/php-fpm.d/www.conf" ] && sed -i "s|user = apache|user = $GET_WEB_USER|g" "/etc/php-fpm.d/www.conf"
+    for apache_dir in "/var/www/mrtg" "/usr/local/share/httpd" "/var/www"; do
+      [ -d "$apache_dir" ] && chown -Rf $GET_WEB_USER "$apache_dir"
+    done
+  fi
+  if [ -n "$GET_WEB_GROUP" ]; then
+    [ -f "/etc/php-fpm.d/www.conf" ] && sed -i "s|group = apache|group = $GET_WEB_GROUP|g" "/etc/php-fpm.d/www.conf"
+    [ -f "/etc/httpd/conf/httpd.conf" ] && sed -i "s|Group apache|Group $GET_WEB_GROUP|g" "/etc/httpd/conf/httpd.conf"
+    for apache_dir in "/var/www/mrtg" "/usr/local/share/httpd" "/var/www"; do
+      [ -d "$apache_dir" ] && chgroup -Rf $GET_WEB_GROUP "$apache_dir"
+    done
   fi
   sed -i 's|ServerTokens. *|ServerTokens Prod|g' /etc/httpd/conf/httpd.conf
   echo -e "Done setting up web server\n"
