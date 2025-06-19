@@ -749,17 +749,16 @@ EOF
   echo -e "Last updated on $DATE" >"/var/log/run_update"
   if [ -n "$(type -P web-notify 2>/dev/null)" ]; then
     if [ "$CRON_UPDATE" = "yes" ]; then
-      if [ -f "$LOG_FILE" ]; then
-        cat "$LOG_FILE" | web-notify telegram >/dev/null
-      else
-        echo "# The script for fixes has finished on $(date) for $HOSTNAME: bye 👋"
-      fi
+      web-notify telegram "$APPNAME has finished running the updates on $(date) for $HOSTNAME"
     else
-      web-notify telegram "$APPNAME has ran on $HOSTNAME" "Updated to version $REMOTE_VERSION from $INSTALLED_VERSION" >/dev/null
+      web-notify telegram "$HOSTNAME has been updated to version $REMOTE_VERSION from $INSTALLED_VERSION" >/dev/null
     fi
   fi
-  [ -n "$LOG_FILE" ] && [ -e "$LOG_FILE" ] && rm -Rf "$LOG_FILE"
   echo -e "Updated to version $REMOTE_VERSION from $INSTALLED_VERSION\nDone running the $APPNAME script\n\n"
+fi
+if [ -f "$LOG_FILE" ]; then
+  cat "$LOG_FILE" | sendemail-to --subject "$HOSTNAME has been updated" --from "no-reply@$HOSTNAME" --recipient "updates@$HOSTNAME" >/dev/null
+  rm -Rf "$LOG_FILE"
 fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 exit
