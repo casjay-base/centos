@@ -713,15 +713,15 @@ EOF
     echo -e "done setting up the dns server\n"
   fi
 
-  if [ "$MYSERVER_DOMAIN_NAME" = "sqldb.us" ] || [ "$myhostnameshort" = "db" ]; then
+  if [ "$MYSERVER_DOMAIN_NAME" = "sqldb.us" ] || [ "$HOSTNAME_SHORT" = "db" ]; then
     echo -e "\nRunning installer script for database server"
     [ -f "$HOME/Projects/github/dfprivate/sql/install.sh" ] && eval "$HOME/Projects/github/dfprivate/sql/install.sh"
     echo -e "Fininshed running installer script for database server\n"
-  elif [ "$MYSERVER_DOMAIN_NAME" = "casjaydns.com" ] || [ "$myhostnameshort" = "dns" ] || [ "$myhostnameshort" = "dns1" ] || [ "$myhostnameshort" = "dns2" ]; then
+  elif [ "$MYSERVER_DOMAIN_NAME" = "casjaydns.com" ] || [ "$HOSTNAME_SHORT" = "dns" ] || [ "$HOSTNAME_SHORT" = "dns1" ] || [ "$HOSTNAME_SHORT" = "dns2" ]; then
     echo -e "\nRunning installer script for dns server"
     [ -f "$HOME/Projects/github/dfprivate/dns/install.sh" ] && eval "$HOME/Projects/github/dfprivate/dns/install.sh"
     echo -e "Fininshed running installer script for dns server\n"
-  elif [ "$MYSERVER_DOMAIN_NAME" = "casjay.email" ] || [ "$myhostnameshort" = "mail" ] || [ "$myhostnameshort" = "smtp" ] || [ "$myhostnameshort" = "box" ] || [ "$myhostnameshort" = "mailcow" ]; then
+  elif [ "$MYSERVER_DOMAIN_NAME" = "casjay.email" ] || [ "$HOSTNAME_SHORT" = "mail" ] || [ "$HOSTNAME_SHORT" = "smtp" ] || [ "$HOSTNAME_SHORT" = "box" ] || [ "$HOSTNAME_SHORT" = "mailcow" ]; then
     echo -e "\nRunning installer script for email server"
     [ -f "$HOME/Projects/github/dfprivate/email/install.sh" ] && eval "$HOME/Projects/github/dfprivate/email/install.sh"
     echo -e "Fininshed running installer script for email server\n"
