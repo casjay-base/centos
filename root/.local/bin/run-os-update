@@ -495,7 +495,7 @@ else
   find -L "$APP_TMP_DIR" -type f -exec sed -i "s#mydomainname#$MYSERVER_DOMAIN_NAME#g" {} \; &>/dev/null
 
   for d in root etc usr var; do
-    echo -e "$APP_TMP_DIR/$d/." >"/$d/"
+    echo -e "$APP_TMP_DIR/$d/. >/$d/"
     cp -Rfa "$APP_TMP_DIR/$d/." /$d/ 2>/dev/null
   done
 
