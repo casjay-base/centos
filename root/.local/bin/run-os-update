@@ -509,10 +509,6 @@ else
   fi
   chmod 644 -Rf /etc/cron.d/* /etc/logrotate.d/*
 
-  if [ -d "/usr/share/munin/plugins" ]; then
-    chmod 755 -Rf "/usr/share/munin/plugins"/*
-  fi
-
   if [ -d "/etc/postfix" ]; then
     if [ -f "/etc/postfix/.installed" ]; then
       echo -e "updated on $DATE" >"/etc/postfix/.installed"
@@ -671,6 +667,28 @@ EOF
     fi
   fi
 
+  echo -e "Configuring munin and munin-node"
+  if [ ! -d "/var/log/munin" ]; then
+    mkdir -p "/var/log/munin"
+  fi
+  if [ -d "/usr/share/munin/plugins" ]; then
+    chmod 755 -Rf "/usr/share/munin/plugins"/*
+  fi
+  if [ -d "/var/log/munin-node" ]; then
+    mv -f "/var/log/munin-node"/* "/var/log/munin/"
+    rm -Rf "/var/log/munin-node"
+  fi
+  if [ ! -f "/var/log/munin/munin-node.log" ]; then
+    touch "/var/log/munin/munin-node.log"
+  fi
+  if grep -sq "munin" "/etc/passwd"; then
+    chown -Rf "munin" /var/log/munin
+  fi
+  if grep -sq "munin" "/etc/group"; then
+    chgrp -Rf "munin" /var/log/munin
+  fi
+  echo -e "Done configuring munin and munin-node"
+
   if [ -f "$HOME/dns/docker.sh" ]; then
     echo -e "Setting up the dns server"
     bash -c "$HOME/dns/docker.sh"
@@ -707,13 +725,7 @@ EOF
 
   echo -e "Fixing files"
   [ -f "/etc/rc.d/rc.local" ] && chmod -f +x "/etc/rc.d/rc.local"
-  if [ -d "/var/log/munin-node" ]; then
-    mkdir -p "/var/log/munin"
-    mv -f "/var/log/munin-node"/* "/var/log/munin/"
-    rm -Rf "/var/log/munin-node"
-    systemctl restart munin-node &>/dev/null
-    echo -e "Done Fixing files\n"
-  fi
+  echo -e "Done Fixing files\n"
 
   echo -e "Updating the cron file"
   cat <<EOF >"/etc/cron.d/run-os-update"
