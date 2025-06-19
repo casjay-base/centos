@@ -24,7 +24,6 @@ USER="${SUDO_USER:-$USER}"
 RUN_USER="${RUN_USER:-$USER}"
 SRC_DIR="${BASH_SOURCE%/*}"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-IS_OS_UPDATE="yes"
 CRON_START_MESSAGE="Running OS update script on $(date) for $HOSTNAME"
 APP_TMP_DIR="$(mktemp --directory --tmpdir --dry-run --quiet XXXXXXXXXXX)"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -200,7 +199,7 @@ DATE="$(date +'%y-%m-%d at %H:%M')"
 LOG_FILE="${TMPDIR:-/tmp}/$APPNAME.log"
 ARCH="$(uname -m | tr '[:upper:]' '[:lower:]')"
 BACKUP_DIR="$HOME/.local/backups/system/$(date +'%Y/%m/%d')"
-export CRON_UPDATE="no"
+export CRON_UPDATE="no" IS_OS_UPDATE="yes"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export FORCE_INST="${FORCE_INST:-}"
 export TIME_ZONE="${TZ:-America/New_York}"
