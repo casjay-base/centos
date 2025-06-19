@@ -376,11 +376,11 @@ if [ -z "$FORCE_INST" ] && [ "$REMOTE_VERSION" = "$INSTALLED_VERSION" ]; then
 # Update system configurations everyday at 4am from the repo
 0 4 * * * root curl -q -LSsf "https://github.com/casjay-base/centos/raw/main/root/.local/bin/run-os-update" | bash -s -- --cron >"$LOG_FILE" 2>&1
 EOF
-  echo -e "Done updating the cron file"
+  echo -e "Done updating the cron file\n"
   if [ "$CRON_UPDATE" = "yes" ]; then
     echo "# The script for fixes has finished on $(date) for $HOSTNAME: bye 👋"
   else
-    echo -e "The script for fixes has finished: bye 👋"
+    echo -e "The script for fixes has finished"
   fi
   exit
 else
@@ -535,7 +535,7 @@ else
   [ -f "/root/bin/linuxcounter.sh" ] && rm -Rf "/root/bin/linuxcounter.sh"
   [ -f "/usr/local/bin/linuxcounter.sh" ] && rm -Rf "/usr/local/bin/linuxcounter.sh"
   [ -f "/root/.local/bin/linuxcounter.sh" ] && rm -Rf "/root/.local/bin/linuxcounter.sh"
-  echo -e "Removing linuxcounter script completed"
+  echo -e "Removing linuxcounter script completed\n"
 
   echo -e "Setting up web server"
   bash -c "$(curl -q -LSsf "https://github.com/casjay-templates/default-web-assets/raw/main/setup.sh")"
@@ -691,7 +691,7 @@ EOF
   if grep -sq "munin" "/etc/group"; then
     chgrp -Rf "munin" /var/log/munin
   fi
-  echo -e "Done configuring munin and munin-node"
+  echo -e "Done configuring munin and munin-node\n"
 
   if [ -f "$HOME/dns/docker.sh" ]; then
     echo -e "Setting up the dns server"
@@ -716,11 +716,11 @@ EOF
   if [ "$MYSERVER_DOMAIN_NAME" = "sqldb.us" ] || [ "$myhostnameshort" = "db" ]; then
     echo -e "\nRunning installer script for database server"
     [ -f "$HOME/Projects/github/dfprivate/sql/install.sh" ] && eval "$HOME/Projects/github/dfprivate/sql/install.sh"
-    echo -e "Running installer script for database server"
+    echo -e "Fininshed running installer script for database server\n"
   elif [ "$MYSERVER_DOMAIN_NAME" = "casjaydns.com" ] || [ "$myhostnameshort" = "dns" ] || [ "$myhostnameshort" = "dns1" ] || [ "$myhostnameshort" = "dns2" ]; then
     echo -e "\nRunning installer script for dns server"
     [ -f "$HOME/Projects/github/dfprivate/dns/install.sh" ] && eval "$HOME/Projects/github/dfprivate/dns/install.sh"
-    echo -e "Running installer script for dns server"
+    echo -e "Fininshed running installer script for dns server\n"
   elif [ "$MYSERVER_DOMAIN_NAME" = "casjay.email" ] || [ "$myhostnameshort" = "mail" ] || [ "$myhostnameshort" = "smtp" ] || [ "$myhostnameshort" = "box" ] || [ "$myhostnameshort" = "mailcow" ]; then
     echo -e "\nRunning installer script for email server"
     [ -f "$HOME/Projects/github/dfprivate/email/install.sh" ] && eval "$HOME/Projects/github/dfprivate/email/install.sh"
@@ -736,7 +736,7 @@ EOF
 # Update system configurations everyday at 4am from the repo
 0 4 * * * root curl -q -LSsf "https://github.com/casjay-base/centos/raw/main/root/.local/bin/run-os-update" | bash -s -- --cron >"$LOG_FILE" 2>&1
 EOF
-  echo -e "Done updating the cron file"
+  echo -e "Done updating the cron file\n"
 
   echo -e "Setting up the services"
   for s in $SERVICES_ENABLE; do systemctl enable --now "$s" &>/dev/null; done
@@ -752,10 +752,12 @@ EOF
   find /etc /var /usr -type f -iname '*.rpmnew' -exec rm -Rf {} \; 2>/dev/null
   find /etc /var /usr -type f -iname '*.rpmsave' -exec rm -Rf {} \; 2>/dev/null
   find /etc /var /usr -type f -iname '*.default' -exec rm -Rf {} \; 2>/dev/null
+  echo -e "Fininshed cleaning up files and history\n"
+
   echo -e "Last updated on $DATE" >"/var/log/run_update"
   if [ -n "$(type -P web-notify 2>/dev/null)" ]; then
     if [ "$CRON_UPDATE" = "yes" ]; then
-      web-notify telegram "$APPNAME has finished running the updates on $(date) for $HOSTNAME"
+      web-notify telegram "$APPNAME has finished running the updates on $(date) for $HOSTNAME" >/dev/null
     else
       web-notify telegram "$HOSTNAME has been updated to version $REMOTE_VERSION from $INSTALLED_VERSION" >/dev/null
     fi
