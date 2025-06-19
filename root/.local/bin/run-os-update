@@ -23,8 +23,10 @@ HOME="${USER_HOME:-$HOME}"
 USER="${SUDO_USER:-$USER}"
 RUN_USER="${RUN_USER:-$USER}"
 SRC_DIR="${BASH_SOURCE%/*}"
-APP_TMP_DIR="$(mktemp --directory --tmpdir --dry-run --quiet XXXXXXXXXXX)"
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+IS_OS_UPDATE="yes"
 CRON_START_MESSAGE="Running OS update script on $(date) for $HOSTNAME"
+APP_TMP_DIR="$(mktemp --directory --tmpdir --dry-run --quiet XXXXXXXXXXX)"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Set bash options
 trap 'exitCode=${exitCode:-$?};[ -n "$RUN_OS_UPDATE_TEMP_FILE" ] && [ -f "$RUN_OS_UPDATE_TEMP_FILE" ] && rm -Rf "$RUN_OS_UPDATE_TEMP_FILE" &>/dev/null' EXIT
