@@ -489,9 +489,9 @@ else
   else
     echo -e "kernel.domainname=$mydomainname" >>/etc/sysctl.conf
   fi
-
-  echo "PRESERVE_HOSTINFO=2" >"/etc/oci-hostname.conf"
-
+  if [ -f "/etc/oci-hostname.conf" ]; then
+    echo "PRESERVE_HOSTINFO=2" >"/etc/oci-hostname.conf"
+  fi
   chmod 644 -Rf /etc/cron.d/* /etc/logrotate.d/*
 
   if [ -d "/usr/share/munin/plugins" ]; then
@@ -500,7 +500,7 @@ else
 
   if [ -d "/etc/postfix" ]; then
     if [ -f "/etc/postfix/.installed" ]; then
-      echo -e "Last updated on $DATE" >"/etc/postfix/.installed"
+      echo -e "updated on $DATE" >"/etc/postfix/.installed"
     else
       echo -e "Installed on $DATE" >"/etc/postfix/.installed"
     fi
@@ -512,13 +512,15 @@ else
     postmap="access canonical relocated mydomains transport virtual sasl/passwd"
     for f in $postmap; do [ -f "/etc/postfix/$f" ] && postmap /etc/postfix/$f &>/dev/null; done
   fi
-
   chattr +i "/etc/resolv.conf"
+  echo -e "Done configuring files\n"
+
+  echo -e "Removing linuxcounter script if it exists"
   [ -f "/usr/bin/linuxcounter.sh" ] && rm -Rf "/usr/bin/linuxcounter.sh"
   [ -f "/root/bin/linuxcounter.sh" ] && rm -Rf "/root/bin/linuxcounter.sh"
-  [ -f "/root/.local/bin/linuxcounter.sh" ] && rm -Rf "/root/.local/bin/linuxcounter.sh"
   [ -f "/usr/local/bin/linuxcounter.sh" ] && rm -Rf "/usr/local/bin/linuxcounter.sh"
-  echo -e "Done configuring files\n"
+  [ -f "/root/.local/bin/linuxcounter.sh" ] && rm -Rf "/root/.local/bin/linuxcounter.sh"
+  echo -e "Removing linuxcounter script completed"
 
   echo -e "Setting up web server"
   bash -c "$(curl -q -LSsf "https://github.com/casjay-templates/default-web-assets/raw/main/setup.sh")"
@@ -560,8 +562,9 @@ else
   fi
 
   echo -e "Setting up the ssl certs"
+  LE_CERTS_EXIST="$(\find "/etc/letsencrypt/live"/* -maxdepth 0 -type 'd,l' 2>/dev/null | grep -v "README" | grep '^' || return)"
   [ -f "/etc/named/certbot-update.conf" ] && chmod 600 /etc/named/certbot-update.conf
-  if [ -d "/etc/letsencrypt/live/domain" ]; then
+  if [ -n "$LE_CERTS_EXIST" ]; then
     if [ -d "/etc/letsencrypt/renewal-hooks/post" ]; then
       if [ ! -f "/etc/letsencrypt/renewal-hooks/post/exec.sh" ]; then
         cat <<EOF | tee "/etc/letsencrypt/renewal-hooks/post/exec.sh" >/dev/null
@@ -611,9 +614,9 @@ EOF
         if [ -d "/opt/openfire/resources/security" ]; then
           cat <<EOF | tee "/etc/letsencrypt/renewal-hooks/post/openfire.sh" >/dev/null
 #!/usr/bin/env sh
+openfireSSL="/opt/openfire/resources/security/hotdeploy"
 privkey="\$(realpath "/etc/letsencrypt/live/domain/privkey.pem")"
 fullchain="\$(realpath "/etc/letsencrypt/live/domain/fullchain.pem")"
-openfireSSL="/opt/openfire/resources/security/hotdeploy"
 [ -d "\$openfireSSL" ] || mkdir -p "\$openfireSSL"
 cat "\$fullchain" "\$openfireSSL/casjay-social-cert.pem"
 cat "\$privkey" "\$openfireSSL/casjay-social-privkey.pem"
@@ -642,12 +645,6 @@ EOF
   echo "$(date)" >"/etc/casjaysdev/.motd_updated"
   echo "$(date)" >"/etc/casjaysdev/.legal_updated"
   echo -e "Done updating motd and issue files \n"
-
-  echo -e "Setting up the services"
-  for s in $SERVICES_ENABLE; do systemctl enable --now "$s" &>/dev/null; done
-  for s in $SERVICES_ENABLE; do systemctl restart "$s" &>/dev/null; done
-  for s in $SERVICES_DISABLE; do systemctl disable "$s" &>/dev/null; done
-  echo -e "Done setting up the services\n"
 
   if [ -d "/etc/cockpit/ws-certs.d" ]; then
     if [ -f "/etc/letsencrypt/live/domain/fullchain.pem" ] && [ -f "/etc/letsencrypt/live/domain/privkey.pem" ]; then
@@ -699,6 +696,12 @@ EOF
     systemctl restart munin-node &>/dev/null
     echo -e "Done Fixing files\n"
   fi
+
+  echo -e "Setting up the services"
+  for s in $SERVICES_ENABLE; do systemctl enable --now "$s" &>/dev/null; done
+  for s in $SERVICES_ENABLE; do systemctl restart "$s" &>/dev/null; done
+  for s in $SERVICES_DISABLE; do systemctl disable "$s" &>/dev/null; done
+  echo -e "Done setting up the services\n"
 
   echo -e "Cleaning up files and history"
   rm -Rf "/tmp/dns-update" 2>/dev/null
