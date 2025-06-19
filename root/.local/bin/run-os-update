@@ -710,6 +710,7 @@ EOF
   if grep -sq "munin" "/etc/group"; then
     chgrp -Rf "munin" /var/log/munin
   fi
+  chmod -Rf 666 /var/log/munin/*.log
   echo -e "Done configuring munin and munin-node\n"
 
   if [ -f "$HOME/dns/docker.sh" ]; then
