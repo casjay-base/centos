@@ -405,7 +405,9 @@ else
 
   echo -e "Updating yum repos for $RELEASE_NAME $RELEASE_VER - $ARCH"
   yum clean all &>/dev/null
-  if ! __repo_file; then
+  if __repo_file >/dev/null; then
+    echo -e "Done updating the repos\n"
+  else
     echo -e "Failed to update the repos\n"
     exit 1
   fi
