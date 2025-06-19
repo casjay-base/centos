@@ -18,7 +18,7 @@
 # @@Template         :  bash/system
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 APPNAME="$(basename "$0")"
-VERSION="202308102203-git"
+VERSION="202506190941-git"
 HOME="${USER_HOME:-$HOME}"
 USER="${SUDO_USER:-$USER}"
 RUN_USER="${RUN_USER:-$USER}"
@@ -194,8 +194,10 @@ ORANGE="\033[0;33m"   # Orange
 LIGHTRED='\033[1;31m' # Light Red
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 DATE="$(date +'%y-%m-%d at %H:%M')"
+LOG_FILE="${TMPDIR:-/tmp}/$APP_NAME.log"
 ARCH="$(uname -m | tr '[:upper:]' '[:lower:]')"
 BACKUP_DIR="$HOME/.local/backups/system/$(date +'%Y/%m/%d')"
+export CRON_UPDATE="no"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export FORCE_INST="${FORCE_INST:-}"
 export TIME_ZONE="${TZ:-America/New_York}"
@@ -235,6 +237,7 @@ while [ $# -ne 0 ]; do
   --version | -v | version) echo "$INSTALLED_VERSION" && exit ;;
   --scripts | -s | scripts | script) SCRIPTS_UPDATE="true" ;;
   --check | -c | check) echo "Old version is $INSTALLED_VERSION and new version is $REMOTE_VERSION" && exit ;;
+  cron | --cron) export CRON_UPDATE="yes" ;;
   *) echo "$1 is an invalid argument" && exit 1 ;;
   esac
   shift
@@ -253,6 +256,10 @@ fi
 if [ "$UPDATE_GRUB" = "yes" ]; then
   run_grub
   exit $?
+fi
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+if [ "$CRON_UPDATE" = "yes" ]; then
+  echo "# Running OS update script on $(date) for $HOSTNAME"
 fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 if [ ! -f "/tmp/run-os-update" ] && ping -c 2 1.1.1.1 &>/dev/null; then
@@ -360,8 +367,17 @@ if [ -z "$FORCE_INST" ] && [ "$REMOTE_VERSION" = "$INSTALLED_VERSION" ]; then
   fi
   for service in nginx httpd php-fpm; do __systemctl_restart "$service"; done
   echo -e "Fixing web servers has finished"
-
-  echo -e "The script for fixes has finished: bye 👋"
+  echo -e "Updating the cron file"
+  cat <<EOF >"/etc/cron.d/run-os-update"
+# Update system configurations everyday at 4am
+0 4 * * * root [ -x "/root/.local/bin/run-os-update" ] && eval "/root/.local/bin/run-os-update" --cron >"$LOG_FILE" 2>&1 || bash -c "$(curl -q -LSsf "https://github.com/casjay-base/centos/raw/main/root/.local/bin/run-os-update")" -- --cron >"$LOG_FILE" 2>&1
+EOF
+  echo -e "Done updating the cron file"
+  if [ "$CRON_UPDATE" = "yes" ]; then
+    echo "# The script for fixes has finished on $(date) for $HOSTNAME: bye 👋"
+  else
+    echo -e "The script for fixes has finished: bye 👋"
+  fi
   exit
 else
   echo -e "\nUpdating to version $REMOTE_VERSION from $INSTALLED_VERSION"
@@ -534,17 +550,17 @@ else
     cp -Rfa "$APP_TMP_DIR/var/www/html/sysinfo/." "/var/www/html/sysinfo/"
   fi
   if [ -n "$GET_WEB_USER" ]; then
-    [ -f "/etc/nginx/nginx.conf" ] && sed -i "s|user  apache|user  $GET_WEB_USER|g" "/etc/nginx/nginx.conf"
-    [ -f "/etc/httpd/conf/httpd.conf" ] && sed -i "s|User apache|User $GET_WEB_USER|g" "/etc/httpd/conf/httpd.conf"
-    [ -f "/etc/php-fpm.d/www.conf" ] && sed -i "s|user = apache|user = $GET_WEB_USER|g" "/etc/php-fpm.d/www.conf"
-    for apache_dir in "/var/www/mrtg" "/usr/local/share/httpd" "/var/www"; do
+    [ -f "/etc/nginx/nginx.conf" ] && sed -i "s|user .*|user  $GET_WEB_USER;|g" "/etc/nginx/nginx.conf"
+    [ -f "/etc/php-fpm.d/www.conf" ] && sed -i "s|user .*|user = $GET_WEB_USER|g" "/etc/php-fpm.d/www.conf"
+    [ -f "/etc/httpd/conf/httpd.conf" ] && sed -i "s|User .*|User $GET_WEB_USER|g" "/etc/httpd/conf/httpd.conf"
+    for apache_dir in "/usr/local/share/httpd" "/var/www"; do
       [ -d "$apache_dir" ] && chown -Rf $GET_WEB_USER "$apache_dir"
     done
   fi
   if [ -n "$GET_WEB_GROUP" ]; then
-    [ -f "/etc/php-fpm.d/www.conf" ] && sed -i "s|group = apache|group = $GET_WEB_GROUP|g" "/etc/php-fpm.d/www.conf"
-    [ -f "/etc/httpd/conf/httpd.conf" ] && sed -i "s|Group apache|Group $GET_WEB_GROUP|g" "/etc/httpd/conf/httpd.conf"
-    for apache_dir in "/var/www/mrtg" "/usr/local/share/httpd" "/var/www"; do
+    [ -f "/etc/php-fpm.d/www.conf" ] && sed -i "s|group .*|group = $GET_WEB_GROUP|g" "/etc/php-fpm.d/www.conf"
+    [ -f "/etc/httpd/conf/httpd.conf" ] && sed -i "s|Group .*|Group $GET_WEB_GROUP|g" "/etc/httpd/conf/httpd.conf"
+    for apache_dir in "/usr/local/share/httpd" "/var/www"; do
       [ -d "$apache_dir" ] && chgrp -Rf $GET_WEB_GROUP "$apache_dir"
     done
   fi
@@ -676,15 +692,18 @@ EOF
     echo -e "done setting up the dns server\n"
   fi
 
-  if [ "$myhostnameshort" = "db" ] || [ "$set_domainname" = "sqldb.us" ]; then
-    echo -e "Running installer script for database server"
+  if [ "$mydomainname" = "sqldb.us" ] || [ "$myhostnameshort" = "db" ]; then
+    echo -e "\nRunning installer script for database server"
     [ -f "$HOME/Projects/github/dfprivate/sql/install.sh" ] && eval "$HOME/Projects/github/dfprivate/sql/install.sh"
-  elif [ "$myhostnameshort" = "dns" ] || [ "$myhostnameshort" = "dns1" ] || [ "$myhostnameshort" = "dns2" ]; then
-    echo -e "Running installer script for dns server"
+    echo -e "Running installer script for database server"
+  elif [ "$mydomainname" = "casjaydns.com" ] || [ "$myhostnameshort" = "dns" ] || [ "$myhostnameshort" = "dns1" ] || [ "$myhostnameshort" = "dns2" ]; then
+    echo -e "\nRunning installer script for dns server"
     [ -f "$HOME/Projects/github/dfprivate/dns/install.sh" ] && eval "$HOME/Projects/github/dfprivate/dns/install.sh"
-  elif [ "$myhostnameshort" = "mail" ] || [ "$myhostnameshort" = "smtp" ] || [ "$myhostnameshort" = "box" ] || [ "$myhostnameshort" = "mailcow" ]; then
-    echo -e "Running installer script for email server"
+    echo -e "Running installer script for dns server"
+  elif [ "$mydomainname" = "casjay.email" ] || [ "$myhostnameshort" = "mail" ] || [ "$myhostnameshort" = "smtp" ] || [ "$myhostnameshort" = "box" ] || [ "$myhostnameshort" = "mailcow" ]; then
+    echo -e "\nRunning installer script for email server"
     [ -f "$HOME/Projects/github/dfprivate/email/install.sh" ] && eval "$HOME/Projects/github/dfprivate/email/install.sh"
+    echo -e "Fininshed running installer script for email server\n"
   fi
 
   echo -e "Fixing files"
@@ -696,6 +715,13 @@ EOF
     systemctl restart munin-node &>/dev/null
     echo -e "Done Fixing files\n"
   fi
+
+  echo -e "Updating the cron file"
+  cat <<EOF >"/etc/cron.d/run-os-update"
+# Update system configurations everyday at 4am
+0 4 * * * root [ -x "/root/.local/bin/run-os-update" ] && eval "/root/.local/bin/run-os-update" --cron >"$LOG_FILE" 2>&1 || bash -c "$(curl -q -LSsf "https://github.com/casjay-base/centos/raw/main/root/.local/bin/run-os-update")" -- --cron >"$LOG_FILE" 2>&1
+EOF
+  echo -e "Done updating the cron file"
 
   echo -e "Setting up the services"
   for s in $SERVICES_ENABLE; do systemctl enable --now "$s" &>/dev/null; done
@@ -710,11 +736,19 @@ EOF
   find /etc /var /usr -type f -iname '*.rpmnew' -exec rm -Rf {} \; 2>/dev/null
   find /etc /var /usr -type f -iname '*.rpmsave' -exec rm -Rf {} \; 2>/dev/null
   echo -e "Last updated on $DATE" >"/var/log/run_update"
-  echo -e "Done updating system\n\n"
   if [ -n "$(type -P web-notify 2>/dev/null)" ]; then
-    web-notify telegram "$APP_NAME has ran on $HOSTNAME" "Updated to version $REMOTE_VERSION from $INSTALLED_VERSION"
+    if [ "$CRON_UPDATE" = "yes" ]; then
+      if [ -f "$LOG_FILE" ]; then
+        cat "$LOG_FILE" | web-notify telegram
+      else
+        echo "# The script for fixes has finished on $(date) for $HOSTNAME: bye 👋"
+      fi
+    else
+      web-notify telegram "$APP_NAME has ran on $HOSTNAME" "Updated to version $REMOTE_VERSION from $INSTALLED_VERSION"
+    fi
   fi
-  echo -e "Updated to version $REMOTE_VERSION from $INSTALLED_VERSION"
+  [ -n "$LOG_FILE" ] && [ -e "$LOG_FILE" ] && rm -Rf "$LOG_FILE"
+  echo -e "Updated to version $REMOTE_VERSION from $INSTALLED_VERSION\nDone running the $APP_NAME script\n\n"
 fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 exit
