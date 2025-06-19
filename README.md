@@ -1,4 +1,4 @@
-# RHEL  
+# AlmaLinux  
   
 Setup a base almalinux server with my system scripts
 
@@ -65,6 +65,7 @@ bash -c "$(curl -q -LSsf "https://github.com/casjay-base/centos/raw/main/root/.l
 curl -q -LSsf "https://github.com/casjay-base/centos/raw/main/root/.local/bin/run-os-update" | bash -s -- --kernel-ml  && reboot
 
 ```
+
 ## Set PHP Version  
 
 ```shell
@@ -74,6 +75,7 @@ dnf module -y install php:remi-$PHP_VER
 ```
 
 ## Install php nginx apache
+
 ```shell
 yum install -yy php-cli php-cgi php-fpm httpd nginx && reboot 
 ```
@@ -88,6 +90,7 @@ sudo /usr/local/share/CasjaysDev/scripts/install.sh && reboot
 ```
 
 ## Install your personal dotfiles
+
 ```shell
 git clone -q "url_to_dotfiles" "$HOME/dotfiles_dir"
 ```
@@ -98,11 +101,6 @@ git clone -q "url_to_dotfiles" "$HOME/dotfiles_dir"
 sudo bash -c "$(curl -q -LSsf "https://github.com/pkmgr/centos/raw/main/scripts/min.sh")"
 ```
 
-OR for oracle cloud almalinux
-
-```shell
-sudo bash -c "$(curl -q -LSsf "https://github.com/pkmgr/centos/raw/main/scripts/min.oci.sh")"
-```
   
 ## Automated Update  
 
