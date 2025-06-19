@@ -271,7 +271,7 @@ fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 if [ ! -f "/tmp/run-os-update" ] && ping -c 2 1.1.1.1 &>/dev/null; then
   echo "Updating the installer before proceeding"
-  export DOCKER_UPDATE INSTALLED_VERSION SCRIPTS_UPDATE STATICSITE USER FORCE_INST REPO_UPDATE IS_RERUNNING_SCRIPT
+  export DOCKER_UPDATE INSTALLED_VERSION SCRIPTS_UPDATE STATICSITE USER FORCE_INST REPO_UPDATE IS_RERUNNING_SCRIPT="yes" IS_OS_UPDATE="yes"
   if curl -q -LSsf "https://raw.githubusercontent.com/casjay-base/centos/main/root/.local/bin/run-os-update" -o "/tmp/run-os-update" 2>/dev/null; then
     if [ -f "/tmp/run-os-update" ]; then
       chmod 755 "/tmp/run-os-update"
