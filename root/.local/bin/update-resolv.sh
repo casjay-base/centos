@@ -47,7 +47,7 @@ fi
 [ -f "/etc/resolv.conf" ] && chattr -i "/etc/resolv.conf"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 if [ -n "$(type -P update-resolv)" ]; then
-  update-resolv
+  update-resolv "$@"
 elif __fetch; then
   [ -f "/tmp/resolv.conf" ] && mv -f "/tmp/resolv.conf" "/etc/resolv.conf"
   [ -f "/tmp/resolv.conf" ] && rm -Rf "/tmp/resolv.conf"
