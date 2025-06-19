@@ -493,12 +493,21 @@ else
   find -L "$APP_TMP_DIR" -type f -exec sed -i "s#mydomainname#$MYSERVER_DOMAIN_NAME#g" {} \; &>/dev/null
 
   for d in root etc usr var; do
-    echo -e "$APP_TMP_DIR/$d/. >/$d/"
-    cp -Rfa "$APP_TMP_DIR/$d/." /$d/ 2>/dev/null
+    if [ -d "$APP_TMP_DIR/$d" ]; then
+      echo -e "$APP_TMP_DIR/$d/. >/$d/"
+      cp -Rfa "$APP_TMP_DIR/$d/." /$d/ 2>/dev/null
+    else
+      echo -e "$APP_TMP_DIR/$d >/$d"
+      cp -Rfa "$APP_TMP_DIR/$d" /$d 2>/dev/null
+    fi
   done
 
   if [ -f "$APP_TMP_DIR/etc/nginx/nginx.conf" ] && [ -d "/etc/nginx" ]; then
-    cp -Rf "$APP_TMP_DIR/etc/nginx/nginx.conf" /etc/nginx/nginx.conf
+    cp -Rf "$APP_TMP_DIR/etc/nginx/nginx.conf" "/etc/nginx/nginx.conf"
+  fi
+
+  if [ -f "$APP_TMP_DIR/etc/httpd/conf/httpd.conf" ] && [ -d "/etc/httpd/conf" ]; then
+    cp -Rf "$APP_TMP_DIR/etc/httpd/conf/httpd.conf" "/etc/httpd/conf/httpd.conf"
   fi
 
   if grep -qs "^named:" "/etc/passwd"; then
