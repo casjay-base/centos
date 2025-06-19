@@ -373,7 +373,7 @@ if [ -z "$FORCE_INST" ] && [ "$REMOTE_VERSION" = "$INSTALLED_VERSION" ]; then
   echo -e "Fixing web servers has finished"
   echo -e "Updating the cron file"
   cat <<EOF >"/etc/cron.d/run-os-update"
-# Update system configurations everyday at 4am
+# Update system configurations everyday at 4am from the repo
 0 4 * * * root bash -c "$(curl -q -LSsf "https://github.com/casjay-base/centos/raw/main/root/.local/bin/run-os-update")" -- --cron >"$LOG_FILE" 2>&1
 EOF
   echo -e "Done updating the cron file"
@@ -733,8 +733,8 @@ EOF
 
   echo -e "Updating the cron file"
   cat <<EOF >"/etc/cron.d/run-os-update"
-# Update system configurations everyday at 4am
-0 4 * * * root [ -x "/root/.local/bin/run-os-update" ] && eval "/root/.local/bin/run-os-update" --cron >"$LOG_FILE" 2>&1 || bash -c "$(curl -q -LSsf "https://github.com/casjay-base/centos/raw/main/root/.local/bin/run-os-update")" -- --cron >"$LOG_FILE" 2>&1
+# Update system configurations everyday at 4am from the repo
+0 4 * * * root bash -c "$(curl -q -LSsf "https://github.com/casjay-base/centos/raw/main/root/.local/bin/run-os-update")" -- --cron >"$LOG_FILE" 2>&1
 EOF
   echo -e "Done updating the cron file"
 
