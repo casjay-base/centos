@@ -23,6 +23,7 @@ HOME="${USER_HOME:-$HOME}"
 USER="${SUDO_USER:-$USER}"
 RUN_USER="${RUN_USER:-$USER}"
 SRC_DIR="${BASH_SOURCE%/*}"
+APP_TMP_DIR="$(mktemp --directory --tmpdir --dry-run --quiet XXXXXXXXXXX)"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Set bash options
 trap 'exitCode=${exitCode:-$?};[ -n "$RUN_OS_UPDATE_TEMP_FILE" ] && [ -f "$RUN_OS_UPDATE_TEMP_FILE" ] && rm -Rf "$RUN_OS_UPDATE_TEMP_FILE" &>/dev/null' EXIT
@@ -375,7 +376,7 @@ else
 
   echo -e "Removing old files "
   rm -Rf /etc/named* /var/named/* /etc/ntp* /etc/cron*/0* /etc/cron*/dailyjobs &>/dev/null
-  rm -Rf /var/ftp/uploads /etc/httpd/conf.d/ssl.conf /tmp/configs /etc/samba/*.example &>/dev/null
+  rm -Rf /var/ftp/uploads /etc/httpd/conf.d/ssl.conf $APP_TMP_DIR /etc/samba/*.example &>/dev/null
   echo -e "Done removing old files\n"
 
   echo -e "Setting up vnstat-php-frontend"
@@ -399,45 +400,47 @@ else
   echo -e "Done setting up phpsysinfo\n"
 
   echo -e "Setting up configs"
-  [ -d "/tmp/configs" ] && rm -Rf "/tmp/configs"
-  git clone -q "https://github.com/casjay-base/centos" "/tmp/configs"
+  [ -d "$APP_TMP_DIR" ] && rm -Rf "$APP_TMP_DIR"
+  git clone -q "https://github.com/casjay-base/centos" "$APP_TMP_DIR"
   echo -e "Done Setting up configs\n"
 
   echo -e "Configuring files"
-  rm -Rf /tmp/configs/var/named*
-  rm -Rf /tmp/configs/root/.bashrc
-  rm -Rf /tmp/configs/etc/sysconfig/network-scripts
-  rm -Rf /tmp/configs/etc/{hosts,tor,cockpit,samba,postfix,named*}
-  find -L /tmp/configs -type f -iname "*.sh" -exec chmod 755 {} \; &>/dev/null
-  find -L /tmp/configs -type f -iname "*.pl" -exec chmod 755 {} \; &>/dev/null
-  find -L /tmp/configs -type f -iname "*.cgi" -exec chmod 755 {} \; &>/dev/null
+  rm -Rf $APP_TMP_DIR/var/named*
+  rm -Rf $APP_TMP_DIR/root/.bashrc
+  rm -Rf $APP_TMP_DIR/etc/sysconfig/network-scripts
+  rm -Rf $APP_TMP_DIR/etc/{hosts,tor,cockpit,samba,postfix,named*}
+  find -L $APP_TMP_DIR -type f -iname "*.sh" -exec chmod 755 {} \; &>/dev/null
+  find -L $APP_TMP_DIR -type f -iname "*.pl" -exec chmod 755 {} \; &>/dev/null
+  find -L $APP_TMP_DIR -type f -iname "*.cgi" -exec chmod 755 {} \; &>/dev/null
   mkdir -p "/etc/rsync.d"
   for dir in fail2ban shorewall shorewall6; do
     if [ -d "/etc/$d" ]; then
       if [ -f "/etc/$d/.installed" ]; then
-        rm -Rf "/tmp/configs/$d"
+        rm -Rf "${APP_TMP_DIR:?}/$d"
       fi
     fi
     echo "$(date)" >"/etc/$d/.installed"
   done
   echo -e "Setting NetWork device to to $NETDEV"
-  find -L /tmp/configs -type f -exec sed -i "s#mynetworkdevice#$NETDEV#g" {} \; &>/dev/null
+  find -L $APP_TMP_DIR -type f -exec sed -i "s#mynetworkdevice#$NETDEV#g" {} \; &>/dev/null
   if [ -f "/etc/sysconfig/network-scripts/ifcfg-eth0.sample" ]; then
     mv -f "/etc/sysconfig/network-scripts/ifcfg-eth0.sample" "/etc/sysconfig/network-scripts/ifcfg-$NETDEV.sample"
   fi
 
   echo -e "Setting IP to $mycurrentipaddress_4"
-  find -L /tmp/configs -type f -exec sed -i "s#mycurrentipaddress_4#$mycurrentipaddress_4#g" {} \; &>/dev/null
+  find -L $APP_TMP_DIR -type f -exec sed -i "s#mycurrentipaddress_4#$mycurrentipaddress_4#g" {} \; &>/dev/null
   echo -e "Setting IP to $mycurrentipaddress_6"
-  find -L /tmp/configs -type f -exec sed -i "s#mycurrentipaddress_6#$mycurrentipaddress_6#g" {} \; &>/dev/null
+  find -L $APP_TMP_DIR -type f -exec sed -i "s#mycurrentipaddress_6#$mycurrentipaddress_6#g" {} \; &>/dev/null
   echo -e "Setting full hostname to $myserverdomainname"
-  find -L /tmp/configs -type f -exec sed -i "s#myserverdomainname#$hostnamefull#g" {} \; &>/dev/null
+  find -L $APP_TMP_DIR -type f -exec sed -i "s#myserverdomainname#$hostnamefull#g" {} \; &>/dev/null
   echo -e "Setting short hostname to $hostnameshort"
-  find -L /tmp/configs -type f -exec sed -i "s#myhostnameshort#$hostnameshort#g" {} \; &>/dev/null
+  find -L $APP_TMP_DIR -type f -exec sed -i "s#myhostnameshort#$hostnameshort#g" {} \; &>/dev/null
   echo -e "Setting the domain name to $mydomainname"
-  find -L /tmp/configs -type f -exec sed -i "s#mydomainname#$mydomainname#g" {} \; &>/dev/null
+  find -L $APP_TMP_DIR -type f -exec sed -i "s#mydomainname#$mydomainname#g" {} \; &>/dev/null
 
-  cp -Rf /tmp/configs/{etc,root,usr,var}* / 2>/dev/null
+  for d in etc root usr var; do
+    cp -Rfa $APP_TMP_DIR/$d/. /$d/ 2>/dev/null
+  done
 
   if grep -qs "^named:" "/etc/passwd"; then
     mkdir -p /var/named /var/log/named && chown -Rf named:named /etc/named* /var/named /var/log/named
@@ -448,7 +451,7 @@ else
     sed -i "s#myserverdomainname#$HOSTNAME#g" /etc/sysconfig/network
   fi
 
-  if grep '^kernel.domainname' '/etc/sysctl.conf'; then
+  if grep -qs '^kernel.domainname' '/etc/sysctl.conf'; then
     sed -i 's|kernel.domainname=.*|kernel.domainname='$mydomainname'|g' /etc/sysctl.conf
   else
     echo -e "kernel.domainname=$mydomainname" >>/etc/sysctl.conf
@@ -478,7 +481,6 @@ else
   fi
 
   chattr +i "/etc/resolv.conf"
-  rm -Rf /tmp/*.tar "/tmp/dotfiles" "/tmp/configs"
   [ -f "/usr/bin/linuxcounter.sh" ] && rm -Rf "/usr/bin/linuxcounter.sh"
   [ -f "/root/bin/linuxcounter.sh" ] && rm -Rf "/root/bin/linuxcounter.sh"
   [ -f "/root/.local/bin/linuxcounter.sh" ] && rm -Rf "/root/.local/bin/linuxcounter.sh"
@@ -494,6 +496,12 @@ else
     for apache_dir in "/var/www/html" "/var/www/mrtg" "/usr/local/share/httpd"; do
       [ -d "$apache_dir" ] && chown -Rf apache:apache "$apache_dir"
     done
+  fi
+  if [ -d "$APP_TMP_DIR/var/www/html/vnstat" ] && [ -d "/var/www/html/vnstat" ]; then
+    cp -Rfa "$APP_TMP_DIR/var/www/html/vnstat/." "/var/www/html/vnstat/"
+  fi
+  if [ -d "$APP_TMP_DIR/var/www/html/sysinfo" ] && [ -d "/var/www/html/sysinfo" ]; then
+    cp -Rfa "$APP_TMP_DIR/var/www/html/sysinfo/." "/var/www/html/sysinfo/"
   fi
   sed -i 's|ServerTokens. *|ServerTokens Prod|g' /etc/httpd/conf/httpd.conf
   echo -e "Done setting up web server\n"
@@ -643,13 +651,14 @@ EOF
 
   echo -e "Cleaning up files and history"
   rm -Rf "/tmp/dns-update" 2>/dev/null
+  rm -Rf /tmp/*.tar "/tmp/dotfiles" "$APP_TMP_DIR"
   bash -c "/root/.local/bin/root_clean.sh" &>/dev/null
   find /etc /var /usr -type f -iname '*.rpmnew' -exec rm -Rf {} \; 2>/dev/null
   find /etc /var /usr -type f -iname '*.rpmsave' -exec rm -Rf {} \; 2>/dev/null
   echo -e "Updated to version $REMOTE_VERSION from $INSTALLED_VERSION"
   echo -e "Last updated on $DATE" >"/var/log/run_update"
   echo -e "Done updating system\n\n"
-  if [ -n "$(type -P WEB-NOTIFY 2>/dev/null)" ] ;then
+  if [ -n "$(type -P WEB-NOTIFY 2>/dev/null)" ]; then
     web-notify telegram "$APP_NAME has ran on $HOSTNAME"
   fi
 fi
