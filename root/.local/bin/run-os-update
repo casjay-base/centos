@@ -512,10 +512,12 @@ else
   echo -e "Done copying the files from config dir to system dir\n"
 
   if [ -f "$APP_TMP_DIR/etc/nginx/nginx.conf" ] && [ -d "/etc/nginx" ]; then
+    echo -e "$APP_TMP_DIR/etc/nginx/nginx.conf >/etc/nginx/nginx.conf"
     cp -Rf "$APP_TMP_DIR/etc/nginx/nginx.conf" "/etc/nginx/nginx.conf"
   fi
 
   if [ -f "$APP_TMP_DIR/etc/httpd/conf/httpd.conf" ] && [ -d "/etc/httpd/conf" ]; then
+    echo -e "$APP_TMP_DIR/etc/httpd/conf/httpd.conf >/etc/httpd/conf/httpd.conf"
     cp -Rf "$APP_TMP_DIR/etc/httpd/conf/httpd.conf" "/etc/httpd/conf/httpd.conf"
   fi
 
