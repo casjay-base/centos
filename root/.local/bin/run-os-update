@@ -789,6 +789,6 @@ if [ -f "$LOG_FILE" ]; then
   rm -Rf "$LOG_FILE"
 fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-exit ${exitCode:-0}
+exit
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # end
