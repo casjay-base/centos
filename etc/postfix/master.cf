@@ -1,37 +1,164 @@
-# Postfix master process configuration file.
-# ==========================================================================
-# service   type    private    unpriv    chroot     wakeup    maxproc   command + args
-#                   (yes)      (yes)     (yes)      (never)   (100)
-# ==========================================================================
-smtp        inet    n          -          n          -        -         smtpd
-submission  inet    n          -          n          -        -         smtpd
-smtps       inet    n          -          n          -        -         smtpd
-pickup      fifo    n          -          n          60       1         pickup
-cleanup     unix    n          -          n          -        0         cleanup
-qmgr        fifo    n          -          n          300      1         qmgr
-#qmgr       fifo    n          -          n          300      1         oqmgr
-tlsmgr      unix    -          -          n          1000?    1         tlsmgr
-rewrite     unix    -          -          n          -        -         trivial-rewrite
-bounce      unix    -          -          n          -        0         bounce
-defer       unix    -          -          n          -        0         bounce
-trace       unix    -          -          n          -        0         bounce
-verify      unix    -          -          n          -        1         verify
-flush       unix    n          -          n          1000?    0         flush
-proxymap    unix    -          -          n          -        -         proxymap
-proxywrite  unix    -          -          n          -        1         proxymap
-smtp        unix    -          -          n          -        -         smtp
-relay       unix    -          -          n          -        -         smtp
-showq       unix    n          -          n          -        -         showq
-error       unix    -          -          n          -        -         error
-retry       unix    -          -          n          -        -         error
-discard     unix    -          -          n          -        -         discard
-local       unix    -          n          n          -        -         local
-virtual     unix    -          n          n          -        -         virtual
-lmtp        unix    -          -          n          -        -         lmtp
-anvil       unix    -          -          n          -        1         anvil
-scache      unix    -          -          n          -        1         scache
-#mailman    unix    -          n          n          -        -         pipe
-#  flags=FR user=list argv=/usr/lib/mailman/bin/postfix-to-mailman.py
-#  ${nexthop} ${user}
-#fax unix - n n - 1 pipe
-#  flags= user=asterisk argv=/usr/bin/faxmail -d -n ${user}
+############################################################
+# 📤 SMTP (Port 25)
+# Accept mail from local systems (VMs, containers, apps)
+############################################################
+smtp      inet  n       -       n       -       -       smtpd
+  -o syslog_name=postfix/smtp
+
+############################################################
+# 📬 SUBMISSION (Port 587)
+# Accept mail from clients using STARTTLS
+############################################################
+submission inet n       -       n       -       -       smtpd
+  -o syslog_name=postfix/submission
+  -o smtpd_tls_security_level=encrypt
+  -o smtpd_sasl_auth_enable=no
+  -o milter_macro_daemon_name=ORIGINATING
+
+############################################################
+# 🔐 SMTPS (Port 465)
+# Accept mail from clients using implicit TLS
+############################################################
+smtps     inet  n       -       n       -       -       smtpd
+  -o syslog_name=postfix/smtps
+  -o smtpd_tls_wrappermode=yes
+  -o smtpd_sasl_auth_enable=no
+  -o milter_macro_daemon_name=ORIGINATING
+
+############################################################
+# 📦 pickup
+# Scan the maildrop queue for new messages
+############################################################
+pickup      fifo  n       -       n       60      1       pickup
+
+############################################################
+# 🧹 cleanup
+# Sanitize and prepare messages for the queue
+############################################################
+cleanup     unix  n       -       n       -       0       cleanup
+
+############################################################
+# 🧾 qmgr
+# Manage the mail queue
+############################################################
+qmgr        fifo  n       -       n       300     1       qmgr
+
+############################################################
+# 🔐 tlsmgr
+# TLS session key and context management
+############################################################
+tlsmgr      unix  -       -       n       1000?   1       tlsmgr
+
+############################################################
+# ✏️ rewrite
+# Rewrite and canonicalize addresses
+############################################################
+rewrite     unix  -       -       n       -       -       trivial-rewrite
+
+############################################################
+# 📣 bounce
+# Handle non-delivery (bounce) messages
+############################################################
+bounce      unix  -       -       n       -       0       bounce
+
+############################################################
+# ⏳ defer
+# Manage temporarily undeliverable messages
+############################################################
+defer       unix  -       -       n       -       0       bounce
+
+############################################################
+# 🕵️ trace
+# Record delivery tracing information
+############################################################
+trace       unix  -       -       n       -       0       bounce
+
+############################################################
+# ✅ verify
+# Verify recipients without delivering mail
+############################################################
+verify      unix  -       -       n       -       1       verify
+
+############################################################
+# 🔁 flush
+# Force queue flushing (manual or scheduled)
+############################################################
+flush       unix  n       -       n       1000?   0       flush
+
+############################################################
+# 🗺️ proxymap
+# Interface to look up map data (e.g., aliases)
+############################################################
+proxymap    unix  -       -       n       -       -       proxymap
+
+############################################################
+# ✍️ proxywrite
+# Write access for proxymap (e.g., for caching)
+############################################################
+proxywrite  unix  -       -       n       -       1       proxymap
+
+############################################################
+# 🚚 smtp
+# Outbound mail transport to remote systems
+############################################################
+smtp        unix  -       -       n       -       -       smtp
+
+############################################################
+# 🔁 relay
+# Similar to smtp; used for relayed delivery
+############################################################
+relay       unix  -       -       n       -       -       smtp
+
+############################################################
+# 🔍 showq
+# Display contents of the mail queue
+############################################################
+showq       unix  n       -       n       -       -       showq
+
+############################################################
+# ❌ error
+# Handle delivery failures with permanent errors
+############################################################
+error       unix  -       -       n       -       -       error
+
+############################################################
+# 🔄 retry
+# Retry delivery for transient errors
+############################################################
+retry       unix  -       -       n       -       -       error
+
+############################################################
+# 🗑️ discard
+# Silently discard messages
+############################################################
+discard     unix  -       -       n       -       -       discard
+
+############################################################
+# 🧍 local
+# Local delivery agent (disabled in satellite role)
+############################################################
+local       unix  -       n       n       -       -       local
+
+############################################################
+# 🌐 virtual
+# Virtual alias/domain handling
+############################################################
+virtual     unix  -       n       n       -       -       virtual
+
+############################################################
+# 📬 lmtp
+# LMTP delivery agent (e.g., for Dovecot)
+############################################################
+lmtp        unix  -       -       n       -       -       lmtp
+
+############################################################
+# 📊 anvil
+# Rate limiting and connection tracking
+############################################################
+anvil       unix  -       -       n       -       1       anvil
+
+############################################################
+# 🧠 scache
+# Client authentication caching
+############################################################
+scache      unix  -       -       n       -       1       scache

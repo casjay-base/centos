@@ -1,38 +1,84 @@
-### Main postfix config
-compatibility_level = 2
-alias_maps = hash:/etc/aliases
-alias_database = hash:/etc/aliases
-transport_maps = hash:/etc/postfix/transport
-virtual_alias_maps = hash:/etc/postfix/virtual
+############################################################
+# ✉️ MAIN POSTFIX CONFIG
+############################################################
+# Custom SMTP banner to identify satellite server
+smtpd_banner = CasjaysDev satellite Server
 
+############################################################
+# 🌐 NETWORK & INTERFACE SETTINGS
+############################################################
+# Listen on all IPv4 and IPv6 interfaces
+inet_interfaces = all
+# Enable both IPv4 and IPv6 protocols
 inet_protocols = all
-inet_interfaces = 127.0.0.1,[::1]
+############################################################
+# 🏷️ HOST IDENTITY
+############################################################
+# Hostname of this satellite server
+myhostname = myserverhostname
+# Default origin domain for outgoing mail
+myorigin = myserverhostname
+# Disable local mail delivery
+mydestination =
+# Append domain to addresses without one
+append_dot_mydomain = yes
 
+############################################################
+# 🤝 TRUSTED NETWORKS
+############################################################
+# Allow mail submission from local and private IP ranges
+mynetworks = /etc/postfix/mynetworks
+
+############################################################
+# 🔐 TLS FOR OUTBOUND
+############################################################
+# Enable TLS when sending to relayhost
+smtp_use_tls = yes
+# Require STARTTLS encryption
+smtp_tls_security_level = encrypt
+# Log STARTTLS availability
+smtp_tls_note_starttls_offer = yes
+# Trusted certificate authority file
+smtp_tls_CAfile = /etc/ssl/certs/ca-bundle.crt
+# Enable detailed TLS logging
+smtp_tls_loglevel = 1
+
+############################################################
+# 🛡️ TLS FOR INBOUND
+############################################################
+# Enable TLS for local client connections
+smtpd_use_tls = yes
+# Path to TLS certificate
+smtpd_tls_cert_file = /etc/letsencrypt/live/domain/fullchain.pem
+# Path to TLS private key
+smtpd_tls_key_file  = /etc/letsencrypt/live/domain/privkey.pem
+
+############################################################
+# 🧱 RELAY RESTRICTIONS
+############################################################
+# Restrict relay access to trusted networks and optionally authenticated users
+smtpd_relay_restrictions = permit_mynetworks, permit_sasl_authenticated, defer_unauth_destination
+# Same for recipient restrictions
+smtpd_recipient_restrictions = permit_mynetworks, permit_sasl_authenticated, reject_unauth_destination
+
+############################################################
+# ⚙️ MISC SETTINGS
+############################################################
+# Compatibility level for Postfix behavior
+compatibility_level = 2
+# Set message queue lifetime
+maximal_queue_lifetime = 30d
+# Source of TLS randomness
 tls_random_source = dev:/dev/urandom
 
-smtp_use_tls = yes
-smtp_tls_wrappermode = yes
-smtp_tls_security_level = encrypt
-smtp_sasl_auth_enable = yes
-smtp_sasl_security_options = noanonymous
-smtp_sasl_password_maps = hash:/etc/postfix/sasl/passwd
+############################################################
+# 📬 MAIL RELAYING
+############################################################
+# Relay all outgoing mail to primary mail server (submission port)
+relayhost = [smtp.casjay.email]:587
+# Disable local delivery entirely
+local_transport = error: local delivery disabled
 
-smtpd_use_tls = yes
-smtpd_tls_dh1024_param_file = /etc/ssl/dhparam/1024.pem
-smtpd_tls_session_cache_database = btree:/etc/postfix/smtpd_scache
-smtpd_tls_exclude_ciphers = aNULL, eNULL, EXPORT, DES, RC4, MD5, PSK, aECDH, EDH-DSS-DES-CBC3-SHA, EDH-RSA-DES-CBC3-SHA, KRB5-DES, CBC3-SHA
-
-smtp_tls_key_file = /etc/letsencrypt/live/domain/privkey.pem
-smtp_tls_cert_file = /etc/letsencrypt/live/domain/fullchain.pem
-smtpd_tls_key_file = /etc/letsencrypt/live/domain/privkey.pem
-smtpd_tls_cert_file = /etc/letsencrypt/live/domain/fullchain.pem
-smtpd_relay_restrictions = permit_mynetworks, permit_sasl_authenticated, reject
-
-myorigin = myserverdomainname
-myhostname = myserverdomainname
-mydestination =
-
-append_dot_mydomain = yes
-local_transport=error: local delivery disabled
-
-relayhost = [smtp-relay.casjay.email]:465
+############################################################
+# 🛑 END OF CONFIG FILE
+############################################################

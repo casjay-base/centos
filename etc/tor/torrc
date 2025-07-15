@@ -1,50 +1,106 @@
-# tor settings                                             #####################
+# =========================================================
+#  🕳️ Tor Exit Node Configuration – Limited, Hardened, Accounted
+#  📅 Monthly 1000GB, 🌐 Safe Ports Only, 🛡️ Abuse-Minimized
+# =========================================================
+
+# =========================================================
+# 🔧 Basic Setup
+# =========================================================
 RunAsDaemon                 1
-##### directiories and files                               #####################
+DataDirectory               /var/lib/tor
+
+# =========================================================
+# 🔐 Control Port
+# =========================================================
+ControlPort                 9051
 ControlSocket               /run/tor/control.sock
 CookieAuthFile              /run/tor/control.authcookie
-DataDirectory               /var/lib/tor
-##### control settings                                     #####################
 ControlSocketsGroupWritable 1
 CookieAuthentication        1
 CookieAuthFileGroupReadable 1
-##### tor --hash-password YourPass | grep '[0-9]:[0-9A-Z][0-9A-Z][0-9A-Z][0-9A-Z]'
-#HashedControlPassword 16:C30604D1D90F341360A14D9A1048C1DF4A3CA2411444E52EE5B954C01F
-##### Server settings                                      #####################
-ControlPort                 9051
-SOCKSPort                   9050
-HTTPTunnelPort              9080
-############### Bandwidth                                  #####################
-# https://support.torproject.org/relay-operators/limit-total-bandwidth/
-AccountingStart             day 0:00
-AccountingMax               5 GBytes
-RelayBandwidthRate          1000 KBytes
-RelayBandwidthBurst         5000 KBytes # allow higher bursts but maintain average
-##### logging                                              #####################
-Log notice file             /var/log/tor/tor.log
-#Log debug file              /var/log/tor/debug.log
-##### dns forwarder                                        #####################
-DNSPort                     9053
+
+# =========================================================
+# 🌐 SOCKS/DNS/HTTP Tunnel (optional public proxy use)
+# =========================================================
+SOCKSPort                   0.0.0.0:9050 IsolateDestAddr IsolateDestPort
+SOCKSPort                   [::]:9050    IsolateDestAddr IsolateDestPort
+HTTPTunnelPort              0.0.0.0:9080
+HTTPTunnelPort              [::]:9080
+DNSPort                     0.0.0.0:9053
+DNSPort                     [::]:9053
 AutomapHostsOnResolve       1
 AutomapHostsSuffixes        .exit,.onion
-### Performance related options                            #####################
-AvoidDiskWrites             1          ## Reduce wear on SSD
-DisableAllSwap              1          ## Service must be started as root
-HardwareAccel               1          ## Look for OpenSSL hardware cryptographic support
-NumCPUs                     2          ## Only start two threads
-##### This section is just for relays                      #####################
-#Nickname whateveryouwant
-#ContactInfo                tor-admin@example.com
-#ORPort                     443
-#Exitpolicy                 reject *:*
-#AccountingMax              100 GBytes
-#AccountingStart            month 1 00:00
-#RelayBandwidthRate         5120 KBytes
-#RelayBandwidthBurst        10240 KBytes
-#DisableDebuggerAttachment  0
-#HardwareAccel              1
-##### This section is just for location-hidden services    #####################
-HiddenServiceDir            /var/lib/tor/hidden_service/default
-HiddenServicePort           22  myserverdomainname:22
-HiddenServicePort           80  myserverdomainname:80
-HiddenServicePort           443 myserverdomainname:443
+
+# =========================================================
+# 💸 Monthly Bandwidth Limits
+# =========================================================
+AccountingStart             month 1 00:00
+AccountingMax               1000 GBytes
+RelayBandwidthRate          10000 KBytes
+RelayBandwidthBurst         20000 KBytes
+
+# =========================================================
+# 📡 Relay Identification
+# =========================================================
+Nickname                    CasjayExit_myserverdomainname
+ContactInfo                 abuse@myserverdomainname
+ORPort                      9001
+ORPort                      [::]:9001
+
+# =========================================================
+# ✅ Exit Policy – Safe, Limited, Abuse-Minimized
+# =========================================================
+ExitRelay                   1
+ExitPolicy accept *:80        # HTTP
+ExitPolicy accept *:443       # HTTPS
+ExitPolicy accept *:22        # SSH (optional)
+ExitPolicy accept *:587       # SMTP Auth (submission only)
+ExitPolicy accept *:993       # IMAPS
+ExitPolicy accept *:995       # POP3S
+
+# 🚫 Deny all others to prevent spam, scans, DDoS vectors
+ExitPolicy reject *:1-21
+ExitPolicy reject *:23-25
+ExitPolicy reject *:26-52
+ExitPolicy reject *:53
+ExitPolicy reject *:54-79
+ExitPolicy reject *:110
+ExitPolicy reject *:111
+ExitPolicy reject *:113
+ExitPolicy reject *:135-139
+ExitPolicy reject *:143
+ExitPolicy reject *:161-162
+ExitPolicy reject *:179
+ExitPolicy reject *:389
+ExitPolicy reject *:445
+ExitPolicy reject *:465
+ExitPolicy reject *:512-514
+ExitPolicy reject *:520
+ExitPolicy reject *:563
+ExitPolicy reject *:6660-6669
+ExitPolicy reject *:6697
+ExitPolicy reject *:1350-2000
+ExitPolicy reject *:3128
+ExitPolicy reject *:3389
+ExitPolicy reject *:5900-5910
+ExitPolicy reject *:6566
+ExitPolicy reject *:6666-7000
+ExitPolicy reject *:8080
+ExitPolicy reject *:8888
+ExitPolicy reject *:9100
+ExitPolicy reject *:10000
+ExitPolicy reject *:32768-65535
+ExitPolicy reject *:*
+
+# =========================================================
+# 🧾 Logging
+# =========================================================
+Log                         notice file /var/log/tor/tor.log
+
+# =========================================================
+# 🏃 Performance
+# =========================================================
+AvoidDiskWrites             1
+DisableAllSwap              1
+HardwareAccel               1
+NumCPUs                     2
