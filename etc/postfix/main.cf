@@ -35,8 +35,8 @@ maximal_queue_lifetime           = 30d
 # 🔐 Server-side TLS (for inbound 25/587/465)
 ########################
 smtpd_use_tls                    = yes
-smtpd_tls_cert_file              = /etc/letsencrypt/live/proxmox.casjayvps.us/fullchain.pem
-smtpd_tls_key_file               = /etc/letsencrypt/live/proxmox.casjayvps.us/privkey.pem
+smtpd_tls_cert_file              = /etc/letsencrypt/live/domain/fullchain.pem
+smtpd_tls_key_file               = /etc/letsencrypt/live/domain/privkey.pem
 smtpd_tls_security_level         = may                # 25 will *offer* STARTTLS; 587/465 enforce via master.cf
 smtpd_tls_loglevel               = 1
 # Minimum protocol policy (safe defaults):
