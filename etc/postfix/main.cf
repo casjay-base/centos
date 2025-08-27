@@ -2,7 +2,7 @@
 # ✉️ MAIN POSTFIX CONFIG
 ############################################################
 # Custom SMTP banner to identify satellite server
-smtpd_banner = CasjaysDev satellite Server
+smtpd_banner = CasjaysDev Satellite Server
 
 ############################################################
 # 🌐 NETWORK & INTERFACE SETTINGS
@@ -70,10 +70,10 @@ tls_random_source = dev:/dev/urandom
 ############################################################
 # 📬 MAIL RELAYING
 ############################################################
-# Relay all outgoing mail to primary mail server (submission port)
-relayhost = [smtp.casjay.email]:465
 # Disable local delivery entirely
 local_transport = error: local delivery disabled
+# Relay all outgoing mail to primary mail server (submission port)
+relayhost = [smtp.casjay.email]:465
 
 ############################################################
 # 🛑 END OF CONFIG FILE
