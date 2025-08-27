@@ -8,19 +8,15 @@ smtpd_banner = CasjaysDev satellite Server
 # 🌐 NETWORK & INTERFACE SETTINGS
 ############################################################
 # Listen on all IPv4 and IPv6 interfaces
-inet_interfaces = all
-# Enable both IPv4 and IPv6 protocols
 inet_protocols = all
+inet_interfaces = all
 ############################################################
 # 🏷️ HOST IDENTITY
 ############################################################
-# Hostname of this satellite server
-myhostname = myserverhostname
-# Default origin domain for outgoing mail
+mydomain = myserverdomainname
 myorigin = myserverhostname
-# Disable local mail delivery
+myhostname = myserverhostname
 mydestination =
-# Append domain to addresses without one
 append_dot_mydomain = yes
 
 ############################################################
@@ -75,7 +71,7 @@ tls_random_source = dev:/dev/urandom
 # 📬 MAIL RELAYING
 ############################################################
 # Relay all outgoing mail to primary mail server (submission port)
-relayhost = [smtp.casjay.email]:587
+relayhost = [smtp.casjay.email]:465
 # Disable local delivery entirely
 local_transport = error: local delivery disabled
 
