@@ -1,38 +1,60 @@
-# $OpenBSD: ssh_config,v 1.30 2016/02/20 23:06:23 sobrado Exp $
+# System-wide SSH client configuration
+# This affects all users unless overridden in ~/.ssh/config
+
+# Basic Settings
 Host *
-    Port 22
-#   Protocol 2
-#   RhostsRSAAuthentication no
-#   RSAAuthentication yes
-#   PasswordAuthentication yes
-#   HostbasedAuthentication no
-    GSSAPIAuthentication yes
-#   GSSAPIDelegateCredentials no
-#   GSSAPIKeyExchange no
-#   GSSAPITrustDNS no
-#   BatchMode no
-#   CheckHostIP yes
-#   AddressFamily any
-#   ConnectTimeout 0
-#   StrictHostKeyChecking ask
-#   IdentityFile ~/.ssh/identity
-#   IdentityFile ~/.ssh/id_rsa
-#   IdentityFile ~/.ssh/id_dsa
-#   IdentityFile ~/.ssh/id_ecdsa
-#   IdentityFile ~/.ssh/id_ed25519
-#   Cipher 3des
-#   Ciphers aes128-ctr,aes192-ctr,aes256-ctr,arcfour256,arcfour128,aes128-cbc,3des-cbc
-#   MACs hmac-md5,hmac-sha1,umac-64@openssh.com,hmac-ripemd160
-#   EscapeChar ~
-#   Tunnel no
-#   TunnelDevice any:any
-#   PermitLocalCommand no
-#   VisualHostKey no
-#   ProxyCommand ssh -q -W %h:%p gateway.example.com
-#   RekeyLimit 1G 1h
+    # Enable X11 forwarding
+    ForwardX11 yes
     ForwardX11Trusted yes
-#   ForwardAgent no
-#   ForwardX11 no
+    
+    # Silence X11 connection errors
+    LogLevel ERROR
+    
+    # Security: Disable agent forwarding by default (enable per-host if needed)
+    ForwardAgent no
+    
+    # Connection Settings
+    # Keep connections alive to prevent timeouts
+    ServerAliveInterval 60
+    ServerAliveCountMax 3
+    
+    # Enable connection multiplexing for faster subsequent connections
+    ControlMaster auto
+    ControlPath ~/.ssh/sockets/%r@%h-%p
+    ControlPersist 10m
+    
+    # Compression (useful for slow connections)
+    Compression yes
+    
+    # Security: Verify host keys
+    StrictHostKeyChecking ask
+    HashKnownHosts yes
+    
+    # Try keyboard-interactive auth first, then password
+    PreferredAuthentications publickey,keyboard-interactive,password
+    
+    # Security: Don't allow rhosts or host-based authentication
+    RhostsRSAAuthentication no
+    HostbasedAuthentication no
+    
+    # Only use secure protocol version
+    Protocol 2
+    
+    # Modern, secure ciphers and algorithms
+    Ciphers chacha20-poly1305@openssh.com,aes256-gcm@openssh.com,aes128-gcm@openssh.com,aes256-ctr,aes192-ctr,aes128-ctr
+    MACs hmac-sha2-512-etm@openssh.com,hmac-sha2-256-etm@openssh.com,hmac-sha2-512,hmac-sha2-256
+    KexAlgorithms curve25519-sha256,curve25519-sha256@libssh.org,diffie-hellman-group-exchange-sha256
+    
+    # Use modern host key algorithms
+    HostKeyAlgorithms ssh-ed25519,rsa-sha2-512,rsa-sha2-256
+    
+    # Enable GSSAPI authentication (Kerberos) unless you don't use it
+    GSSAPIAuthentication yes
+    
+    # Connection timeouts
+    ConnectTimeout 30
+    
+    # Don't send locale environment variables (can cause issues)
     SendEnv LANG LC_CTYPE LC_NUMERIC LC_TIME LC_COLLATE LC_MONETARY LC_MESSAGES
     SendEnv LC_PAPER LC_NAME LC_ADDRESS LC_TELEPHONE LC_MEASUREMENT
     SendEnv LC_IDENTIFICATION LC_ALL LANGUAGE
