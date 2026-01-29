@@ -14,6 +14,8 @@ PermitRootLogin yes
 StrictModes yes
 MaxAuthTries 3
 MaxSessions 99999
+IgnoreRhosts yes
+KeepAlive yes
 
 PermitEmptyPasswords no
 PasswordAuthentication yes
@@ -51,6 +53,3 @@ AcceptEnv XMODIFIERS
 
 # override default of no subsystems
 Subsystem sftp /usr/libexec/openssh/sftp-server
-IgnoreRhosts yes
-KeepAlive yes
-Protocol 2
