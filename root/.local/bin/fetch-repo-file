@@ -49,7 +49,8 @@ __rm_repo_files() { [ "${1:-$YUM_DELETE}" = "yes" ] && rm -Rf "/etc/yum.repos.d"
 __has_alt_kernel() { rpm -qa 2>/dev/null | grep -qE '^kernel-(ml|lt)-'; }
 __kernel_exclude_args() {
   __has_alt_kernel || return 0
-  printf -- '--exclude=%s ' kernel kernel-core kernel-modules kernel-modules-core kernel-modules-extra kernel-tools kernel-tools-libs kernel-devel kernel-headers kernel-abi-stablelists kernel-srpm-macros
+  # Only the base kernel boot/module packages. kernel-tools, kernel-headers, kernel-devel, etc. update normally.
+  printf -- '--exclude=%s ' kernel kernel-core kernel-modules kernel-modules-core kernel-modules-extra kernel-abi-stablelists
 }
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 __backup_repo_files() {

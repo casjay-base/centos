@@ -2,7 +2,12 @@
   "permissions": {
     "allow": [
       "Bash(sh -n /root/Projects/github/casjay-base/centos/root/.local/bin/fetch-repo-file)",
-      "Bash(bash -n /root/Projects/github/casjay-base/centos/root/.local/bin/run-os-update)"
+      "Bash(bash -n /root/Projects/github/casjay-base/centos/root/.local/bin/run-os-update)",
+      "WebFetch(domain:elrepo.org)",
+      "WebFetch(domain:www.mail-archive.com)",
+      "WebFetch(domain:centos.pkgs.org)",
+      "WebFetch(domain:linux.cc.iitk.ac.in)",
+      "Bash(bash -n /root/Projects/github/pkmgr/centos/scripts/min.sh)"
     ]
   }
 }

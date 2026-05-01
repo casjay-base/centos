@@ -57,23 +57,26 @@ __run_updater() {
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 __kernel_ml() {
   local exitC=0
-  local kernel="$(uname -r 2>/dev/null | grep -F 'elrepo')"
+  local kernel_installed="$(rpm -qa kernel-ml 2>/dev/null | tail -n1)"
   local kernel_avail="$(yum search kernel-ml 2>&1 | awk '{print $1}' | grep '^kernel-ml-.*[.]' | grep -Ev 'devel|headers' || return)"
-  if [ -n "$kernel" ]; then
-    echo "You are already running kernel-ml: $kernel"
+  # EL7 ships monolithic kernel-ml; EL8/9 split into kernel-ml + kernel-ml-core + kernel-ml-modules*. --skip-broken handles both.
+  local kml_pkgs="kernel-ml kernel-ml-core kernel-ml-modules kernel-ml-modules-extra"
+  if [ -n "$kernel_installed" ]; then
+    echo "kernel-ml is already installed: $kernel_installed"
     echo "Ensuring the kernel-ml modules packages are installed"
-    yum install -yy -q kernel-ml-modules kernel-ml-modules-extra >/dev/null
+    yum install -yy -q --skip-broken $kml_pkgs >/dev/null
     echo "You should be all set with the kernel"
   elif [ -n "$kernel_avail" ]; then
     echo "Switching to the newest kernel from elrepo - This may take a few minutes"
-    pkgs="$(rpm -qa | grep -v 'kernel-ml' | grep '^kernel')"
+    # Only remove base kernel boot/module packages. Keep kernel-tools, kernel-headers, kernel-devel etc.
+    pkgs="$(rpm -qa kernel kernel-core kernel-modules kernel-modules-core kernel-modules-extra 2>/dev/null)"
     [ -n "$pkgs" ] && for pkg in $pkgs; do rpm -ev --nodeps $pkg >/dev/null 2>&1; done
-    devnull yum update -yyq --exclude 'kernel*' >/dev/null
-    devnull yum install -yyq kernel-ml kernel-ml-modules kernel-ml-modules-extra >/dev/null || exitC=1
-    devnull yum update -yyq kernel-ml kernel-ml-modules kernel-ml-modules-extra >/dev/null || exitC=1
+    devnull yum update -yyq --exclude 'kernel' --exclude 'kernel-core' --exclude 'kernel-modules*' >/dev/null
+    devnull yum install -yyq --skip-broken $kml_pkgs >/dev/null || exitC=1
+    devnull yum update -yyq --skip-broken $kml_pkgs >/dev/null || exitC=1
     run_grub
   else
-    echo "kernel-ml doesn't seem to be avaliable"
+    echo "kernel-ml doesn't seem to be available"
     exitC=1
   fi
   return $exitC
@@ -81,23 +84,26 @@ __kernel_ml() {
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 __kernel_lt() {
   local exitC=0
-  local kernel="$(uname -r 2>/dev/null | grep -F 'elrepo')"
+  local kernel_installed="$(rpm -qa kernel-lt 2>/dev/null | tail -n1)"
   local kernel_avail="$(yum search kernel-lt 2>&1 | awk '{print $1}' | grep '^kernel-lt-.*[.]' | grep -Ev 'devel|headers' || return)"
-  if [ -n "$kernel" ]; then
-    echo "You are already running kernel-lt: $kernel"
+  # EL7 ships monolithic kernel-lt; EL8/9 split into kernel-lt + kernel-lt-core + kernel-lt-modules*. --skip-broken handles both.
+  local klt_pkgs="kernel-lt kernel-lt-core kernel-lt-modules kernel-lt-modules-extra"
+  if [ -n "$kernel_installed" ]; then
+    echo "kernel-lt is already installed: $kernel_installed"
     echo "Ensuring the kernel-lt modules packages are installed"
-    yum install -yy -q kernel-lt-modules kernel-lt-modules-extra >/dev/null
+    yum install -yy -q --skip-broken $klt_pkgs >/dev/null
     echo "You should be all set with the kernel"
   elif [ -n "$kernel_avail" ]; then
     echo "Switching to the newest kernel from elrepo - This may take a few minutes"
-    pkgs="$(rpm -qa | grep -v 'kernel-lt' | grep '^kernel')"
+    # Only remove base kernel boot/module packages. Keep kernel-tools, kernel-headers, kernel-devel etc.
+    pkgs="$(rpm -qa kernel kernel-core kernel-modules kernel-modules-core kernel-modules-extra 2>/dev/null)"
     [ -n "$pkgs" ] && for pkg in $pkgs; do rpm -ev --nodeps $pkg >/dev/null 2>&1; done
-    devnull yum update -yyq --exclude 'kernel*' >/dev/null
-    devnull yum install -yyq kernel-lt kernel-lt-modules kernel-lt-modules-extra >/dev/null || exitC=1
-    devnull yum update -yyq kernel-lt kernel-lt-modules kernel-lt-modules-extra >/dev/null || exitC=1
+    devnull yum update -yyq --exclude 'kernel' --exclude 'kernel-core' --exclude 'kernel-modules*' >/dev/null
+    devnull yum install -yyq --skip-broken $klt_pkgs >/dev/null || exitC=1
+    devnull yum update -yyq --skip-broken $klt_pkgs >/dev/null || exitC=1
     run_grub
   else
-    echo "kernel-lt doesn't seem to be avaliable"
+    echo "kernel-lt doesn't seem to be available"
     exitC=1
   fi
   return $exitC
@@ -228,9 +234,10 @@ MYSERVER_HOST_NAME="$(hostname -f 2>/dev/null | grep '^' || hostname -s 2>/dev/n
 MYSERVER_DOMAIN_NAME="$(hostname -d | grep '^' || echo "$HOSTNAME_FULL" | awk -F'.' '{$1="";OFS="."; print $0}' | grep -v '^$' | sed 's|^\.||g;s|^ /*||g;s| |.|g' | grep '^' || echo "$INTERNAL_DOMAIN")"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 [ "$ARCH" = "x86_64" ] || yum_opts="--disablerepo casjay-remi-php,casjay-remi-safe"
-# If kernel-ml or kernel-lt is installed, exclude the base kernel from updates so it doesn't get pulled back in
+# If kernel-ml or kernel-lt is installed, exclude only the base kernel boot/module packages from updates
+# so they don't get pulled back in. kernel-tools, kernel-headers, kernel-devel, etc. are kept and updated normally.
 if rpm -qa 2>/dev/null | grep -qE '^kernel-(ml|lt)-'; then
-  for k in kernel kernel-core kernel-modules kernel-modules-core kernel-modules-extra kernel-tools kernel-tools-libs kernel-devel kernel-headers kernel-abi-stablelists kernel-srpm-macros; do
+  for k in kernel kernel-core kernel-modules kernel-modules-core kernel-modules-extra kernel-abi-stablelists; do
     yum_opts="${yum_opts} --exclude=$k"
   done
   unset k
