@@ -228,6 +228,13 @@ MYSERVER_HOST_NAME="$(hostname -f 2>/dev/null | grep '^' || hostname -s 2>/dev/n
 MYSERVER_DOMAIN_NAME="$(hostname -d | grep '^' || echo "$HOSTNAME_FULL" | awk -F'.' '{$1="";OFS="."; print $0}' | grep -v '^$' | sed 's|^\.||g;s|^ /*||g;s| |.|g' | grep '^' || echo "$INTERNAL_DOMAIN")"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 [ "$ARCH" = "x86_64" ] || yum_opts="--disablerepo casjay-remi-php,casjay-remi-safe"
+# If kernel-ml or kernel-lt is installed, exclude the base kernel from updates so it doesn't get pulled back in
+if rpm -qa 2>/dev/null | grep -qE '^kernel-(ml|lt)-'; then
+  for k in kernel kernel-core kernel-modules kernel-modules-core kernel-modules-extra kernel-tools kernel-tools-libs kernel-devel kernel-headers kernel-abi-stablelists kernel-srpm-macros; do
+    yum_opts="${yum_opts} --exclude=$k"
+  done
+  unset k
+fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 while [ $# -ne 0 ]; do
   case "$1" in

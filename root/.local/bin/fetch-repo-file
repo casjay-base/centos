@@ -46,6 +46,11 @@ __function_exists() { builtin type $1 >/dev/null 2>&1 || return 1; }
 # custom functions
 __save_remote_file() { curl -q -SLs "$1" | tee "$2" >/dev/null 2>&1 || return 1; }
 __rm_repo_files() { [ "${1:-$YUM_DELETE}" = "yes" ] && rm -Rf "/etc/yum.repos.d"/* >/dev/null 2>&1 || return 0; }
+__has_alt_kernel() { rpm -qa 2>/dev/null | grep -qE '^kernel-(ml|lt)-'; }
+__kernel_exclude_args() {
+  __has_alt_kernel || return 0
+  printf -- '--exclude=%s ' kernel kernel-core kernel-modules kernel-modules-core kernel-modules-extra kernel-tools kernel-tools-libs kernel-devel kernel-headers kernel-abi-stablelists kernel-srpm-macros
+}
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 __backup_repo_files() {
   [ -d "$BACKUP_DIR" ] || mkdir -p "$BACKUP_DIR"
@@ -114,8 +119,12 @@ if grep -sq "^SELINUX=" "/etc/selinux/config"; then
 fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 if [ "$FETCH_REPO_FILE_EXIT_STATUS" -eq 0 ]; then
+  YUM_KERNEL_EXCLUDES="$(__kernel_exclude_args)"
+  if [ -n "$YUM_KERNEL_EXCLUDES" ]; then
+    printf '%b\n' "Detected kernel-ml/kernel-lt installed - excluding base kernel from update"
+  fi
   printf '%b\n' "Done updating repos - now running yum update -y --skip-broken --nogpgcheck"
-  yum update -y --skip-broken --nogpgcheck
+  yum update -y --skip-broken --nogpgcheck $YUM_KERNEL_EXCLUDES
 else
   printf '%b\n' "Failed to update the repos"
 fi

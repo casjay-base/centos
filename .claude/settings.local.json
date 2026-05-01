@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(sh -n /root/Projects/github/casjay-base/centos/root/.local/bin/fetch-repo-file)",
+      "Bash(bash -n /root/Projects/github/casjay-base/centos/root/.local/bin/run-os-update)"
+    ]
+  }
+}
