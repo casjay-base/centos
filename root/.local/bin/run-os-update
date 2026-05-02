@@ -797,6 +797,16 @@ EOF
 EOF
   echo -e "Done updating the cron file\n"
 
+  echo -e "Removing iptables-legacy if iptables-nft is available"
+  if rpm -q iptables-legacy >/dev/null 2>&1 && rpm -q iptables-nft >/dev/null 2>&1; then
+    rpm -ev --nodeps iptables-legacy >/dev/null 2>&1
+    alternatives --set iptables /usr/sbin/iptables-nft >/dev/null 2>&1
+    alternatives --set ip6tables /usr/sbin/ip6tables-nft >/dev/null 2>&1
+    echo -e "Removed iptables-legacy and pointed alternatives at iptables-nft\n"
+  else
+    echo -e "Skipping iptables-legacy removal\n"
+  fi
+
   echo -e "Setting up the services"
   for s in $SERVICES_ENABLE; do systemctl enable --now "$s" &>/dev/null; done
   for s in $SERVICES_ENABLE; do systemctl restart "$s" &>/dev/null; done
