@@ -26,7 +26,7 @@ enabled  = true
 filter   = proftpd
 action   = %(banaction)s
 logpath  = /var/log/secure
-logpath  = /var/log/proftpd/auth.log
+           /var/log/proftpd/auth.log
 
 [postfix]
 enabled  = true
@@ -39,6 +39,26 @@ enabled  = true
 filter   = apache-auth
 action   = %(banaction)s
 logpath  = /var/log/httpd/*error_log
+
+# nginx is the internet-facing TLS terminator, so these jails see the real
+# client IP; the apache jail above only ever sees the nginx proxy address
+[nginx-http-auth]
+enabled  = true
+filter   = nginx-http-auth
+action   = %(banaction)s
+logpath  = /var/log/nginx/error.log
+
+[nginx-botsearch]
+enabled  = true
+filter   = nginx-botsearch
+action   = %(banaction)s
+logpath  = /var/log/nginx/access.log
+
+[nginx-limit-req]
+enabled  = true
+filter   = nginx-limit-req
+action   = %(banaction)s
+logpath  = /var/log/nginx/error.log
 
 [named-udp]
 enabled  = true
@@ -78,3 +98,13 @@ enabled = false
 filter  = webmin-auth
 action   = %(banaction)s
 logpath = /var/log/secure
+
+# Long ban for hosts that come back after an earlier ban expires
+[recidive]
+enabled  = true
+filter   = recidive
+action   = %(banaction)s
+logpath  = /var/log/fail2ban.log
+bantime  = 2592000
+findtime = 604800
+maxretry = 3

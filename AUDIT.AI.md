@@ -120,35 +120,107 @@ immediate discard; everything else rotates monthly OR at a size threshold
 
 ## HIGH
 
-- [ ] 9. Daily root cron pipes unauthenticated `curl` output to `bash`,
+- [x] 9. Daily root cron pipes unauthenticated `curl` output to `bash`,
       unpinned `main` ref, no signature — `cron.d/run-os-update:2`. Pin to
       a commit SHA + verify signature, or drop the fallback.
-- [ ] 10. Apache `<Directory />` has no `Require all denied` (stock RHEL
+      FIXED: dropped the `|| bash -c "$(curl ...)"` fallback entirely from
+      `etc/cron.d/run-os-update` — `/root/.local/bin/run-os-update` is shipped by
+      this same repo, so the remote refetch was a redundant root RCE path, not a
+      recovery mechanism. If the script is missing the cron entry now no-ops
+      instead of executing whatever `main` happens to hold. Comment above the
+      line states this. `cron.d/yum-update`'s separate issue is #38 (LOW),
+      untouched here.
+- [x] 10. Apache `<Directory />` has no `Require all denied` (stock RHEL
       default removed) with `Options All` + `AllowOverride All` —
       `httpd.conf:123-138`. Restore deny-by-default, `Options None`.
-- [ ] 11. `/cgi-bin` executes `.sh .php .js .go` as CGI, world-accessible,
+      FIXED in `etc/httpd/conf/httpd.conf`: `<Directory />` is now
+      `Options None` + `AllowOverride None` + `Require all denied`, the stock
+      RHEL posture. Because 2.4 authorization is inherited, `<Directory
+      "/var/www">` and `<Directory "/var/www/html">` each gained an explicit
+      `Require all granted` so the real docroot still serves; both also dropped
+      the `All` from `Options` (which was silently granting `ExecCGI` and
+      `Includes` across the whole docroot) down to
+      `MultiViews Indexes FollowSymLinks`. `Indexes` is left in place on
+      purpose — that is #32 (LOW), out of scope for this pass.
+- [x] 11. `/cgi-bin` executes `.sh .php .js .go` as CGI, world-accessible,
       `AllowOverride All` — `httpd.conf:154-160`,
       `nginx/global.d/cgi-bin.conf`. Strip non-`.cgi/.pl` handlers,
       `AllowOverride None`.
-- [ ] 12. Munin has zero access control on `/munin` and `/munin-cgi` (both
+      FIXED in `etc/httpd/conf/httpd.conf`: the `/usr/local/share/httpd/cgi-bin`
+      block is now `AllowOverride None` and
+      `AddHandler cgi-script .cgi .pl` — `.py .sh .rb .go .js .php` no longer
+      execute as CGI (`.php` in particular was handing the PHP handler an
+      arbitrary-upload directory). A comment above the `ScriptAlias` says not to
+      re-add them. `Require all granted` was deliberately kept: nginx is the
+      internet-facing terminator and proxies `/cgi-bin` to Apache from the
+      host's own LAN address (`conf.d/default.conf` upstream
+      `mycurrentipaddress_4:8443`), so a loopback-only `Require ip` would have
+      broken every legitimate request while the exposure is unchanged — the
+      execution surface, not the reachability, was the actual defect.
+      `nginx/global.d/cgi-bin.conf` needed no change; it is a plain proxy pass
+      with no handler logic of its own.
+- [x] 12. Munin has zero access control on `/munin` and `/munin-cgi` (both
       Apache and nginx configs) — empty `munin-htpasswd` is never
       referenced anywhere. Add AuthType Basic + AuthUserFile + Require
       valid-user to both vhost configs; generate htpasswd at bootstrap.
-- [ ] 13. munin-node runs plugins as root, zero `allow`/`cidr_allow` ACL —
+      FIXED: `httpd/conf.d/munin.conf` now carries `AuthType Basic` /
+      `AuthName "Munin"` / `AuthUserFile /etc/munin/munin-htpasswd` /
+      `Require valid-user` on both the `/var/lib/munin/html` directory and the
+      `/munin-cgi/` Location, and `nginx/global.d/munin.conf` enforces the same
+      credentials at the edge via `auth_basic` / `auth_basic_user_file` on both
+      proxied locations (single prompt — nginx forwards `Authorization`
+      upstream, and Apache revalidates against the same file). The committed
+      `munin/munin-htpasswd` is intentionally left empty, so munin fails closed
+      until bootstrap runs `htpasswd -B -c /etc/munin/munin-htpasswd <user>`;
+      a comment at the top of each config states that command.
+- [x] 13. munin-node runs plugins as root, zero `allow`/`cidr_allow` ACL —
       `munin-node.conf`. Add `cidr_allow 127.0.0.1/32`; drop root where
       plugins allow.
-- [ ] 14. sshd_config: `PermitRootLogin yes`, `PasswordAuthentication yes`,
+      FIXED: `munin/munin-node.conf` replaced the two commented-out
+      `#allow ^.\.0\.0\.0$` / `#allow ^::0$` placeholders with a real ACL —
+      `cidr_allow 127.0.0.1/32` + `cidr_allow ::1/128` and the matching
+      `allow ^127\.0\.0\.1$` / `allow ^::1$` regexes (munin-node applies both
+      lists, so both forms are needed). `host 127.0.0.1` already bound it to
+      loopback; the ACL is the second layer. Root drop: the global
+      `[*] user root` in `munin/plugin-conf.d/munin-node` is now `user munin` —
+      every plugin that genuinely needs privilege (`disk*`, `cps*`, `postfix*`,
+      `hddtemp*`, `ip_*`, `fail2ban`, `fw*`, `cup*`, `asterisk_*`, `yum*`)
+      already carries its own explicit `user root` section, so only the
+      unenumerated default was widened. `user root` on the daemon itself is
+      unchanged (upstream default; munin-node needs it to setuid per plugin).
+      Also stripped a stray blank line at EOF of `plugin-conf.d/munin-node`.
+- [x] 14. sshd_config: `PermitRootLogin yes`, `PasswordAuthentication yes`,
       `MaxSessions 99999`, `LoginGraceTime 300`, `GSSAPIAuthentication
       yes`, no cipher/kex/MAC hardening (client config has it, server
       doesn't) — `sshd_config:12,13,16,21,32`. Harden to match
       `ssh_config`'s crypto pins; `PermitRootLogin prohibit-password`;
       `PasswordAuthentication no`; `MaxSessions 10`; `LoginGraceTime 30`.
-- [ ] 15. ProFTPD: `RootLogin on`, `TLSRequired off` (cleartext root
+      FIXED in `etc/ssh/sshd_config`: `LoginGraceTime 30`,
+      `PermitRootLogin prohibit-password`, `MaxSessions 10`,
+      `PasswordAuthentication no` (plus explicit `PubkeyAuthentication yes` and
+      `KbdInteractiveAuthentication no` so PAM cannot re-open a password path
+      behind `UsePAM yes`), and `GSSAPIAuthentication no` /
+      `GSSAPICleanupCredentials yes` — no Kerberos realm is configured anywhere
+      in this tree, so GSSAPI was pure attack surface. Added the four crypto
+      pins (`Ciphers`/`MACs`/`KexAlgorithms`/`HostKeyAlgorithms`) copied
+      verbatim from `ssh_config` so client and server now agree, with a comment
+      saying to keep the two in sync. NOTE: this is a hard cutover to key-only
+      root/user login — bootstrap must install an authorized_keys entry before
+      this config is deployed to a host that currently logs in by password.
+- [x] 15. ProFTPD: `RootLogin on`, `TLSRequired off` (cleartext root
       password over network), `AllowForeignAddress on` (FTP bounce),
       `TLSProtocol` includes TLSv1/1.1 — `proftpd.conf`,
       `proftpd.d/tls.conf`. `RootLogin off`, `TLSRequired on`,
       `AllowForeignAddress off`, drop TLSv1/1.1.
-- [ ] 16. fail2ban: stray `banaction = firewallcmd-ipset` in
+      FIXED: `proftpd.conf` → `RootLogin off` and `AllowForeignAddress off`
+      (closes the FTP-bounce port-scan/relay primitive). `proftpd.d/tls.conf` →
+      `TLSRequired on` and `TLSProtocol TLSv1.2 TLSv1.3`. A comment above the
+      block flags the behavioral consequence: `TLSRequired on` applies to the
+      `<Anonymous ~ftp>` section too, so anonymous clients must now speak
+      FTPS (`AUTH TLS`) — plain cleartext FTP is refused outright. Left
+      `TLSOptions NoSessionReuseRequired` alone: that is #39 (LOW), out of
+      scope for this pass despite being tagged "fix alongside #15".
+- [x] 16. fail2ban: stray `banaction = firewallcmd-ipset` in
       `jail.d/00-firewalld.conf` contradicts `action = shorewall` in
       `jail.local` (footgun for any jail added without an explicit
       action); no nginx jail despite nginx being the internet-facing TLS
@@ -157,20 +229,81 @@ immediate discard; everything else rotates monthly OR at a size threshold
       `logpath` in `[proftpd]` silently drops `/var/log/secure`; no
       `recidive` jail. Delete the firewalld banaction file, add nginx +
       recidive jails, fix the duplicate logpath.
-- [ ] 17. Postfix `mynetworks` trusts all of `10/8`, `172.16/12`,
+      ALREADY FIXED (banaction half): re-read before touching anything, as
+      instructed. The shorewall→firewalld migration under #2 already resolved
+      the contradiction in the opposite direction from what this finding
+      proposed — instead of deleting `jail.d/00-firewalld.conf`, `jail.conf:17`
+      was changed from `banaction = shorewall` to
+      `banaction = firewallcmd-ipset`, so the two files now agree and every
+      `action = %(banaction)s` in `jail.local` resolves to a firewalld action
+      that actually exists. Deleting the jail.d file would have been a
+      regression; left in place. No `action = shorewall` remains anywhere.
+      FIXED (remaining three parts): `jail.local` `[proftpd]` had two
+      consecutive `logpath =` lines, the second silently discarding
+      `/var/log/secure` — merged into one multi-line `logpath` continuation so
+      both files are watched. Added `[nginx-http-auth]`, `[nginx-botsearch]`,
+      and `[nginx-limit-req]` jails (all `enabled = true`) against
+      `/var/log/nginx/{error,access}.log`, with a comment noting these see the
+      real client IP while the `[apache]` jail only ever sees the proxy. Added
+      an `[recidive]` jail — 30d ban, 7d window, 3 strikes — watching
+      `/var/log/fail2ban.log`. For the real-IP half, `nginx/nginx.conf` gained
+      `set_real_ip_from 127.0.0.0/8` + `::1/128`, `real_ip_header
+      X-Forwarded-For`, and `real_ip_recursive on` in the `http` block, so a
+      request arriving through any loopback hop is attributed to and banned as
+      the true source rather than the intermediate.
+- [x] 17. Postfix `mynetworks` trusts all of `10/8`, `172.16/12`,
       `192.168/16`, malformed `fd00::/8` (should be `fc00::/7` scope) —
       `postfix/mynetworks:5-9`. Not an open relay to the internet, but any
       device on any of those private ranges can relay authenticated
       onward mail via `relayhost`. Narrow to the actual server subnet.
-- [ ] 18. Apache emits `Access-Control-Allow-Origin: *` (incl. DELETE/PUT)
+      FIXED in `etc/postfix/mynetworks`: reduced to `[::1]/128` + `127.0.0.0/8`.
+      Dropped `10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16` and the malformed
+      `[fd00::]/8` (which, as written, matched the whole `fd00::/8` prefix
+      rather than the intended ULA `fc00::/7` scope) — rather than correcting
+      it to `fc00::/7`, which would have kept an entire address class trusted,
+      it is removed with the rest. The heading was updated from "loopback and
+      private ranges" to "loopback only", and a comment tells the operator to
+      add the actual server subnet (a single /24 or the docker bridge) here
+      rather than a whole RFC1918 range. Loopback-only is the correct fail-safe
+      default for a repo that deploys to unknown networks; hosts that need to
+      relay for LAN clients should authenticate via submission instead.
+- [x] 18. Apache emits `Access-Control-Allow-Origin: *` (incl. DELETE/PUT)
       on every vhost, a syntactically invalid `Content-Security-Policy
       "*"` (browsers discard it — zero XSS protection despite appearing
       configured), and a malformed `Header always add Header "..."`
       timing-leak line — `httpd.conf:222-227`. Remove all five lines; set
       CORS per-vhost with an explicit allowlist; write a real CSP.
-- [ ] 19. `ssh_config` sets `ForwardX11Trusted yes` under `Host *` — any
+      FIXED in `etc/httpd/conf/httpd.conf`: removed all four global
+      `Access-Control-*` headers (the wildcard origin, the 1000s preflight
+      cache, the header allowlist, and the `POST, GET, OPTIONS, DELETE, PUT`
+      method list) and the malformed `Header always add Header "It took %D
+      microseconds for request"` line, which both emitted a literally
+      `Header`-named response header and leaked per-request service timing.
+      Replaced the placeholder `Content-Security-Policy "*"` — which browsers
+      discard as a parse error, so the site had zero CSP while appearing
+      configured — with a real policy: `default-src 'self'`, `object-src
+      'none'`, `frame-ancestors 'self'`, `base-uri 'self'`, `form-action
+      'self'`, `img-src 'self' data:`, `script-src 'self'`, `style-src 'self'
+      'unsafe-inline'` (inline styles kept because the shipped default-html
+      pages rely on them). Also added the two headers that were simply absent,
+      `X-Content-Type-Options nosniff` and `X-Frame-Options SAMEORIGIN`, plus
+      `Referrer-Policy strict-origin-when-cross-origin`. `Strict-Transport-
+      Security` was already correct and is unchanged. A comment in place of the
+      deleted CORS block says to set `Access-Control-*` per vhost in
+      `vhosts.d` against an explicit origin allowlist, never a wildcard.
+- [x] 19. `ssh_config` sets `ForwardX11Trusted yes` under `Host *` — any
       compromised remote host can keylog/screenshot the local X session.
       Set `ForwardX11 no` globally; enable per-host only, never Trusted.
+      FIXED in `etc/ssh/ssh_config`: the `Host *` block is now `ForwardX11 no`
+      + `ForwardX11Trusted no` (both stated explicitly rather than relying on
+      the compiled-in default, since a later `Host` stanza inherits whatever is
+      set first). The existing "Enable X11 forwarding" comment was replaced
+      with one explaining the keylog/screenshot risk and directing per-host
+      opt-in via `ForwardX11 yes` alone, never `ForwardX11Trusted`. The
+      neighboring `ForwardAgent no` was already correct and is unchanged.
+      Server-side `X11Forwarding yes` in `sshd_config` is left as-is — it
+      governs hosts connecting *in*, is untrusted-mode by default there, and is
+      not what this finding describes.
 
 ## MEDIUM
 

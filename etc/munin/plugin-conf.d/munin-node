@@ -1,5 +1,7 @@
+# Default to the unprivileged munin user; plugins that genuinely need root
+# carry their own explicit "user root" in the per-plugin sections below
 [*]
-user root
+user munin
 env.username root
 env.password mysecurepassword
 env.host myserverdomainname
@@ -114,4 +116,3 @@ env.community public
 env.user administrator
 env.pass mysecurepassword
 env.vCenter vcenter
-

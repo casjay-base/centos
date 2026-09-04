@@ -1,2 +1,3 @@
 # Update system configurations everyday at 4am
-0 4 * * * root [ -x "/root/.local/bin/run-os-update" ] && /root/.local/bin/run-os-update scripts >/dev/null 2>&1 && /root/.local/bin/run-os-update >/dev/null 2>&1 || bash -c "$(curl -q -LSsf "https://github.com/casjay-base/centos/raw/main/root/.local/bin/run-os-update")" >/dev/null 2>&1
+# No remote fallback: the script is shipped by this repo and must exist locally
+0 4 * * * root [ -x "/root/.local/bin/run-os-update" ] && /root/.local/bin/run-os-update scripts >/dev/null 2>&1 && /root/.local/bin/run-os-update >/dev/null 2>&1

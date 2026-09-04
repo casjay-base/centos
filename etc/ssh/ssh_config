@@ -3,9 +3,11 @@
 
 # Basic Settings
 Host *
-    # Enable X11 forwarding
-    ForwardX11 yes
-    ForwardX11Trusted yes
+    # Security: no X11 forwarding by default - a remote host with a forwarded
+    # X11 channel can keylog and screenshot the local session. Enable per-host
+    # with "ForwardX11 yes" only, never ForwardX11Trusted
+    ForwardX11 no
+    ForwardX11Trusted no
 
     # Silence X11 connection errors
     LogLevel ERROR

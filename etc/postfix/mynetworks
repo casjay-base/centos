@@ -1,12 +1,12 @@
 ############################################################
-# 🏠 LOCAL NETWORKS: loopback and private ranges
+# 🏠 LOCAL NETWORKS: loopback only
 ############################################################
+# Only this host is trusted to relay without authentication. Add the actual
+# server subnet below (a single /24 or the docker bridge), never a whole
+# RFC1918 range - every device on 10/8 or 192.168/16 would inherit relay
+# rights through relayhost otherwise.
 [::1]/128
-[fd00::]/8
 127.0.0.0/8
-10.0.0.0/8
-172.16.0.0/12
-192.168.0.0/16
 
 ############################################################
 # 🛑 END OF CONFIG FILE
