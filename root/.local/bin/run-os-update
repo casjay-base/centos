@@ -34,13 +34,27 @@ trap 'exitCode=${exitCode:-$?};[ -n "$RUN_OS_UPDATE_TEMP_FILE" ] && [ -f "$RUN_O
 set -o pipefail
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 devnull() { eval "$@" >/dev/null 2>&1; }
-__yum() { yum "$@" $yum_opts -yy -q &>/dev/null || return 1; }
+# Generic package-manager dispatcher used by callers that still speak in
+# yum verbs (makecache/update/install). PKG_MGR is set later in the script
+# (before any of these callers actually run) by __pkg_mgr(). Backed by the
+# __pkg_* functions defined further down, which hold the per-distro logic.
+__yum() {
+  local verb="$1"
+  shift || true
+  case "$verb" in
+  makecache) __pkg_makecache ;;
+  update) __pkg_update_all "$@" ;;
+  install) __pkg_install "$@" ;;
+  clean) __pkg_clean ;;
+  *) return 1 ;;
+  esac
+}
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 if ! type -p execute &>/dev/null; then execute() { echo "$2" && eval "$1" || return 1; }; fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 __repo_file() {
   local statusCode=0
-  bash -c "$(curl -q -LSsf "https://github.com/casjay-base/centos/raw/main/root/.local/bin/fetch-repo-file" || return 10)"
+  bash -c "$(curl -q -LSsf "https://github.com/casjay-base/$CASJAY_BASE_REPO/raw/main/root/.local/bin/fetch-repo-file" || return 10)"
   statusCode=$?
   [ "$statusCode" -eq 0 ] && printf '%b\n' "${YELLOW}Done updating repos${NC}"
   return $statusCode
@@ -57,6 +71,13 @@ __run_updater() {
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 __kernel_ml() {
   local exitC=0
+  case "$PKG_MGR" in
+  dnf | yum) : ;;
+  *)
+    echo "kernel-ml is an ELRepo (dnf/yum) package with no equivalent on this distro's package manager ($PKG_MGR) - skipping"
+    return 1
+    ;;
+  esac
   local kernel_installed="$(rpm -qa kernel-ml 2>/dev/null | tail -n1)"
   local kernel_avail="$(yum search kernel-ml 2>&1 | awk '{print $1}' | grep '^kernel-ml-.*[.]' | grep -Ev 'devel|headers' || return)"
   # EL7 ships monolithic kernel-ml; EL8/9 split into kernel-ml + kernel-ml-core + kernel-ml-modules*. --skip-broken handles both.
@@ -84,6 +105,13 @@ __kernel_ml() {
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 __kernel_lt() {
   local exitC=0
+  case "$PKG_MGR" in
+  dnf | yum) : ;;
+  *)
+    echo "kernel-lt is an ELRepo (dnf/yum) package with no equivalent on this distro's package manager ($PKG_MGR) - skipping"
+    return 1
+    ;;
+  esac
   local kernel_installed="$(rpm -qa kernel-lt 2>/dev/null | tail -n1)"
   local kernel_avail="$(yum search kernel-lt 2>&1 | awk '{print $1}' | grep '^kernel-lt-.*[.]' | grep -Ev 'devel|headers' || return)"
   # EL7 ships monolithic kernel-lt; EL8/9 split into kernel-lt + kernel-lt-core + kernel-lt-modules*. --skip-broken handles both.
@@ -217,7 +245,6 @@ export SERVICES_DISABLE="firewalld auditd kdump iscsid.socket lvm2-lvmpolld.sock
 export SERVICES_DISABLE+="iscsi.service iscsiuio.socket lvm2-lvmetad.socket radvd "
 export SERVICES_DISABLE+="fail2ban shorewall shorewall6 named dhcpd dhcpd6 mdmonitor "
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export REMOTE_VERSION="$(curl -q -LSsf "https://github.com/casjay-base/centos/raw/main/version.txt" | head -n1)"
 [ -f "/etc/casjaysdev/updates/versions/configs.txt" ] && export INSTALLED_VERSION="$(head -n1 <"/etc/casjaysdev/updates/versions/configs.txt" 2>/dev/null)"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 [ -f "/etc/casjaysdev/updates/versions/os_version.txt" ] && RELEASE_VER="$(<"/etc/casjaysdev/updates/versions/os_version.txt")"
@@ -239,6 +266,125 @@ __release_type() {
   esac
 }
 export RELEASE_TYPE="$(__release_type)"
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# CASJAY_BASE_REPO maps this host's distro to its casjay-base repo name.
+# Every RHEL-family variant (real RHEL, CentOS, Oracle Linux, AlmaLinux,
+# Rocky) shares the single "centos" repo; every other distro's repo is
+# named identically to its own /etc/os-release ID.
+export CASJAY_BASE_REPO="${RELEASE_TYPE:-$RELEASE_ID}"
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export REMOTE_VERSION="$(curl -q -LSsf "https://github.com/casjay-base/$CASJAY_BASE_REPO/raw/main/version.txt" | head -n1)"
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# PKG_MGR is the package manager for this distro family. dnf/yum both
+# cover RHEL-family + Fedora; apt covers debian/ubuntu/raspbian; pacman
+# covers arch; apk covers alpine. Falls back to command-detection for
+# an unrecognized RELEASE_ID.
+__pkg_mgr() {
+  case "$RELEASE_TYPE" in
+  centos) command -v dnf >/dev/null 2>&1 && printf '%s' "dnf" || printf '%s' "yum" && return 0 ;;
+  esac
+  case "$RELEASE_ID" in
+  fedora) printf '%s' "dnf" ;;
+  debian | ubuntu | raspbian) printf '%s' "apt" ;;
+  arch) printf '%s' "pacman" ;;
+  alpine) printf '%s' "apk" ;;
+  *)
+    if command -v dnf >/dev/null 2>&1; then printf '%s' "dnf"
+    elif command -v apt-get >/dev/null 2>&1; then printf '%s' "apt"
+    elif command -v pacman >/dev/null 2>&1; then printf '%s' "pacman"
+    elif command -v apk >/dev/null 2>&1; then printf '%s' "apk"
+    else printf '%s' "yum"
+    fi
+    ;;
+  esac
+}
+export PKG_MGR="$(__pkg_mgr)"
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# Per-distro filesystem layout for the paths this script touches
+# directly (not covered by sync.sh's config-file path mapping, since
+# these are literal paths embedded in this script's own logic).
+case "$RELEASE_ID" in
+debian | ubuntu | raspbian)
+  WEB_CONF="/etc/apache2/apache2.conf"
+  PHP_FPM_CONF="/etc/php/8.2/fpm/pool.d/www.conf"
+  WEB_ROOT="/var/www/html"
+  BIND_CONF_DIR="/etc/bind"
+  BIND_DATA_DIR="/var/cache/bind"
+  ;;
+arch)
+  WEB_CONF="/etc/httpd/conf/httpd.conf"
+  PHP_FPM_CONF="/etc/php/php-fpm.d/www.conf"
+  WEB_ROOT="/srv/http"
+  BIND_CONF_DIR="/etc"
+  BIND_DATA_DIR="/var/named"
+  ;;
+alpine)
+  WEB_CONF="/etc/apache2/httpd.conf"
+  PHP_FPM_CONF="/etc/php8/php-fpm.d/www.conf"
+  WEB_ROOT="/var/www/localhost/htdocs"
+  BIND_CONF_DIR="/etc/bind"
+  BIND_DATA_DIR="/var/cache/bind"
+  ;;
+*)
+  WEB_CONF="/etc/httpd/conf/httpd.conf"
+  PHP_FPM_CONF="/etc/php-fpm.d/www.conf"
+  WEB_ROOT="/var/www/html"
+  BIND_CONF_DIR="/etc"
+  BIND_DATA_DIR="/var/named"
+  ;;
+esac
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# Package-manager abstraction. ELRepo kernel-ml/kernel-lt has no
+# equivalent outside the RHEL family — __kernel_ml/__kernel_lt refuse
+# to run rather than fabricate a non-existent feature on other distros.
+__pkg_clean() {
+  case "$PKG_MGR" in
+  dnf | yum) "$PKG_MGR" clean all >/dev/null 2>&1 ;;
+  apt) apt-get clean >/dev/null 2>&1 ;;
+  pacman) : ;;
+  apk) rm -rf /var/cache/apk/*.tmp >/dev/null 2>&1 ;;
+  esac
+}
+__pkg_makecache() {
+  case "$PKG_MGR" in
+  dnf | yum) "$PKG_MGR" makecache -y >/dev/null 2>&1 ;;
+  apt) DEBIAN_FRONTEND=noninteractive apt-get update -qq >/dev/null 2>&1 ;;
+  pacman) pacman -Sy --noconfirm >/dev/null 2>&1 ;;
+  apk) apk update -q >/dev/null 2>&1 ;;
+  esac
+}
+__pkg_update_all() {
+  case "$PKG_MGR" in
+  dnf | yum) "$PKG_MGR" update -yyq ${yum_opts:-} "$@" >/dev/null 2>&1 ;;
+  apt) DEBIAN_FRONTEND=noninteractive apt-get -yq dist-upgrade >/dev/null 2>&1 ;;
+  pacman) pacman -Su --noconfirm >/dev/null 2>&1 ;;
+  apk) apk upgrade -q >/dev/null 2>&1 ;;
+  esac
+}
+__pkg_install() {
+  case "$PKG_MGR" in
+  dnf | yum) "$PKG_MGR" install -yy -q --skip-broken "$@" >/dev/null 2>&1 ;;
+  apt) DEBIAN_FRONTEND=noninteractive apt-get -yq install "$@" >/dev/null 2>&1 ;;
+  pacman) pacman -S --noconfirm --needed "$@" >/dev/null 2>&1 ;;
+  apk) apk add -q "$@" >/dev/null 2>&1 ;;
+  esac
+}
+__pkg_installed() {
+  case "$PKG_MGR" in
+  dnf | yum) rpm -qa -- "$1" 2>/dev/null | tail -n1 ;;
+  apt) dpkg-query -W -f='${Package}\n' -- "$1" 2>/dev/null | tail -n1 ;;
+  pacman) pacman -Q -- "$1" 2>/dev/null | awk '{print $1}' ;;
+  apk) apk info -e -- "$1" 2>/dev/null ;;
+  esac
+}
+__pkg_remove_nodeps() {
+  case "$PKG_MGR" in
+  dnf | yum) rpm -ev --nodeps -- "$1" >/dev/null 2>&1 ;;
+  apt) dpkg --purge --force-depends -- "$1" >/dev/null 2>&1 ;;
+  pacman) pacman -Rdd --noconfirm -- "$1" >/dev/null 2>&1 ;;
+  apk) apk del --no-cache -- "$1" >/dev/null 2>&1 ;;
+  esac
+}
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 GET_WEB_USER="$(__get_www_user)"
 GET_WEB_GROUP="$(__get_www_group)"
@@ -248,15 +394,19 @@ HOSTNAME_SHORT="$(hostname -s 2>/dev/null | grep '^' || echo "$HOSTNAME")"
 MYSERVER_HOST_NAME="$(hostname -f 2>/dev/null | grep '^' || hostname -s 2>/dev/null | grep '^' || echo "$HOSTNAME")"
 MYSERVER_DOMAIN_NAME="$(hostname -d | grep '^' || echo "$HOSTNAME_FULL" | awk -F'.' '{$1="";OFS="."; print $0}' | grep -v '^$' | sed 's|^\.||g;s|^ /*||g;s| |.|g' | grep '^' || echo "$INTERNAL_DOMAIN")"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-[ "$ARCH" = "x86_64" ] || yum_opts="--disablerepo casjay-remi-php,casjay-remi-safe"
-# If kernel-ml or kernel-lt is installed, exclude only the base kernel boot/module packages from updates
-# so they don't get pulled back in. kernel-tools, kernel-headers, kernel-devel, etc. are kept and updated normally.
-if rpm -qa 2>/dev/null | grep -qE '^kernel-(ml|lt)-'; then
-  for k in kernel kernel-core kernel-modules kernel-modules-core kernel-modules-extra kernel-abi-stablelists; do
-    yum_opts="${yum_opts} --exclude=$k"
-  done
-  unset k
-fi
+case "$PKG_MGR" in
+dnf | yum)
+  [ "$ARCH" = "x86_64" ] || yum_opts="--disablerepo casjay-remi-php,casjay-remi-safe"
+  # If kernel-ml or kernel-lt is installed, exclude only the base kernel boot/module packages from updates
+  # so they don't get pulled back in. kernel-tools, kernel-headers, kernel-devel, etc. are kept and updated normally.
+  if rpm -qa 2>/dev/null | grep -qE -- '^kernel-(ml|lt)-'; then
+    for k in kernel kernel-core kernel-modules kernel-modules-core kernel-modules-extra kernel-abi-stablelists; do
+      yum_opts="${yum_opts} --exclude=$k"
+    done
+    unset k
+  fi
+  ;;
+esac
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 while [ $# -ne 0 ]; do
   case "$1" in
@@ -301,7 +451,7 @@ fi
 if [ ! -f "/tmp/run-os-update" ] && ping -c 2 1.1.1.1 &>/dev/null; then
   echo "Updating the installer before proceeding"
   export DOCKER_UPDATE INSTALLED_VERSION SCRIPTS_UPDATE STATICSITE USER FORCE_INST REPO_UPDATE IS_RERUNNING_SCRIPT="yes" IS_OS_UPDATE="yes"
-  if curl -q -LSsf "https://raw.githubusercontent.com/casjay-base/centos/main/root/.local/bin/run-os-update" -o "/tmp/run-os-update" 2>/dev/null; then
+  if curl -q -LSsf "https://raw.githubusercontent.com/casjay-base/$CASJAY_BASE_REPO/main/root/.local/bin/run-os-update" -o "/tmp/run-os-update" 2>/dev/null; then
     if [ -f "/tmp/run-os-update" ]; then
       chmod 755 "/tmp/run-os-update"
       eval "/tmp/run-os-update" && exitCode=0 || exitCode=1
@@ -326,7 +476,7 @@ MYSERVER_NET_DEVICE="$(ip route | grep default | sed -e "s/^.*dev.//" -e "s/.pro
 chattr -i /etc/hosts &>/dev/null
 chattr -i /etc/resolv.conf &>/dev/null
 [ -f "/etc/nginx/vhosts.d/default.conf" ] && chattr -i /etc/nginx/vhosts.d/default.conf &>/dev/null
-[ -f "/etc/httpd/conf/vhosts.d/000-default.conf" ] && chattr -i /etc/httpd/conf/vhosts.d/000-default.conf &>/dev/null
+[ -f "$(dirname "$WEB_CONF")/vhosts.d/000-default.conf" ] && chattr -i "$(dirname "$WEB_CONF")/vhosts.d/000-default.conf" &>/dev/null
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 if [ -w "/etc/resolv.conf" ]; then
   printf '%s\n%s\n%s\n' "search casjay.in" "nameserver 1.1.1.1" "nameserver 8.8.8.8" | tee "/etc/resolv.conf" &>/dev/null
@@ -334,8 +484,8 @@ fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 if [ "$SCRIPTS_UPDATE" = "true" ]; then
   exitCode="0"
-  RAW_REPO_URL="https://raw.githubusercontent.com/casjay-base/centos/main/root/.local/bin"
-  API_FILE_URL="https://api.github.com/repos/casjay-base/centos/contents/root/.local/bin?ref=main"
+  RAW_REPO_URL="https://raw.githubusercontent.com/casjay-base/$CASJAY_BASE_REPO/main/root/.local/bin"
+  API_FILE_URL="https://api.github.com/repos/casjay-base/$CASJAY_BASE_REPO/contents/root/.local/bin?ref=main"
   file_list="$(curl -q -LSsf "$API_FILE_URL" | jq -r '.[].url' | awk -F '?' '{print $1}')"
   if [ "$REMOTE_VERSION" = "$INSTALLED_VERSION" ]; then
     echo "Reinstalling from version $INSTALLED_VERSION"
@@ -384,23 +534,23 @@ fi
 if [ -z "$FORCE_INST" ] && [ "$REMOTE_VERSION" = "$INSTALLED_VERSION" ]; then
   echo -e "There are no updates available, however, I am going to run the fixes"
   echo -e "Fixing web servers"
-  curl -q -LSsf "https://github.com/casjay-base/centos/raw/refs/heads/main/etc/nginx/nginx.conf" -o "/etc/nginx/nginx.conf"
-  if [ -f "/etc/httpd/conf/httpd.conf" ]; then
-    if ! grep -qi 'ServerTokens Prod$' "/etc/httpd/conf/httpd.conf"; then
-      sed -i 's|ServerTokens .*|ServerTokens Prod|g' /etc/httpd/conf/httpd.conf
+  curl -q -LSsf "https://github.com/casjay-base/$CASJAY_BASE_REPO/raw/refs/heads/main/etc/nginx/nginx.conf" -o "/etc/nginx/nginx.conf"
+  if [ -f "$WEB_CONF" ]; then
+    if ! grep -qi 'ServerTokens Prod$' "$WEB_CONF"; then
+      sed -i 's|ServerTokens .*|ServerTokens Prod|g' "$WEB_CONF"
     fi
   fi
   if [ -n "$GET_WEB_USER" ]; then
     [ -f "/etc/nginx/nginx.conf" ] && sed -i "s|user .*|user  $GET_WEB_USER;|g" "/etc/nginx/nginx.conf"
-    [ -f "/etc/php-fpm.d/www.conf" ] && sed -i "s|user .*|user = $GET_WEB_USER|g" "/etc/php-fpm.d/www.conf"
-    [ -f "/etc/httpd/conf/httpd.conf" ] && sed -i "s|User .*|User $GET_WEB_USER|g" "/etc/httpd/conf/httpd.conf"
+    [ -f "$PHP_FPM_CONF" ] && sed -i "s|user .*|user = $GET_WEB_USER|g" "$PHP_FPM_CONF"
+    [ -f "$WEB_CONF" ] && sed -i "s|User .*|User $GET_WEB_USER|g" "$WEB_CONF"
     for apache_dir in "/usr/local/share/httpd" "/var/www"; do
       [ -d "$apache_dir" ] && chown -Rf $GET_WEB_USER "$apache_dir"
     done
   fi
   if [ -n "$GET_WEB_GROUP" ]; then
-    [ -f "/etc/php-fpm.d/www.conf" ] && sed -i "s|group .*|group = $GET_WEB_GROUP|g" "/etc/php-fpm.d/www.conf"
-    [ -f "/etc/httpd/conf/httpd.conf" ] && sed -i "s|Group .*|Group $GET_WEB_GROUP|g" "/etc/httpd/conf/httpd.conf"
+    [ -f "$PHP_FPM_CONF" ] && sed -i "s|group .*|group = $GET_WEB_GROUP|g" "$PHP_FPM_CONF"
+    [ -f "$WEB_CONF" ] && sed -i "s|Group .*|Group $GET_WEB_GROUP|g" "$WEB_CONF"
     for apache_dir in "/usr/local/share/httpd" "/var/www"; do
       [ -d "$apache_dir" ] && chgrp -Rf $GET_WEB_GROUP "$apache_dir"
     done
@@ -410,7 +560,7 @@ if [ -z "$FORCE_INST" ] && [ "$REMOTE_VERSION" = "$INSTALLED_VERSION" ]; then
   echo -e "Updating the cron file"
   cat <<EOF >"/etc/cron.d/run-os-update"
 # Update system configurations everyday at 4am from the repo
-0 4 * * * root curl -q -LSsf "https://github.com/casjay-base/centos/raw/main/root/.local/bin/run-os-update" | bash -s -- --cron >"$LOG_FILE" 2>&1
+0 4 * * * root curl -q -LSsf "https://github.com/casjay-base/$CASJAY_BASE_REPO/raw/main/root/.local/bin/run-os-update" | bash -s -- --cron >"$LOG_FILE" 2>&1
 EOF
   echo -e "Done updating the cron file\n"
   if [ "$CRON_UPDATE" = "yes" ]; then
@@ -437,15 +587,22 @@ else
   chmod -Rf 664 /etc/casjaysdev/updates/versions/*.txt
   echo -e "Done setting version\n"
 
-  echo -e "Updating yum repos for $RELEASE_NAME $RELEASE_VER - $ARCH"
-  yum clean all &>/dev/null
-  if ! __repo_file >/dev/null; then
-    while :; do __repo_file >/dev/null && break || { sleep 60 && yum clean all &>/dev/null; }; done
-  fi
-  echo -e "Done updating yum repos for $RELEASE_NAME $RELEASE_VER\n"
+  echo -e "Updating $PKG_MGR repos for $RELEASE_NAME $RELEASE_VER - $ARCH"
+  case "$PKG_MGR" in
+  dnf | yum)
+    # fetch-repo-file is RPM-only (casjay-release .repo files); it has no
+    # analog on non-RPM distros, so the repo-file refresh loop is RHEL-only.
+    __pkg_clean
+    if ! __repo_file >/dev/null; then
+      while :; do __repo_file >/dev/null && break || { sleep 60 && __pkg_clean; }; done
+    fi
+    ;;
+  *) __pkg_clean && __pkg_makecache ;;
+  esac
+  echo -e "Done updating $PKG_MGR repos for $RELEASE_NAME $RELEASE_VER\n"
 
   echo -e "Setting up packages - this may take some time!"
-  __yum update &>/dev/null
+  __pkg_update_all &>/dev/null
   if [ -f "/etc/nginx/vhosts.d/default.conf" ]; then
     mv -f "/etc/nginx/vhosts.d/default.conf" "/etc/nginx/vhosts.d/0000-default.conf"
   fi
@@ -462,37 +619,37 @@ else
   echo -e "Done updating systemmgr configs\n"
 
   echo -e "Removing old files"
-  rm -Rf /etc/named* /var/named/* /etc/ntp* /etc/cron*/0* /etc/cron*/dailyjobs &>/dev/null
-  rm -Rf /var/ftp/uploads /etc/httpd/conf.d/ssl.conf "$APP_TMP_DIR" /etc/samba/*.example &>/dev/null
+  rm -Rf "$BIND_CONF_DIR"/named* "$BIND_DATA_DIR"/* /etc/ntp* /etc/cron*/0* /etc/cron*/dailyjobs &>/dev/null
+  rm -Rf /var/ftp/uploads "$(dirname "$WEB_CONF")/conf.d/ssl.conf" "$APP_TMP_DIR" /etc/samba/*.example &>/dev/null
   echo -e "Done removing old files\n"
 
   echo -e "Setting up vnstat-php-frontend"
-  if [ -d "/var/www/html/vnstat/.git" ]; then
-    git -C "/var/www/html/vnstat" reset --hard -q
-    git -C "/var/www/html/vnstat" pull -q
+  if [ -d "$WEB_ROOT/vnstat/.git" ]; then
+    git -C "$WEB_ROOT/vnstat" reset --hard -q
+    git -C "$WEB_ROOT/vnstat" pull -q
   else
-    [ -d "/var/www/html/vnstat" ] && rm -Rf "/var/www/html/vnstat"
-    git clone -q "https://github.com/solbu/vnstat-php-frontend" "/var/www/html/vnstat"
+    [ -d "$WEB_ROOT/vnstat" ] && rm -Rf "$WEB_ROOT/vnstat"
+    git clone -q "https://github.com/solbu/vnstat-php-frontend" "$WEB_ROOT/vnstat"
   fi
   echo -e "Done setting up vnstat-php-frontend\n"
 
   echo -e "Setting up phpsysinfo"
-  if [ -d "/var/www/html/sysinfo/.git" ]; then
-    git -C "/var/www/html/sysinfo" reset --hard -q
-    git -C "/var/www/html/sysinfo" pull -q
+  if [ -d "$WEB_ROOT/sysinfo/.git" ]; then
+    git -C "$WEB_ROOT/sysinfo" reset --hard -q
+    git -C "$WEB_ROOT/sysinfo" pull -q
   else
-    [ -d "/var/www/html/sysinfo" ] && rm -Rf "/var/www/html/sysinfo"
-    git clone -q "https://github.com/phpsysinfo/phpsysinfo" "/var/www/html/sysinfo"
+    [ -d "$WEB_ROOT/sysinfo" ] && rm -Rf "$WEB_ROOT/sysinfo"
+    git clone -q "https://github.com/phpsysinfo/phpsysinfo" "$WEB_ROOT/sysinfo"
   fi
   echo -e "Done setting up phpsysinfo\n"
 
   echo -e "Cloning the $RELEASE_NAME repo"
   [ -d "$APP_TMP_DIR" ] && rm -Rf "$APP_TMP_DIR"
-  git clone -q "https://github.com/casjay-base/centos" "$APP_TMP_DIR"
+  git clone -q "https://github.com/casjay-base/$CASJAY_BASE_REPO" "$APP_TMP_DIR"
   echo -e "Done cloning the repo\n"
 
   echo -e "Configuring files"
-  rm -Rf "$APP_TMP_DIR"/var/named*
+  rm -Rf "$APP_TMP_DIR$BIND_DATA_DIR"*
   rm -Rf "$APP_TMP_DIR"/root/.bashrc
   rm -Rf "$APP_TMP_DIR"/etc/sysconfig/network-scripts
   rm -Rf "$APP_TMP_DIR"/etc/{hosts,tor,cockpit,samba,postfix,named*}
@@ -547,13 +704,13 @@ else
     cp -Rf "$APP_TMP_DIR/etc/nginx/nginx.conf" "/etc/nginx/nginx.conf"
   fi
 
-  if [ -f "$APP_TMP_DIR/etc/httpd/conf/httpd.conf" ] && [ -d "/etc/httpd/conf" ]; then
-    echo -e "$APP_TMP_DIR/etc/httpd/conf/httpd.conf >/etc/httpd/conf/httpd.conf"
-    cp -Rf "$APP_TMP_DIR/etc/httpd/conf/httpd.conf" "/etc/httpd/conf/httpd.conf"
+  if [ -f "$APP_TMP_DIR$WEB_CONF" ] && [ -d "$(dirname "$WEB_CONF")" ]; then
+    echo -e "$APP_TMP_DIR$WEB_CONF >$WEB_CONF"
+    cp -Rf "$APP_TMP_DIR$WEB_CONF" "$WEB_CONF"
   fi
 
   if grep -qs "^named:" "/etc/passwd"; then
-    mkdir -p /var/named /var/log/named && chown -Rf named:named /etc/named* /var/named /var/log/named
+    mkdir -p "$BIND_DATA_DIR" /var/log/named && chown -Rf named:named "$BIND_CONF_DIR"/named* "$BIND_DATA_DIR" /var/log/named
   fi
 
   if [ -f "/etc/sysconfig/network" ]; then
@@ -599,47 +756,47 @@ else
   [ -f "/usr/local/share/httpd/.env" ] && rm -Rf "/usr/local/share/httpd/.env"
   bash -c "$(curl -q -LSsf "https://github.com/casjay-templates/default-web-assets/raw/main/setup.sh")"
   if [ -f "/var/lib/tor/hidden_service/default/hostname" ]; then
-    cat "/var/lib/tor/hidden_service/*/hostname" >"/var/www/html/tor_hostname" 2>/dev/null
+    cat "/var/lib/tor/hidden_service/*/hostname" >"$WEB_ROOT/tor_hostname" 2>/dev/null
   fi
-  if [ -d "$APP_TMP_DIR/var/www/html/vnstat" ] && [ -d "/var/www/html/vnstat" ]; then
-    cp -Rfa "$APP_TMP_DIR/var/www/html/vnstat/." "/var/www/html/vnstat/"
+  if [ -d "$APP_TMP_DIR$WEB_ROOT/vnstat" ] && [ -d "$WEB_ROOT/vnstat" ]; then
+    cp -Rfa "$APP_TMP_DIR$WEB_ROOT/vnstat/." "$WEB_ROOT/vnstat/"
   fi
-  if [ -d "$APP_TMP_DIR/var/www/html/sysinfo" ] && [ -d "/var/www/html/sysinfo" ]; then
-    cp -Rfa "$APP_TMP_DIR/var/www/html/sysinfo/." "/var/www/html/sysinfo/"
+  if [ -d "$APP_TMP_DIR$WEB_ROOT/sysinfo" ] && [ -d "$WEB_ROOT/sysinfo" ]; then
+    cp -Rfa "$APP_TMP_DIR$WEB_ROOT/sysinfo/." "$WEB_ROOT/sysinfo/"
   fi
   if [ -n "$GET_WEB_USER" ]; then
     if [ -f "/etc/nginx/nginx.conf" ]; then
       sed -i '0,/^user .*/s//user  '$GET_WEB_USER';/' "/etc/nginx/nginx.conf"
       grep -sqh "^user  $GET_WEB_USER" "/etc/nginx/nginx.conf" || echo "Failed to change the user in /etc/nginx/nginx.conf"
     fi
-    if [ -f "/etc/php-fpm.d/www.conf" ]; then
-      sed -i '0,/^user .*/s//user = '$GET_WEB_USER'/' "/etc/php-fpm.d/www.conf"
-      grep -sqh "^user = $GET_WEB_USER" "/etc/php-fpm.d/www.conf" || echo "Failed to change the user in /etc/php-fpm.d/www.conf"
+    if [ -f "$PHP_FPM_CONF" ]; then
+      sed -i '0,/^user .*/s//user = '$GET_WEB_USER'/' "$PHP_FPM_CONF"
+      grep -sqh "^user = $GET_WEB_USER" "$PHP_FPM_CONF" || echo "Failed to change the user in $PHP_FPM_CONF"
     fi
-    if [ -f "/etc/httpd/conf/httpd.conf" ]; then
-      sed -i '0,/^User .*/s//User '$GET_WEB_USER'/' "/etc/httpd/conf/httpd.conf"
-      grep -sqh "^User $GET_WEB_USER" "/etc/httpd/conf/httpd.conf" || echo "Failed to change the user in /etc/httpd/conf/httpd.conf"
+    if [ -f "$WEB_CONF" ]; then
+      sed -i '0,/^User .*/s//User '$GET_WEB_USER'/' "$WEB_CONF"
+      grep -sqh "^User $GET_WEB_USER" "$WEB_CONF" || echo "Failed to change the user in $WEB_CONF"
     fi
     for apache_dir in "/usr/local/share/httpd" "/var/www"; do
       [ -d "$apache_dir" ] && chown -Rf $GET_WEB_USER "$apache_dir"
     done
   fi
   if [ -n "$GET_WEB_GROUP" ]; then
-    if [ -f "/etc/php-fpm.d/www.conf" ]; then
-      sed -i '0,/^group .*/s//group = '$GET_WEB_GROUP'/' "/etc/php-fpm.d/www.conf"
-      grep -sqh "^group = $GET_WEB_GROUP" "/etc/php-fpm.d/www.conf" || echo "Failed to change the group in /etc/php-fpm.d/www.conf"
+    if [ -f "$PHP_FPM_CONF" ]; then
+      sed -i '0,/^group .*/s//group = '$GET_WEB_GROUP'/' "$PHP_FPM_CONF"
+      grep -sqh "^group = $GET_WEB_GROUP" "$PHP_FPM_CONF" || echo "Failed to change the group in $PHP_FPM_CONF"
     fi
-    if [ -f "/etc/httpd/conf/httpd.conf" ]; then
-      sed -i '0,/^Group .*/s//Group '$GET_WEB_GROUP'/' "/etc/httpd/conf/httpd.conf"
-      grep -sqh "^Group $GET_WEB_GROUP" "/etc/httpd/conf/httpd.conf" || echo "Failed to change the group in /etc/httpd/conf/httpd.conf"
+    if [ -f "$WEB_CONF" ]; then
+      sed -i '0,/^Group .*/s//Group '$GET_WEB_GROUP'/' "$WEB_CONF"
+      grep -sqh "^Group $GET_WEB_GROUP" "$WEB_CONF" || echo "Failed to change the group in $WEB_CONF"
     fi
     for apache_dir in "/usr/local/share/httpd" "/var/www"; do
       [ -d "$apache_dir" ] && chgrp -Rf $GET_WEB_GROUP "$apache_dir"
     done
   fi
-  if [ -f "/etc/httpd/conf/httpd.conf" ]; then
-    if ! grep -qi 'ServerTokens Prod$' /etc/httpd/conf/httpd.conf; then
-      sed -i 's|ServerTokens.*|ServerTokens Prod|g' "/etc/httpd/conf/httpd.conf"
+  if [ -f "$WEB_CONF" ]; then
+    if ! grep -qi -- 'ServerTokens Prod$' "$WEB_CONF"; then
+      sed -i 's|ServerTokens.*|ServerTokens Prod|g' "$WEB_CONF"
     fi
   fi
   echo -e "Done setting up web server\n"
@@ -652,7 +809,7 @@ else
 
   echo -e "Setting up the ssl certs"
   LE_CERTS_EXIST="$(\find "/etc/letsencrypt/live"/* -maxdepth 0 -type 'd,l' 2>/dev/null | grep -v "README" | grep '^' || return)"
-  [ -f "/etc/named/certbot-update.conf" ] && chmod 600 /etc/named/certbot-update.conf
+  [ -f "$BIND_CONF_DIR/named/certbot-update.conf" ] && chmod 600 "$BIND_CONF_DIR/named/certbot-update.conf"
   if [ -n "$LE_CERTS_EXIST" ]; then
     if [ -d "/etc/letsencrypt/renewal-hooks/post" ]; then
       if [ ! -f "/etc/letsencrypt/renewal-hooks/post/exec.sh" ]; then
@@ -809,19 +966,45 @@ EOF
   echo -e "Updating the cron file"
   cat <<EOF >"/etc/cron.d/run-os-update"
 # Update system configurations everyday at 4am from the repo
-0 4 * * * root curl -q -LSsf "https://github.com/casjay-base/centos/raw/main/root/.local/bin/run-os-update" | bash -s -- --cron >"$LOG_FILE" 2>&1
+0 4 * * * root curl -q -LSsf "https://github.com/casjay-base/$CASJAY_BASE_REPO/raw/main/root/.local/bin/run-os-update" | bash -s -- --cron >"$LOG_FILE" 2>&1
 EOF
   echo -e "Done updating the cron file\n"
 
   echo -e "Removing iptables-legacy if iptables-nft is available"
-  if rpm -q iptables-legacy >/dev/null 2>&1 && rpm -q iptables-nft >/dev/null 2>&1; then
-    rpm -ev --nodeps iptables-legacy >/dev/null 2>&1
-    alternatives --set iptables /usr/sbin/iptables-nft >/dev/null 2>&1
-    alternatives --set ip6tables /usr/sbin/ip6tables-nft >/dev/null 2>&1
-    echo -e "Removed iptables-legacy and pointed alternatives at iptables-nft\n"
-  else
-    echo -e "Skipping iptables-legacy removal\n"
-  fi
+  case "$PKG_MGR" in
+  dnf | yum)
+    if rpm -q iptables-legacy >/dev/null 2>&1 && rpm -q iptables-nft >/dev/null 2>&1; then
+      rpm -ev --nodeps iptables-legacy >/dev/null 2>&1
+      alternatives --set iptables /usr/sbin/iptables-nft >/dev/null 2>&1
+      alternatives --set ip6tables /usr/sbin/ip6tables-nft >/dev/null 2>&1
+      echo -e "Removed iptables-legacy and pointed alternatives at iptables-nft\n"
+    else
+      echo -e "Skipping iptables-legacy removal\n"
+    fi
+    ;;
+  apt)
+    if update-alternatives --list iptables 2>/dev/null | grep -q -- iptables-nft; then
+      update-alternatives --set iptables /usr/sbin/iptables-nft >/dev/null 2>&1
+      update-alternatives --set ip6tables /usr/sbin/ip6tables-nft >/dev/null 2>&1
+      echo -e "Pointed alternatives at iptables-nft\n"
+    else
+      echo -e "Skipping iptables-legacy removal\n"
+    fi
+    ;;
+  pacman)
+    if pacman -Q iptables-nft >/dev/null 2>&1; then
+      echo -e "iptables-nft already installed\n"
+    elif pacman -Q iptables >/dev/null 2>&1; then
+      pacman -S --noconfirm iptables-nft >/dev/null 2>&1
+      echo -e "Switched to iptables-nft\n"
+    else
+      echo -e "Skipping iptables-legacy removal\n"
+    fi
+    ;;
+  *)
+    echo -e "Skipping iptables-legacy removal - no known alternatives mechanism for $PKG_MGR\n"
+    ;;
+  esac
 
   echo -e "Setting up the services"
   for s in $SERVICES_ENABLE; do systemctl enable --now "$s" &>/dev/null; done
