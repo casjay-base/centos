@@ -70,9 +70,24 @@ SET_DAY="$(date +'%d')"
 SET_MONTH="$(date +'%m')"
 FETCH_REPO_FILE_EXIT_STATUS=0
 BACKUP_DIR="${BACKUP_DIR:-$HOME/.local/backups/$APPNAME}/repos/$SET_MONTH/$SET_DAY"
-RELEASE_VER="$(grep --no-filename -s 'VERSION_ID=' /etc/*-release | awk -F '=' '{print $2}' | sed 's#"##g' | awk -F '.' '{print $1}' | grep '^')"
-RELEASE_NAME="$(grep --no-filename -s '^NAME=' /etc/*-release | awk -F'=' '{print $2}' | sed 's|"||g;s| .*||g' | tr '[:upper:]' '[:lower:]' | grep '^')"
-RELEASE_TYPE="$(grep --no-filename -s '^ID_LIKE=' /etc/*-release | awk -F'=' '{print $2}' | sed 's|"||g' | tr '[:upper:]' '[:lower:]' | tr ' ' '\n' | grep 'centos' | grep '^')"
+RELEASE_VER="$(grep --no-filename -s -- 'VERSION_ID=' /etc/*-release | awk -F '=' '{print $2}' | sed 's#"##g' | awk -F '.' '{print $1}' | grep -- '^')"
+RELEASE_NAME="$(grep --no-filename -s -- '^NAME=' /etc/*-release | awk -F'=' '{print $2}' | sed 's|"||g;s| .*||g' | tr '[:upper:]' '[:lower:]' | grep -- '^')"
+RELEASE_ID="$(grep --no-filename -s -- '^ID=' /etc/*-release | awk -F'=' '{print $2}' | sed 's|"||g' | tr '[:upper:]' '[:lower:]' | grep -- '^' | head -n1)"
+RELEASE_ID_LIKE="$(grep --no-filename -s -- '^ID_LIKE=' /etc/*-release | awk -F'=' '{print $2}' | sed 's|"||g' | tr '[:upper:]' '[:lower:]')"
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# RELEASE_TYPE is "centos" for any RHEL-family system: real RHEL, CentOS
+# (Linux or Stream), Oracle Linux, AlmaLinux, Rocky Linux. ID_LIKE alone
+# misses real RHEL (unset) and can miss CentOS Stream/Oracle Linux
+# depending on release, so ID is checked first as the reliable signal.
+__release_type() {
+  case "$RELEASE_ID" in
+  rhel | centos | ol) printf '%s' "centos" && return 0 ;;
+  esac
+  case " $RELEASE_ID_LIKE " in
+  *' rhel '* | *' centos '*) printf '%s' "centos" ;;
+  esac
+}
+RELEASE_TYPE="$(__release_type)"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Main application
 __save_remote_file "https://raw.githubusercontent.com/rpm-devel/casjay-release/main/RPM-GPG-KEY-casjay" "/etc/pki/rpm-gpg/RPM-GPG-KEY-casjay"
@@ -82,20 +97,37 @@ if [ "$RELEASE_TYPE" = "centos" ] && [ "$(hostname -s)" != "pbx" ]; then
   if [ "$RELEASE_VER" -ge "9" ]; then
     YUM_DELETE="yes"
     REPO_REPLACE="no"
-    RELEASE_FILE="https://github.com/rpm-devel/casjay-release/raw/main/casjay.rh9.repo"
   elif [ "$RELEASE_VER" -ge "8" ]; then
     YUM_DELETE="yes"
     REPO_REPLACE="yes"
-    RELEASE_FILE="https://github.com/rpm-devel/casjay-release/raw/main/casjay.rh8.repo"
   elif [ "$RELEASE_VER" -lt "8" ]; then
     YUM_DELETE="yes"
     REPO_REPLACE="yes"
-    RELEASE_FILE="https://github.com/rpm-devel/casjay-release/raw/main/casjay.rh.repo"
   else
     YUM_DELETE="no"
     REPO_REPLACE="yes"
-    RELEASE_FILE=""
   fi
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  # Retired generic casjay.rh9/rh8/rh.repo names — map the actual
+  # distro ID to its dedicated per-distro file in rpm-devel/casjay-release.
+  # Real RHEL and CentOS Stream 8+ have no dedicated file upstream; the
+  # AlmaLinux file is casjay-release's own official fallback for them.
+  RELEASE_FILE_NAME=""
+  case "$RELEASE_ID" in
+  almalinux) RELEASE_FILE_NAME="almalinux.$RELEASE_VER.repo" ;;
+  rocky) RELEASE_FILE_NAME="rockylinux.$RELEASE_VER.repo" ;;
+  ol) RELEASE_FILE_NAME="oraclelinux.$RELEASE_VER.repo" ;;
+  centos)
+    if [ "$RELEASE_VER" -le 7 ]; then
+      RELEASE_FILE_NAME="centos.$RELEASE_VER.repo"
+    else
+      RELEASE_FILE_NAME="almalinux.$RELEASE_VER.repo"
+    fi
+    ;;
+  *) [ -n "$RELEASE_VER" ] && RELEASE_FILE_NAME="almalinux.$RELEASE_VER.repo" ;;
+  esac
+  RELEASE_FILE=""
+  [ -n "$RELEASE_FILE_NAME" ] && RELEASE_FILE="https://github.com/rpm-devel/casjay-release/raw/main/$RELEASE_FILE_NAME"
 else
   printf '%b\n' "No repos specified"
   yum clean all >/dev/null 2>&1
