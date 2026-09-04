@@ -656,7 +656,7 @@ else
   rm -Rf "$APP_TMP_DIR$BIND_DATA_DIR"*
   rm -Rf "$APP_TMP_DIR"/root/.bashrc
   rm -Rf "$APP_TMP_DIR"/etc/sysconfig/network-scripts
-  rm -Rf "$APP_TMP_DIR"/etc/{hosts,tor,cockpit,samba,postfix,named*}
+  rm -Rf "$APP_TMP_DIR"/etc/{hosts,tor,cockpit,samba,postfix,dovecot,named*,firewalld}
   find -L "$APP_TMP_DIR" -type f -iname "*.sh" -exec chmod 755 {} \; &>/dev/null
   find -L "$APP_TMP_DIR" -type f -iname "*.pl" -exec chmod 755 {} \; &>/dev/null
   find -L "$APP_TMP_DIR" -type f -iname "*.cgi" -exec chmod 755 {} \; &>/dev/null
