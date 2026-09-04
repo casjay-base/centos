@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<zone>
+  <short>Public</short>
+  <description>casjay-base default zone. nginx is the only public listener for
+  web/cockpit (proxies to Apache on 81/8443 and Cockpit locally - neither is
+  opened here); mail is exposed directly via Postfix. Docker's own remote
+  API and Apache's local listener stay unreachable by not being listed.</description>
+  <service name="ssh"/>
+  <service name="dhcpv6-client"/>
+  <service name="http"/>
+  <service name="https"/>
+  <service name="smtp"/>
+  <service name="smtps"/>
+  <service name="smtp-submission"/>
+  <forward/>
+</zone>
