@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<zone target="%%REJECT%%">
+  <short>Docker</short>
+  <description>Bridge interfaces owned by the Docker daemon (docker0 and any
+  user-defined bridge networks). Docker manages its own forwarding/NAT rules
+  ahead of this zone in the FORWARD chain, so published container ports keep
+  working; this zone's REJECT target is defense in depth against a container
+  reaching a host-only service that isn't meant to be container-reachable,
+  and against any container traffic that isn't covered by Docker's own
+  chains. No services/ports are opened here - Docker punches its own holes
+  for published ports.</description>
+  <interface name="docker0"/>
+</zone>
