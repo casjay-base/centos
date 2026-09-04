@@ -502,7 +502,7 @@ immediate discard; everything else rotates monthly OR at a size threshold
       the loud warning. `snmp_* env.community public` in the same file is a
       separate weak-default issue, not a committed password, and is out of
       scope for this finding.
-- [ ] 26. Docker: `daemon.json` enables `ipv6`/`ip6tables` but
+- [x] 26. Docker: `daemon.json` enables `ipv6`/`ip6tables` but
       `shorewall6/zones` has no `dock` zone (IPv4 has one, with
       `dock $FW REJECT`) and no `fixed-cidr-v6` is set — containers can
       get globally-routable IPv6 reachable directly from the internet,
@@ -510,6 +510,15 @@ immediate discard; everything else rotates monthly OR at a size threshold
       true` on a production host. Mirror the `dock` zone into shorewall6,
       set `fixed-cidr-v6` (ULA), drop `experimental`, add
       `"no-new-privileges": true`, `"icc": false`, `"live-restore": true`.
+      ALREADY FIXED (found while closing out the LOW/INFO pass — this checkbox
+      was never ticked even though the work landed earlier): `etc/docker/
+      daemon.json` sets `fixed-cidr-v6` to a ULA prefix (`fd00:dead:beef::/64`,
+      not globally routable), `no-new-privileges`/`icc`/`live-restore` are all
+      set as prescribed, and `experimental` is absent. The shorewall6 `dock`
+      zone mirror is moot — shorewall was deleted entirely (see #2) and
+      replaced by `firewalld/zones/docker.xml`, which is
+      `target="%%REJECT%%"` bound to `docker0` — the same default-deny
+      posture the finding asked shorewall6 to provide, just via firewalld.
 - [x] 27. `login.defs`: `PASS_MAX_DAYS 99999` (never expires),
       `PASS_MIN_DAYS 0`; no `pam_pwquality` config anywhere in the tree,
       so password length/complexity has no real floor given
@@ -563,49 +572,172 @@ immediate discard; everything else rotates monthly OR at a size threshold
 
 ## LOW / INFO
 
-- [ ] 29. `ServerSignature EMail` leaks an email address on every Apache
+- [x] 29. `ServerSignature EMail` leaks an email address on every Apache
       error page, contradicts `ServerTokens Prod` — set `Off`.
-- [ ] 30. `/health/apache` uses deprecated `Order Deny,Allow` syntax —
+      FIXED: `httpd/conf/httpd.conf:114` is now `ServerSignature Off`.
+- [x] 30. `/health/apache` uses deprecated `Order Deny,Allow` syntax —
       migrate to `Require ip` (mod_access_compat still works but is
       legacy); note RFC1918 isn't a real trust boundary here given #6.
-- [ ] 31. `SSLProxyCheckPeerName/CN/Expire off` disables cert validation
+      FIXED: the `<Location /health/apache>` block now uses a single
+      `Require ip 127.0.0.0/8 10.0.0.0/8 172.16.0.0/12 192.168.0.0/16`
+      in place of the `Order`/`Deny`/`Allow` trio. Same deprecated 2.2
+      syntax in `httpd/conf.d/autoindex.conf` (the `.hta*` `<Files>`
+      block, `order allow,deny` + `deny from all`) was converted to
+      `Require all denied` in the same pass — identical mechanical fix in
+      a file already open for #32. A third instance found by grep,
+      `httpd/conf.d/errors.conf:18-19` (`Order allow,deny` +
+      `Allow from all` on the `default-error` directory), became
+      `Require all granted` — semantically identical, no access change.
+      `httpd/conf.d/` is now free of 2.2 `Order`/`Allow`/`Deny` syntax.
+      RFC1918-is-not-a-trust-boundary caveat is unchanged and still
+      stands.
+- [x] 31. `SSLProxyCheckPeerName/CN/Expire off` disables cert validation
       for all outbound mod_proxy HTTPS — low impact today (loopback-ish
       target) but MITM-able for any future proxy target.
-- [ ] 32. `Options Indexes` on shared asset paths + `~/Public/html` —
+      FIXED: all three flipped to `on` in `httpd/conf/httpd.conf`, with a
+      comment noting that a vhost needing a self-signed backend overrides
+      them per-vhost. BEHAVIOR CHANGE ON DEPLOYED HOSTS: any existing
+      `mod_proxy` HTTPS target whose certificate does not validate (self-
+      signed, wrong CN, or expired) will now fail instead of silently
+      proceeding. The nginx→apache loopback path in `nginx/global.d/*`
+      proxies to `https://apache/...`, so if that upstream presents the
+      committed self-signed cert under a non-matching name it will need a
+      per-vhost `SSLProxyCheckPeerName off` (or a matching cert) after
+      this lands.
+- [x] 32. `Options Indexes` on shared asset paths + `~/Public/html` —
       directory listing enabled broadly; low value alone but consistent
       with #10's posture problem.
-- [ ] 33. No `server_tokens off;` in nginx.conf (version disclosure); no
+      FIXED: `Indexes` dropped from all seven `/usr/local/share/httpd/
+      default-*` blocks in `httpd/conf.d/autoindex.conf`, from
+      `/home/*/Public/html` in `httpd/conf.d/userdir.conf`, and from the
+      `/var/www` and `/var/www/html` blocks in `httpd/conf/httpd.conf`.
+      The mod_autoindex theming (`IndexOptions`, `AddIcon`,
+      `IndexStyleSheet`) is left in place — it is inert unless a vhost
+      opts back in with `Options +Indexes`, which is now the explicit
+      per-vhost decision it should have been. BEHAVIOR CHANGE: paths that
+      relied on an implicit directory listing (a `default-*` asset dir or
+      a user's `~/Public/html` with no index file) now return 403.
+- [x] 33. No `server_tokens off;` in nginx.conf (version disclosure); no
       HSTS observed at the nginx layer specifically (Apache sets one
       behind it — verify it actually reaches the client through the
       double-TLS-termination setup).
-- [ ] 34. `named.conf` uses `dnssec-enable`/`dnssec-lookaside`/
+      FIXED (tokens) / VERIFIED (HSTS): `server_tokens off;` added to the
+      `http` block in `nginx/nginx.conf`. The HSTS half was a false alarm
+      — `nginx/global.d/nginx-defaults.conf:96` already sets
+      `add_header Strict-Transport-Security "max-age=31536000;
+      includeSubDomains" always;` and every vhost includes `global.d/*`,
+      so nginx emits its own HSTS to the client and does not depend on
+      Apache's header surviving the double termination.
+- [x] 34. `named.conf` uses `dnssec-enable`/`dnssec-lookaside`/
       `bindkeys-file`, all removed in BIND 9.16+ (RHEL 9 ships 9.16) —
       named will fail to start. Access controls (`listen-on 127.0.0.1`,
       `allow-query localhost`) are correct — not an open resolver.
-- [ ] 35. `dnf.conf`: `skip_if_unavailable=True` can silently skip
+      FIXED: `named/named.conf` drops `dnssec-enable`,
+      `dnssec-lookaside` and `bindkeys-file`, keeping
+      `dnssec-validation yes` (backed by the existing
+      `include "/etc/named/root.key"`) and `managed-keys-directory`,
+      both still valid in 9.16+. Access controls untouched.
+- [x] 35. `dnf.conf`: `skip_if_unavailable=True` can silently skip
       security updates from a failing repo; `localpkg_gpgcheck` unset
       (defaults off) — locally-installed RPMs bypass signature checks.
-- [ ] 36. `resolv.conf` hardcodes a specific third-party resolver IP
+      FIXED: `skip_if_unavailable=False` and `localpkg_gpgcheck=1` in
+      `dnf/dnf.conf`. BEHAVIOR CHANGE ON DEPLOYED HOSTS: a transiently
+      unreachable or broken repo now makes the whole dnf transaction fail
+      loudly instead of quietly proceeding without it, and an unsigned or
+      wrongly-signed local `.rpm` installed with `dnf install ./foo.rpm`
+      is now refused — both intended, but both will surface as new
+      failures on hosts that were relying on the silent path.
+- [x] 36. `resolv.conf` hardcodes a specific third-party resolver IP
       (`82.29.128.43`) alongside 1.1.1.1/8.8.8.8 — baked into a public
       repo; will silently become someone else's server if reassigned.
-- [ ] 37. `profile`/`bashrc` set `umask 002` (UPG convention) vs
+      FIXED: `82.29.128.43` removed; `resolv.conf` now ships only
+      1.1.1.1 and 8.8.8.8. A stray blank line at EOF was cleaned up at
+      the same time (single trailing newline). Note `cron.d/
+      update-resolver` runs `update-resolv.sh` from `root/.local/bin/`,
+      which is in the unreviewed set below — if that script re-adds a
+      hardcoded resolver at runtime this fix is cosmetic until that
+      script is reviewed too.
+- [x] 37. `profile`/`bashrc` set `umask 002` (UPG convention) vs
       `login.defs UMASK 077` — standard RHEL behavior but worth a
       conscious decision; 002 means group-writable files by default.
-- [ ] 38. `cron.d/yum-update` unattended daily `yum update -y` gated on
+      DECISION: keep as-is. Re-read of `profile:51-55` and
+      `bashrc:56-60` shows both use the stock RHEL user-private-group
+      conditional — `if [ $UID -gt 199 ] && [ "$(id -gn)" = "$(id -un)" ]`
+      — so `002` applies only when the user's primary group is their own
+      private group (group-writable to nobody but themselves); every
+      other account, including system accounts and any user in a shared
+      primary group, gets `022`. That is the upstream `setup` package
+      behavior verbatim, not a local weakening, and `login.defs UMASK
+      077` governs `useradd` home-directory creation, a different code
+      path. No change made; tightening to 077 here would diverge from
+      stock RHEL and break UPG collaboration without a real gain.
+- [x] 38. `cron.d/yum-update` unattended daily `yum update -y` gated on
       `ping google.com` — availability risk (unreviewed updates), and the
       ping-as-connectivity-check fails closed on ICMP-blocking networks.
-- [ ] 39. `proftpd.d/tls.conf`: `TLSOptions NoSessionReuseRequired`
+      FIXED: `cron.d/yum-update` is now
+      `0 2 * * * root dnf -y --security upgrade >/dev/null 2>&1`. The
+      ICMP gate is gone (dnf fails on its own when repos are
+      unreachable, and ping is blocked on plenty of otherwise-online
+      networks). BEHAVIOR CHANGE ON DEPLOYED HOSTS: the nightly job now
+      applies only security errata instead of every available update —
+      deliberately narrower, since a full unattended `update -y` was the
+      availability risk this finding names. Non-security updates are
+      still covered by the separate `cron.d/run-os-update` job at 4am.
+- [x] 39. `proftpd.d/tls.conf`: `TLSOptions NoSessionReuseRequired`
       weakens control/data-channel binding — fix alongside #15.
-- [ ] 40. Committed 1024-bit DH param file (`ssl/dhparam/1024.pem`) —
+      FIXED: re-read the current file after #15's `TLSRequired on` /
+      `TLSProtocol TLSv1.2 TLSv1.3` changes — the `TLSOptions
+      NoSessionReuseRequired` line was still present and untouched by
+      that pass. The line is now removed entirely, restoring proftpd's
+      default requirement that the data connection reuse the control
+      connection's TLS session. BEHAVIOR CHANGE ON DEPLOYED HOSTS: FTPS
+      clients that open the data channel with a fresh TLS session (some
+      older or load-balanced clients) will be rejected; that rejection is
+      the control this finding asks for, so the fix is a tighten, not a
+      workaround.
+- [x] 40. Committed 1024-bit DH param file (`ssl/dhparam/1024.pem`) —
       unused (4096-bit one is referenced instead) but should be deleted;
       1024-bit DH is within reach of precomputation attacks (Logjam).
-- [ ] 41. php-fpm `www.conf` is mostly correct (loopback-bound, allowed
+      FIXED: confirmed with `openssl dhparam -text -noout` that the file
+      really was 1024-bit, and that nothing in the repo references it
+      (`httpd.conf:217` uses `/etc/ssl/dhparam/httpd.pem`, itself 4096-
+      bit). `etc/ssl/dhparam/1024.pem` deleted. No regeneration needed —
+      2048.pem and 4096.pem already ship. Deleting the committed file
+      alone was not sufficient: `root/.local/bin/root_dhparams.sh:33`
+      regenerated a fresh `1024.pem` into `$DHDIR` every Tuesday via
+      `cron.d/dhparam`, so that generation line was removed too (this is
+      a `.sh` change — run script-lint before committing). NOTE, not
+      fixed, needs a decision: the same script's last line collapses
+      `apache/nginx/postfix/proftpd/httpd.pem` to a copy of the 2048-bit
+      params, so a deployed host ends up with 2048-bit `httpd.pem` while
+      this repo ships a 4096-bit one. Not a Logjam-class weakness and out
+      of scope for #40, but the repo and the host disagree.
+- [x] 41. php-fpm `www.conf` is mostly correct (loopback-bound, allowed
       clients restricted, clear_env yes) — only `display_errors = on`
       needs to flip per #22; `pm.status_path`/`ping.path` aren't
       currently exposed by any vhost.
-- [ ] 42. `certbot/dns.conf` `dns_rfc2136_secret` is empty (no committed
+      ALREADY FIXED by #22: `php-fpm.d/www.conf:26` is
+      `php_flag[display_errors] = off` with the explanatory comment from
+      that pass above it, and `php.ini:41` is `display_errors = Off`.
+      Re-confirmed `pm.status_path = /status` / `ping.path = /ping` are
+      still not routed by any vhost or `global.d` location. No change
+      needed this pass.
+- [x] 42. `certbot/dns.conf` `dns_rfc2136_secret` is empty (no committed
       secret) — flag only that deployed file mode should be 0600; repo/
       rsync overlay doesn't appear to enforce per-file modes.
+      DECISION: confirmed safe, documented rather than changed. The
+      committed value really is empty (`dns_rfc2136_secret =` with no
+      value) — a template, not a leaked credential, so
+      `sensitive_data.md` is satisfied as-is and this repo needs no
+      plaintext-credential exception. The 0600 concern is also already
+      handled outside this repo: `pkmgr/centos/scripts/min.sh:1283-1284`,
+      `server.sh:1104-1105` and `scripts/template:366` all
+      `chmod 600 /etc/certbot/dns.conf` at bootstrap, and min.sh:1026 /
+      server.sh:891 drop the file from the overlay temp dir so a host's
+      filled-in secret is never overwritten by the empty template. Only
+      change made here: trailing whitespace stripped and a comment added
+      stating the empty secret is deliberate and that pkmgr enforces the
+      mode.
 
 ## Not reviewed — follow-up needed
 

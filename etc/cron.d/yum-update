@@ -1,2 +1,4 @@
-# run yum update - runs daily at 2 am
-0 2 * * * root ping -c 1 google.com >/dev/null 2>&1 && yum update -y >/dev/null 2>&1
+# run security updates - runs daily at 2 am
+# No ICMP connectivity gate: dnf fails on its own when the repos are
+# unreachable, and ping is blocked on plenty of otherwise-online networks
+0 2 * * * root dnf -y --security upgrade >/dev/null 2>&1
