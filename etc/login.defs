@@ -1,9 +1,11 @@
 # *REQUIRED*
 MAIL_DIR           Maildir/
-PASS_MAX_DAYS      99999
-PASS_MIN_DAYS      0
-PASS_MIN_LEN       8
-PASS_WARN_AGE      7
+# 99999 meant passwords never expired; complexity is enforced separately by
+# /etc/security/pwquality.conf, which PASS_MIN_LEN does not control on RHEL
+PASS_MAX_DAYS      365
+PASS_MIN_DAYS      1
+PASS_MIN_LEN       14
+PASS_WARN_AGE      14
 UID_MIN            10000
 UID_MAX            50000
 GID_MIN            10000

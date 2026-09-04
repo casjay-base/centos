@@ -307,9 +307,17 @@ immediate discard; everything else rotates monthly OR at a size threshold
 
 ## MEDIUM
 
-- [ ] 20. SELinux disabled (`selinux/config`, `sysconfig/selinux`) — set
+- [x] 20. SELinux disabled (`selinux/config`, `sysconfig/selinux`) — set
       `enforcing` (or `permissive` first to collect denials).
-- [ ] 21. Logrotate gaps against policy (rotate 0 / nocompress / monthly-
+      DECISION (user, 2026-09-04): keep `SELINUX=disabled` in both files.
+      `pkmgr/centos/scripts/min.sh:337` and `server.sh:282` both run
+      `sed -i 's|SELINUX=.*|SELINUX=disabled|g' "/etc/selinux/config"` on every
+      bootstrap, forcing this state regardless of what casjay-base ships — a
+      `permissive` fix here would have been silently overwritten on every
+      deployed host. Given that, the user chose to match the shipped config to
+      what bootstrap actually deploys rather than change pkmgr's behavior or
+      remove the override. Not a functional change from the pre-audit state.
+- [x] 21. Logrotate gaps against policy (rotate 0 / nocompress / monthly-
       or-size / security logs maxage 180 + 100M):
   - `logrotate.conf` global stanza + `/var/log/btmp`: no `maxsize` at
     all (time-only) — btmp is exactly the file that fills fastest under
@@ -330,7 +338,57 @@ immediate discard; everything else rotates monthly OR at a size threshold
   - `cron.daily/logrotate` duplicates RHEL 9's `logrotate.timer` systemd
     unit — risk of double-rotation discarding a log the first run just
     created under `rotate 0`. Pick one mechanism.
-- [ ] 22. PHP session/error hardening — `php.ini`: `display_errors = On`
+      FIXED, all six sub-items. `logrotate.conf`: added a global
+      `maxsize 100M` backstop so a log that goes loud mid-month cannot fill the
+      disk waiting for the monthly run, and gave `/var/log/btmp` its own
+      `maxsize 100M` (it was time-only, and it is the file that fills fastest
+      under brute force). The four security-tier files (`secure`, `maillog`,
+      `auth.log`, `mail.log`) plus `wtmp`/`btmp` moved off `rotate 0` to
+      `rotate 12` + `maxage 180` — `maxage` is a no-op alongside `rotate 0`,
+      which discards the rotated copy immediately, so retaining a 180-day
+      forensic window required both. `logrotate.d/named` and `logrotate.d/munin`
+      gained explicit `monthly` + `maxsize 50M` + `rotate 0` + `nocompress`
+      instead of inheriting with no size cap, and munin's `postrotate systemctl
+      restart munin munin-node` was dropped — line 6 already sets `copytruncate`,
+      so the restart bought nothing and cost a monthly monitoring outage.
+      New stanzas added for every service that had none:
+      `logrotate.d/{httpd,nginx,proftpd,php-fpm,fail2ban,rsyncd,mysql,samba,tor}`,
+      sized 100M (httpd/nginx/mysql), 50M (proftpd/php-fpm/samba) or 10M (tor)
+      by verbosity, all `nocompress`. `fail2ban`, `rsyncd` and proftpd's
+      `auth.log` are security-relevant, so they take `maxage 180` + `rotate 12`
+      like the tier above; the rest are `rotate 0`. Log paths were read out of
+      the actual service configs in this tree, not guessed
+      (`proftpd.conf:19,28,29,46,47`, `rsyncd.conf:3`, `torrc:59`,
+      `samba/smb.conf:18`, `php-fpm.d/www.conf:15,17`, `nginx.conf:7,19`).
+      Double-rotation: `cron.daily/logrotate` now exits 0 immediately when
+      `systemctl list-unit-files logrotate.timer` succeeds, so the timer owns
+      rotation on RHEL 9 and the cron entry survives only as a fallback for a
+      host with no timer. Deleting it outright was rejected — on a host where
+      the timer is absent that would have left no rotation at all.
+      Two further defects found while verifying the above with
+      `logrotate --debug`, both of which silently disabled rotation entirely
+      and are fixed here rather than left for a later pass:
+      (a) The stock `logrotate.d/rsyslog` shipped by the rsyslog package also
+      lists `/var/log/maillog` and `/var/log/secure`, which `logrotate.conf`
+      defines. logrotate treats a path defined twice as fatal and skips the
+      whole second file, so on any deployed host `/var/log/{cron,messages,
+      spooler}` were never being rotated at all. This tree now ships its own
+      `logrotate.d/rsyslog` covering only those three, with a comment saying not
+      to re-add the two that live in `logrotate.conf`.
+      (b) The `secure`/`maillog`/`auth.log`/`mail.log` stanzas had no
+      `postrotate` HUP, so rsyslog kept writing to the unlinked inode after
+      rotation and the newly created file stayed empty — the security logs were
+      effectively being discarded, not rotated. They are now one grouped stanza
+      with `sharedscripts` + `systemctl -s HUP kill rsyslog.service`.
+      Also dropped the `create`/`su` lines naming the `mysql` and `toranon`
+      users from the two new stanzas (and did not add one to `nginx`):
+      logrotate treats an unknown user as a fatal error and skips the entire
+      file, so those lines would have disabled the stanza on any host without
+      that service installed. `copytruncate` is used instead.
+      Verified: `logrotate --debug` over `logrotate.conf` with `include`
+      repointed at this tree's own `logrotate.d` reports zero errors,
+      duplicates, or unknown options across all 11 files.
+- [x] 22. PHP session/error hardening — `php.ini`: `display_errors = On`
       (`:33`, leaks paths/SQL/stack traces — set Off, log_errors already
       on); `session.cookie_httponly` empty (`:245` — XSS → full session
       theft, set On); no `session.cookie_secure`; `session.use_strict_mode
@@ -338,23 +396,112 @@ immediate discard; everything else rotates monthly OR at a size threshold
       never idle-expiring (`:242,249`); `post_max_size = 10G` /
       `upload_max_filesize = 1G` / `max_execution_time = 3600` (`:56,77,
       27` — disk-fill / worker-exhaustion DoS, reduce all three).
-- [ ] 23. sysctl.conf: `send_redirects = 1` (should be 0, non-router host),
+      FIXED in `etc/php.ini`: `display_errors = Off`, `session.use_strict_mode
+      = 1` (rejects a session ID the server never issued, which is what makes
+      session fixation work), `session.cookie_httponly = 1`,
+      `session.cookie_secure = 1` (the directive was commented out entirely —
+      every vhost in this tree is TLS-only, so there is no plain-HTTP path to
+      break), and `session.cookie_samesite = Lax` added alongside as the
+      matching CSRF control. Lifetimes: `session.cookie_lifetime` 525600 → `0`
+      (browser-session cookie) and `session.gc_maxlifetime` 525600 → `7200`, so
+      an idle session actually expires server-side after two hours instead of
+      never — the old value was ~6 days on both, meaning a stolen cookie stayed
+      valid for a week. Limits: `post_max_size` 10G → `128M`,
+      `upload_max_filesize` 1G → `64M` (also fixing the missing space in
+      `upload_max_filesize =1G`), `max_execution_time` and `max_input_time`
+      3600 → `120`.
+      Also fixed one file the finding did not name: `php-fpm.d/www.conf:24`
+      carried `php_flag[display_errors] = on`, a per-pool override that would
+      have put display_errors straight back on for every FPM request regardless
+      of php.ini. Now `off`. `log_errors` was already on in both files and is
+      unchanged. Grepped `php-fpm.conf`, `php-fpm.d/` and confirmed there is no
+      `php.d/` in this tree, so nothing else overrides any of the above.
+      ADMIN NOTE: `max_execution_time 120` and the upload caps are a real
+      behavior change for any app doing large uploads or long-running imports —
+      raise them per-vhost/per-pool rather than globally; comments above each
+      directive say so.
+- [x] 23. sysctl.conf: `send_redirects = 1` (should be 0, non-router host),
       `proxy_arp = 1` on all interfaces (ARP hijack risk), `log_martians
       = 0` (disables spoofed-packet logging) — lines 17-27. Missing
       entirely: `rp_filter`, `accept_redirects = 0`, `secure_redirects =
       0`, `accept_source_route = 0`, `net.ipv6.conf.all.accept_ra = 0`,
       `kernel.kptr_restrict`, `kernel.dmesg_restrict`. `ip_forward = 1`
       stays (needed for Docker).
-- [ ] 24. Cockpit `disallowed-users` is empty (upstream ships `root`) —
+      FIXED in `etc/sysctl.conf`, lines 17-27 rewritten as commented blocks.
+      `log_martians` 0 → `1` (all + default), `proxy_arp` 1 → `0` (all +
+      default — answering ARP for addresses this host does not own is an
+      on-segment traffic-redirection primitive), and every `send_redirects`
+      set to `0`. The old block also had `net.ipv4.conf.all.send_redirects = 1`
+      written twice on consecutive lines (21, 22); deduplicated. Added the seven
+      missing controls: `accept_redirects = 0` and `secure_redirects = 0`
+      (v4 all/default, plus v6 `accept_redirects`), `accept_source_route = 0`
+      (v4 and v6), `net.ipv6.conf.{all,default}.accept_ra = 0` so a rogue RA
+      cannot install a default route on a statically-addressed server,
+      `kernel.kptr_restrict = 2` and `kernel.dmesg_restrict = 1`.
+      `rp_filter` is set to `2` (loose), not `1` (strict): this host forwards
+      for Docker and may be multi-homed, and strict mode drops the return leg
+      of any asymmetric path. A comment states that tradeoff. `ip_forward = 1`,
+      `conf.default.forwarding = 1` and both `ipv6...forwarding = 1` lines are
+      unchanged as the finding requires, and still match the `sed` patterns
+      `pkmgr/centos/scripts/min.sh:785,789` rewrites them with, so bootstrap
+      does not conflict with this file.
+- [x] 24. Cockpit `disallowed-users` is empty (upstream ships `root`) —
       re-enables root login to the Cockpit web UI. Restore `root` to the
       file.
-- [ ] 25. Committed placeholder passwords that deploy verbatim (not in the
+      FIXED: `etc/cockpit/disallowed-users` now contains `root` below the
+      existing header comment, restoring the upstream default this tree had
+      emptied. A comment says why — an empty file is not "no policy", it
+      actively re-enables root login to the web UI — and directs the operator to
+      administer as an unprivileged user and escalate. This pairs with #14's
+      `PermitRootLogin prohibit-password`: without it, Cockpit was still a
+      password-authenticated root entry point on port 9090.
+- [x] 25. Committed placeholder passwords that deploy verbatim (not in the
       sed substitution list) — `munin/plugin-conf.d/munin-node` (mysql/
       pgsql/ldap-bindpw/squid/generic — `mysecurepassword`, `amp111`),
       `my.cnf:3` (`supersecretpassword`). Move to a gitignored
       `*.local` generated at bootstrap; add to the placeholder
       substitution list so an unsubstituted deploy fails loudly instead
       of silently shipping a known password.
+      ALREADY FIXED (`my.cnf` half): re-read the live file before touching
+      anything, as instructed. #7 already removed the `[client] password =
+      supersecretpassword` line and replaced it with a comment pointing at a
+      0600 `~/.my.cnf` or a bootstrap env file. No password remains anywhere in
+      `etc/my.cnf`. Not redone.
+      FIXED (munin half): all seven committed credentials in
+      `etc/munin/plugin-conf.d/munin-node` — the `[*]` global `env.password`,
+      `[mysql*] env.mysqlpassword`, `[postgres*] env.PGPASS`, `[slapd*]
+      env.bindpw`, `[squid*] env.squidpassword`, `[asterisk_*] env.secret`
+      (`amp111`, the stock FreePBX manager secret) and `[esx_*] env.pass` — are
+      now the literal token `CHANGEME_AT_BOOTSTRAP`. A header comment states
+      that this is a deliberately non-functional placeholder, not a working
+      default, that no real credential may ever be committed to this
+      world-readable public repo, and that the plugin reports nothing until the
+      operator fills it in or deletes the section for a service they do not
+      monitor.
+      The non-functional-token route was chosen over a gitignored
+      `*.local` generated at bootstrap because these are optional per-service
+      monitoring credentials for services that may not be installed — there is
+      nothing for bootstrap to generate them *from*, unlike `rsyncd.secrets`
+      (`min.sh:1389-1394`), where the secret is self-chosen and `openssl rand`
+      is the right answer. The established convention in this repo is followed
+      in the half that does apply: bootstrap now says something.
+      SECOND REPO TOUCHED — `pkmgr/centos/scripts/min.sh` and
+      `scripts/server.sh`, munin-node section of each. Both now grep the
+      installed `/etc/munin/plugin-conf.d/munin-node` for the placeholder token
+      and print a `printf_yellow` warning naming the file when it is still
+      present, which is the "fails loudly instead of silently shipping a known
+      password" this finding asks for. Both also `chown root:munin` +
+      `chmod 640` that file, since it holds credentials once filled in and was
+      being deployed world-readable. `bash -n` passes on both scripts;
+      script-lint still needs to run before commit.
+      NOT DONE, deliberately: the placeholder was not added to the
+      `find ... sed -i` substitution list at `min.sh:1078-1083`. Every entry
+      there substitutes a value bootstrap can actually derive (hostname, domain,
+      current IP). A password is not derivable, so a sed entry would have had to
+      invent one and write it into a world-readable file — strictly worse than
+      the loud warning. `snmp_* env.community public` in the same file is a
+      separate weak-default issue, not a committed password, and is out of
+      scope for this finding.
 - [ ] 26. Docker: `daemon.json` enables `ipv6`/`ip6tables` but
       `shorewall6/zones` has no `dock` zone (IPv4 has one, with
       `dock $FW REJECT`) and no `fixed-cidr-v6` is set — containers can
@@ -363,16 +510,56 @@ immediate discard; everything else rotates monthly OR at a size threshold
       true` on a production host. Mirror the `dock` zone into shorewall6,
       set `fixed-cidr-v6` (ULA), drop `experimental`, add
       `"no-new-privileges": true`, `"icc": false`, `"live-restore": true`.
-- [ ] 27. `login.defs`: `PASS_MAX_DAYS 99999` (never expires),
+- [x] 27. `login.defs`: `PASS_MAX_DAYS 99999` (never expires),
       `PASS_MIN_DAYS 0`; no `pam_pwquality` config anywhere in the tree,
       so password length/complexity has no real floor given
       `PasswordAuthentication yes` on sshd (#14). Set `PASS_MAX_DAYS
       365`, `PASS_MIN_DAYS 1`, ship `/etc/security/pwquality.conf`.
-- [ ] 28. Expired private-CA anchor in system trust store —
+      FIXED in `etc/login.defs`: `PASS_MAX_DAYS` 99999 → `365`, `PASS_MIN_DAYS`
+      0 → `1` (stops a user cycling straight back to the old password to defeat
+      history), `PASS_WARN_AGE` 7 → `14`, and `PASS_MIN_LEN` 8 → `14` for
+      consistency — with a comment noting PAM ignores `PASS_MIN_LEN` on RHEL, so
+      it is the pwquality file below that actually enforces length.
+      `ENCRYPT_METHOD SHA512` and `UMASK 077` were already correct and are
+      unchanged.
+      New file `etc/security/pwquality.conf` (the `etc/security/` directory did
+      not exist in this tree at all): `minlen = 14`, one required character from
+      each of the four classes (`dcredit`/`ucredit`/`lcredit`/`ocredit = -1`
+      plus `minclass = 4`), `maxrepeat`/`maxclassrepeat` to reject runs,
+      `usercheck`/`gecoscheck`/`dictcheck` on, `difok = 5`, and
+      `enforce_for_root` so a root password set non-interactively during a
+      bootstrap run is held to the same floor. Every directive carries a comment
+      above it explaining what it buys.
+      NOTE on the finding's framing: it justifies this by
+      `PasswordAuthentication yes` on sshd, but #14 has since set that to `no`,
+      so this no longer guards remote SSH. It still matters — console and
+      recovery logins, `su`, Cockpit (now root-blocked by #24 but still password
+      auth for other users), proftpd, and samba all authenticate against these
+      passwords. Fixed on that basis, not the original one.
+      ADMIN NOTE: `PASS_MAX_DAYS 365` only applies to accounts created after
+      this deploys; existing accounts keep their current aging until
+      `chage -M 365 <user>` is run against them.
+- [x] 28. Expired private-CA anchor in system trust store —
       `pki/ca-trust/source/anchors/CasjaysDev.crt`, expired ~2024-04-09.
       Remove; the CA's private key is not in this repo (checked), so no
       compromise, just dead/silently-breaking trust. If a private CA is
       still needed, regenerate fresh and keep the key offline.
+      FIXED: deleted `etc/pki/ca-trust/source/anchors/CasjaysDev.crt`. Verified
+      against the file rather than the finding text before removing it —
+      `openssl x509` confirms a self-signed `CN=Casjays Developments` valid
+      `2014-04-12` to `2024-04-09`, so it has been dead for over two years and
+      `update-ca-trust` was silently importing an expired anchor on every
+      bootstrap. Grepped the whole tree: nothing in `casjay-base/centos`
+      referenced it by name, so removing it breaks no config.
+      No replacement is needed and none was added. The finding's "if a private
+      CA is still needed" is already answered elsewhere in this tree:
+      `etc/ssl/CA/CasjaysDev/certs/ca.crt` is a *different*, current CA
+      (`CN=casjaysdev.com`, valid to 2031-11-18), and
+      `pkmgr/*/scripts/min.sh` already copies that one into
+      `/etc/pki/ca-trust/source/anchors/` at bootstrap. The expired file was
+      simply a stale leftover from the previous CA generation, not the anchor
+      anything actually uses. The `anchors/` directory is now empty in git,
+      which is fine — bootstrap recreates and populates it on the host.
 
 ## LOW / INFO
 
