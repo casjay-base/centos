@@ -12,51 +12,57 @@ usedns = warn
 [fail2ban]
 enabled = true
 filter = fail2ban
-action   = shorewall
+action   = %(banaction)s
 logpath = /var/log/fail2ban.log
 
 [ssh]
 enabled  = true
 filter   = sshd
-action   = shorewall
+action   = %(banaction)s
 logpath  = /var/log/secure
 
 [proftpd]
 enabled  = true
 filter   = proftpd
-action   = shorewall
+action   = %(banaction)s
 logpath  = /var/log/secure
 logpath  = /var/log/proftpd/auth.log
 
 [postfix]
 enabled  = true
 filter   = postfix
-action   = shorewall
+action   = %(banaction)s
 logpath  = /var/log/maillog
 
 [apache]
 enabled  = true
 filter   = apache-auth
-action   = shorewall
+action   = %(banaction)s
 logpath  = /var/log/httpd/*error_log
 
 [named-udp]
 enabled  = true
 filter   = named-refused
-action   = shorewall
+action   = %(banaction)s
 logpath  = /var/log/named/security.log
 
 [named-tcp]
 enabled  = true
 filter   = named-refused
-action   = shorewall
+action   = %(banaction)s
 logpath  = /var/log/named/security.log
 
 [mysqld-auth]
 enabled = false
 filter  = mysqld-auth
-action   = shorewall
+action   = %(banaction)s
 logpath = /var/log/mysql/mysql.log
+
+[mssql-auth]
+enabled = false
+filter  = mssql-auth
+action   = %(banaction)s
+logpath = /var/opt/mssql/log/errorlog
 
 [dovecot]
 enabled  = false
@@ -64,11 +70,11 @@ filter   = dovecot
 maxretry = 5
 bantime  = 3600
 findtime  = 120
-action   = shorewall
+action   = %(banaction)s
 logpath  = /var/log/maillog
 
 [webmin-auth]
 enabled = false
 filter  = webmin-auth
-action   = shorewall
+action   = %(banaction)s
 logpath = /var/log/secure

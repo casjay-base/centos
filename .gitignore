@@ -40,3 +40,13 @@ ehthumbs.db
 Thumbs.db
 # ignore commit message
 .gitcommit
+
+# Secrets and credential material #
+####################################
+# The self-signed localhost.key/localhost.crt pair stays committed on purpose
+# (kept fine for public per user decision) - only runtime-generated secrets
+# that must differ per host are ignored here
+etc/ssl/certs/*.key
+etc/letsencrypt/
+etc/rsyncd.secrets
+etc/samba/smbpasswd
