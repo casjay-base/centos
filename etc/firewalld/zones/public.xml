@@ -24,5 +24,6 @@
   <service name="pop3s"/>
   <service name="managesieve"/>
   <port protocol="tcp" port="49152-65534"/>
+  <port protocol="udp" port="49152-65534"/>
   <forward/>
 </zone>
