@@ -1016,6 +1016,16 @@ EOF
   for s in $SERVICES_DISABLE; do systemctl disable "$s" &>/dev/null; done
   echo -e "Done setting up the services\n"
 
+  echo -e "Setting up firewalld"
+  firewall-offline-cmd --reset &>/dev/null
+  systemctl restart firewalld &>/dev/null
+  firewall-cmd --zone=trusted --change-interface=docker0 --permanent &>/dev/null
+  firewall-cmd --zone=trusted --change-interface=incusbr0 --permanent &>/dev/null
+  firewall-cmd --permanent --zone=public --set-target=ACCEPT &>/dev/null
+  firewall-cmd --reload &>/dev/null
+  systemctl restart firewall &>/dev/null
+  echo -e "Done Setting up firewalld"
+
   echo -e "Cleaning up files and history"
   rm -Rf "/tmp/dns-update" 2>/dev/null
   rm -Rf /tmp/*.tar "/tmp/dotfiles" "$APP_TMP_DIR"
