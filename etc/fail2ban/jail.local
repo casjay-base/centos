@@ -2,12 +2,29 @@
 before = paths-fedora.conf
 
 # Fail2Ban configuration file
+#
+# casjay-base ships to many different server roles, not just this user's own
+# infra, and not every host runs every service (mail, dns, ftp, a database).
+# Every service-specific jail below therefore starts disabled - min.sh/
+# server.sh flip one to enabled only when that service is actually detected
+# on the host (see the "install and enable intrusion detection/prevention"
+# block in each script). Only [fail2ban]/[ssh]/[recidive] stay enabled by
+# default because sshd and fail2ban's own log are present on every host.
+# Do not flip a service jail back to `enabled = true` here - a jail pointed
+# at a logpath that never gets created makes fail2ban report a jail-start
+# error on every boot on any host that doesn't run that service.
 [DEFAULT]
 bantime  = 604800
 findtime  = 3600
 maxretry = 5
 backend = auto
 usedns = warn
+# Merged from the former etc/fail2ban/ips.txt (removed - fail2ban never
+# auto-loads a bare .txt file, so that file was dead configuration; folding
+# its ranges in here is what actually makes them take effect). Keeps
+# fail2ban from ever banning RFC1918 management/LAN traffic in addition to
+# loopback.
+ignoreip = 127.0.0.0/8 10.0.0.0/8 172.16.0.0/12 192.168.0.0/16
 
 [fail2ban]
 enabled = true
@@ -22,20 +39,20 @@ action   = %(banaction)s
 logpath  = /var/log/secure
 
 [proftpd]
-enabled  = true
+enabled  = false
 filter   = proftpd
 action   = %(banaction)s
 logpath  = /var/log/secure
            /var/log/proftpd/auth.log
 
 [postfix]
-enabled  = true
+enabled  = false
 filter   = postfix
 action   = %(banaction)s
 logpath  = /var/log/maillog
 
 [apache]
-enabled  = true
+enabled  = false
 filter   = apache-auth
 action   = %(banaction)s
 logpath  = /var/log/httpd/*error_log
@@ -43,31 +60,31 @@ logpath  = /var/log/httpd/*error_log
 # nginx is the internet-facing TLS terminator, so these jails see the real
 # client IP; the apache jail above only ever sees the nginx proxy address
 [nginx-http-auth]
-enabled  = true
+enabled  = false
 filter   = nginx-http-auth
 action   = %(banaction)s
 logpath  = /var/log/nginx/error.log
 
 [nginx-botsearch]
-enabled  = true
+enabled  = false
 filter   = nginx-botsearch
 action   = %(banaction)s
 logpath  = /var/log/nginx/access.log
 
 [nginx-limit-req]
-enabled  = true
+enabled  = false
 filter   = nginx-limit-req
 action   = %(banaction)s
 logpath  = /var/log/nginx/error.log
 
 [named-udp]
-enabled  = true
+enabled  = false
 filter   = named-refused
 action   = %(banaction)s
 logpath  = /var/log/named/security.log
 
 [named-tcp]
-enabled  = true
+enabled  = false
 filter   = named-refused
 action   = %(banaction)s
 logpath  = /var/log/named/security.log

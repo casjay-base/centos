@@ -32,3 +32,20 @@ companion commit)
 - [ ] Missing semicolon at line 1037 —
       `if [ -d "/tmp/dotfiles-personal-$USER" ] then` should be
       `if [ -d "/tmp/dotfiles-personal-$USER" ]; then`
+
+## Pre-existing violations found 2026-09-09 (fail2ban jail.local
+disable-by-default companion commit — none on lines that commit touched;
+only config files changed, no scripts)
+
+- [ ] root/.local/bin/root_certbot.sh line 50: add `--` before the grep
+      query — `grep -s -- 'dns_rfc2136_secret = '`
+- [ ] root/.local/bin/update-resolv.sh line 59: bare `exit` — use
+      `exit 0`/`1`/`"$?"`
+- [ ] root/.local/bin/process-check.sh: add `--` before the grep query at
+      lines 42 (x3), 47 (x4), 59, 73, 74, 80, 81
+- [ ] root/.local/bin/root_clean.sh lines 20-21: inline comments on code
+      lines — move `# added in /etc/logrotate.conf` above each
+      `[ -f ... ] && rm -Rf ...` line
+- [ ] etc/skel/.config/bash/functions/global.sh: rename function `geany`
+      to `__geany` (line 21); add `--` before the grep query at lines 39,
+      52, 53 (x2)
