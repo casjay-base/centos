@@ -1,29 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<zone>
+<zone target="ACCEPT">
   <short>Public</short>
-  <description>casjay-base default zone. nginx is the only public listener for
-  web/cockpit (proxies to Apache on 81/8443 and Cockpit locally - neither is
-  opened here); mail is exposed directly via Postfix and Dovecot, files via
-  ProFTPD and rsyncd. DNS (bind) is docker-published on 53/tcp+udp, which
-  traverses the FORWARD chain ahead of this zone and needs no entry here.
-  Docker's own remote API and Apache's local listener stay unreachable by
-  not being listed. ProFTPD's passive port range (49152-65534/tcp) matches
-  PassivePorts in etc/proftpd.conf - keep both in sync if that value changes.</description>
-  <service name="ssh"/>
-  <service name="dhcpv6-client"/>
-  <service name="http"/>
-  <service name="https"/>
-  <service name="smtp"/>
-  <service name="smtps"/>
-  <service name="smtp-submission"/>
-  <service name="ftp"/>
-  <service name="rsyncd"/>
-  <service name="imap"/>
-  <service name="imaps"/>
-  <service name="pop3"/>
-  <service name="pop3s"/>
-  <service name="managesieve"/>
-  <port protocol="tcp" port="49152-65534"/>
-  <port protocol="udp" port="49152-65534"/>
+  <description>casjay-base default zone. Wide open by design: firewalld's
+  job here is only to serve as fail2ban's backend (banaction =
+  firewallcmd-ipset in etc/fail2ban/jail.d/00-firewalld.conf) - fail2ban's
+  own dynamic ipset/rich-rule bans still apply on top of an ACCEPT target,
+  so misbehaving IPs still get blocked. A restrictive allow-list here
+  previously broke real services (mail, dns, ftp, rsync, dovecot, docker,
+  incus, mosh) every time it fell out of sync with what was actually
+  running, and required manually resetting firewalld after every restart.
+  Do not reintroduce a per-service allow-list - if a zone-level block is
+  ever needed again, add it deliberately and keep it in sync with every
+  service that binds a public port.</description>
   <forward/>
 </zone>

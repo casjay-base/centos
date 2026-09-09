@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<zone target="ACCEPT">
+  <short>Trusted</short>
+  <description>Built-in trusted zone, overridden here only to statically bind
+  docker0 and incusbr0. Binding them in this file (not just via a one-time
+  firewall-cmd --change-interface at bootstrap) makes the assignment survive
+  firewalld reloads/restarts and reboots: without a static binding, every
+  reload re-reads the zone XML files and, if docker0 were ever claimed by
+  another zone file, would snap it back to that zone - which is exactly what
+  a REJECT-target docker.xml used to do, breaking Docker/Incus networking
+  and forcing a manual change-interface + reload after every restart. Do not
+  reintroduce a docker.xml (or any other zone file) that also claims
+  docker0/incusbr0 - only one zone file may own an interface.</description>
+  <interface name="docker0"/>
+  <interface name="incusbr0"/>
+</zone>
