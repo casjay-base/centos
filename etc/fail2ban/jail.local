@@ -4,15 +4,22 @@ before = paths-fedora.conf
 # Fail2Ban configuration file
 #
 # casjay-base ships to many different server roles, not just this user's own
-# infra, and not every host runs every service (mail, dns, ftp, a database).
-# Every service-specific jail below therefore starts disabled - min.sh/
-# server.sh flip one to enabled only when that service is actually detected
-# on the host (see the "install and enable intrusion detection/prevention"
-# block in each script). Only [fail2ban]/[ssh]/[recidive] stay enabled by
-# default because sshd and fail2ban's own log are present on every host.
-# Do not flip a service jail back to `enabled = true` here - a jail pointed
-# at a logpath that never gets created makes fail2ban report a jail-start
-# error on every boot on any host that doesn't run that service.
+# infra, and not every host runs every service (mail, dns, ftp, a database) -
+# and pkmgr/centos's min.sh/server.sh only ever run once, at bootstrap, so a
+# service installed later would never get its jail flipped on if enablement
+# depended on detecting the service at bootstrap time. Instead every jail
+# below stays permanently `enabled = true`, and min.sh/server.sh unconditionally
+# pre-create each jail's logpath as an empty file at bootstrap (see the
+# "install and enable intrusion detection/prevention" block in each script).
+# fail2ban only errors at jail-start when a logpath glob resolves to zero
+# files - an empty placeholder file satisfies that, so a host that never
+# installs a given service just watches a file that never grows (no error,
+# no bans, no noise). The moment that service IS installed and starts
+# appending to the same path, the already-running jail picks it up
+# immediately - no re-bootstrap, no restart, no separate sync step needed.
+# Do not flip a jail back to `enabled = false` or remove its bootstrap
+# pre-create step - either one reintroduces the exact staleness/noise
+# problem this design avoids.
 [DEFAULT]
 bantime  = 604800
 findtime  = 3600
@@ -39,20 +46,20 @@ action   = %(banaction)s
 logpath  = /var/log/secure
 
 [proftpd]
-enabled  = false
+enabled  = true
 filter   = proftpd
 action   = %(banaction)s
 logpath  = /var/log/secure
            /var/log/proftpd/auth.log
 
 [postfix]
-enabled  = false
+enabled  = true
 filter   = postfix
 action   = %(banaction)s
 logpath  = /var/log/maillog
 
 [apache]
-enabled  = false
+enabled  = true
 filter   = apache-auth
 action   = %(banaction)s
 logpath  = /var/log/httpd/*error_log
@@ -60,49 +67,49 @@ logpath  = /var/log/httpd/*error_log
 # nginx is the internet-facing TLS terminator, so these jails see the real
 # client IP; the apache jail above only ever sees the nginx proxy address
 [nginx-http-auth]
-enabled  = false
+enabled  = true
 filter   = nginx-http-auth
 action   = %(banaction)s
 logpath  = /var/log/nginx/error.log
 
 [nginx-botsearch]
-enabled  = false
+enabled  = true
 filter   = nginx-botsearch
 action   = %(banaction)s
 logpath  = /var/log/nginx/access.log
 
 [nginx-limit-req]
-enabled  = false
+enabled  = true
 filter   = nginx-limit-req
 action   = %(banaction)s
 logpath  = /var/log/nginx/error.log
 
 [named-udp]
-enabled  = false
+enabled  = true
 filter   = named-refused
 action   = %(banaction)s
 logpath  = /var/log/named/security.log
 
 [named-tcp]
-enabled  = false
+enabled  = true
 filter   = named-refused
 action   = %(banaction)s
 logpath  = /var/log/named/security.log
 
 [mysqld-auth]
-enabled = false
+enabled = true
 filter  = mysqld-auth
 action   = %(banaction)s
 logpath = /var/log/mysql/mysql.log
 
 [mssql-auth]
-enabled = false
+enabled = true
 filter  = mssql-auth
 action   = %(banaction)s
 logpath = /var/opt/mssql/log/errorlog
 
 [dovecot]
-enabled  = false
+enabled  = true
 filter   = dovecot
 maxretry = 5
 bantime  = 3600
@@ -111,7 +118,7 @@ action   = %(banaction)s
 logpath  = /var/log/maillog
 
 [webmin-auth]
-enabled = false
+enabled = true
 filter  = webmin-auth
 action   = %(banaction)s
 logpath = /var/log/secure
