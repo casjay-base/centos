@@ -1019,8 +1019,12 @@ EOF
   echo -e "Setting up firewalld"
   firewall-offline-cmd --reset &>/dev/null
   systemctl restart firewalld &>/dev/null
-  firewall-cmd --zone=trusted --change-interface=docker0 --permanent &>/dev/null
-  firewall-cmd --zone=trusted --change-interface=incusbr0 --permanent &>/dev/null
+  if command -v docker >/dev/null 2>&1; then
+    firewall-cmd --zone=trusted --change-interface=docker0 --permanent &>/dev/null
+  fi
+  if command -v incus >/dev/null 2>&1; then
+    firewall-cmd --zone=trusted --change-interface=incusbr0 --permanent &>/dev/null
+  fi
   firewall-cmd --permanent --zone=public --set-target=ACCEPT &>/dev/null
   firewall-cmd --reload &>/dev/null
   systemctl restart firewall &>/dev/null
