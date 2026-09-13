@@ -1027,7 +1027,7 @@ EOF
   fi
   firewall-cmd --permanent --zone=public --set-target=ACCEPT &>/dev/null
   firewall-cmd --reload &>/dev/null
-  systemctl restart firewall &>/dev/null
+  systemctl restart firewalld &>/dev/null
   echo -e "Done Setting up firewalld"
 
   echo -e "Cleaning up files and history"
@@ -1038,7 +1038,7 @@ EOF
   find /etc /var /usr -type f -iname '*.rpmnew' -exec rm -Rf {} \; 2>/dev/null
   find /etc /var /usr -type f -iname '*.rpmsave' -exec rm -Rf {} \; 2>/dev/null
   find /etc /var /usr -type f -iname '*.default' -exec rm -Rf {} \; 2>/dev/null
-  if [ -d "/tmp/dotfiles-personal-$USER" ] then
+  if [ -d "/tmp/dotfiles-personal-$USER" ]; then
     rm -Rf /tmp/dotfiles-personal-"$USER"*
   fi
   echo -e "Fininshed cleaning up files and history\n"
