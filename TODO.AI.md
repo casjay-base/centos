@@ -33,6 +33,15 @@ companion commit)
       `if [ -d "/tmp/dotfiles-personal-$USER" ] then` should be
       `if [ -d "/tmp/dotfiles-personal-$USER" ]; then`
 
+## root/.local/bin/update-resolv.sh (found 2026-09-13, centos->rhel
+rename companion commit — not on lines that commit touched)
+
+- [ ] Header `##@Version` has no matching `VERSION=` assignment in the
+      script body — add one or drop the header field
+- [ ] `exit $exitCode` at line 44 can exit with a code outside the
+      allowed range (0-2, 64-78, 128-143) when multiple curl failures
+      accumulate — clamp or map to an allowed code
+
 ## Pre-existing violations found 2026-09-09 (fail2ban jail.local
 disable-by-default companion commit — none on lines that commit touched;
 only config files changed, no scripts)
