@@ -149,8 +149,8 @@ if [ -n "$RELEASE_FILE" ]; then
   yum makecache -y >/dev/null 2>&1 || FETCH_REPO_FILE_EXIT_STATUS=1
 fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-if grep -sq "^SELINUX=" "/etc/selinux/config"; then
-  sed -i "^SELINUX=" "SELINUX=disabled" "/etc/selinux/config" 2>/dev/null
+if grep -sq -- "^SELINUX=" "/etc/selinux/config"; then
+  sed -i 's/^SELINUX=.*/SELINUX=disabled/' "/etc/selinux/config" 2>/dev/null
 fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 if [ "$FETCH_REPO_FILE_EXIT_STATUS" -eq 0 ]; then

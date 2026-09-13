@@ -56,6 +56,6 @@ fi
 [ -f "/etc/resolv.conf" ] || __default_resolv
 [ -f "/etc/resolv.conf" ] && chattr +i "/etc/resolv.conf"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-exit
+exit 0
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # end

@@ -36,7 +36,7 @@ set -o pipefail
 PROCS="nginx httpd postfix crond dockerd sshd php-fpm "
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # User defined functions
-__check_url() { curl -q -LSsfI --max-time 3 --max-time 2 --retry 1 "$1" >/dev/null 2>&1 || return 1; }
+__check_url() { curl -q -LSsfI --max-time 2 --retry 1 "$1" >/dev/null 2>&1 || return 1; }
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 __proc_check() {
   proc="$(ps aux 2>&1 | grep -v 'grep' | grep -w "$1" | head -n1 | grep -q "$1" && echo "$1" || false)"
@@ -103,7 +103,8 @@ for httpd_site in $get_httpd_domains; do
       printf '%s\n' "Success"
     else
       printf '%s\n' "Failed"
-      exithttpdCode=$((exitProcCode++))
+      exithttpdCode=1
+      exitProcCode=$((1 + exitProcCode))
     fi
   fi
 done
@@ -117,7 +118,8 @@ for nginx_site in $get_nginx_domains; do
       printf '%s\n' "Success"
     else
       printf '%s\n' "Failed"
-      exitnginxCode=$((exitProcCode++))
+      exitnginxCode=1
+      exitProcCode=$((1 + exitProcCode))
     fi
   fi
 done
