@@ -5,7 +5,7 @@ before = paths-fedora.conf
 #
 # casjay-base ships to many different server roles, not just this user's own
 # infra, and not every host runs every service (mail, dns, ftp, a database) -
-# and pkmgr/centos's min.sh/server.sh only ever run once, at bootstrap, so a
+# and pkmgr/rhel's min.sh/server.sh only ever run once, at bootstrap, so a
 # service installed later would never get its jail flipped on if enablement
 # depended on detecting the service at bootstrap time. Instead every jail
 # below stays permanently `enabled = true`, and min.sh/server.sh unconditionally

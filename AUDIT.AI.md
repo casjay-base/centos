@@ -26,7 +26,7 @@ immediate discard; everything else rotates monthly OR at a size threshold
       the shared default — acceptable for a public repo, no per-host rotation
       wanted. Files restored, `.gitignore` no longer excludes them. Kept two
       independent bugs found along the way, unrelated to that decision:
-      `__copy_ca_certs()` in `pkmgr/centos/scripts/{min.sh,server.sh}` now
+      `__copy_ca_certs()` in `pkmgr/rhel/scripts/{min.sh,server.sh}` now
       chmods the generated-if-missing fallback pair 600/644 (was a
       world-readable 664 on the whole `/etc/letsencrypt` tree), and the
       cockpit renewal hook writes the key with `>` instead of an appending
@@ -80,7 +80,7 @@ immediate discard; everything else rotates monthly OR at a size threshold
       anonymous read-only on purpose (public `/var/ftp/pub`, already non-root)
       with a comment saying so. `etc/rsyncd.secrets` is gitignored and
       generated 0600 root:root by a new "Setting up rsyncd" section in
-      `pkmgr/centos/scripts/{min.sh,server.sh}`; missing secrets fail closed.
+      `pkmgr/rhel/scripts/{min.sh,server.sh}`; missing secrets fail closed.
 - [x] 6. Tor: SOCKS/HTTP/DNS proxy bound `0.0.0.0`, no SocksPolicy, plus
       `ExitRelay 1` — `etc/tor/torrc:25-31,53-59`. Open proxy + SSRF pivot
       to every loopback service. Bind to 127.0.0.1, add
@@ -310,7 +310,7 @@ immediate discard; everything else rotates monthly OR at a size threshold
 - [x] 20. SELinux disabled (`selinux/config`, `sysconfig/selinux`) — set
       `enforcing` (or `permissive` first to collect denials).
       DECISION (user, 2026-09-04): keep `SELINUX=disabled` in both files.
-      `pkmgr/centos/scripts/min.sh:337` and `server.sh:282` both run
+      `pkmgr/rhel/scripts/min.sh:337` and `server.sh:282` both run
       `sed -i 's|SELINUX=.*|SELINUX=disabled|g' "/etc/selinux/config"` on every
       bootstrap, forcing this state regardless of what casjay-base ships — a
       `permissive` fix here would have been silently overwritten on every
@@ -443,7 +443,7 @@ immediate discard; everything else rotates monthly OR at a size threshold
       of any asymmetric path. A comment states that tradeoff. `ip_forward = 1`,
       `conf.default.forwarding = 1` and both `ipv6...forwarding = 1` lines are
       unchanged as the finding requires, and still match the `sed` patterns
-      `pkmgr/centos/scripts/min.sh:785,789` rewrites them with, so bootstrap
+      `pkmgr/rhel/scripts/min.sh:785,789` rewrites them with, so bootstrap
       does not conflict with this file.
 - [x] 24. Cockpit `disallowed-users` is empty (upstream ships `root`) —
       re-enables root login to the Cockpit web UI. Restore `root` to the
@@ -485,7 +485,7 @@ immediate discard; everything else rotates monthly OR at a size threshold
       (`min.sh:1389-1394`), where the secret is self-chosen and `openssl rand`
       is the right answer. The established convention in this repo is followed
       in the half that does apply: bootstrap now says something.
-      SECOND REPO TOUCHED — `pkmgr/centos/scripts/min.sh` and
+      SECOND REPO TOUCHED — `pkmgr/rhel/scripts/min.sh` and
       `scripts/server.sh`, munin-node section of each. Both now grep the
       installed `/etc/munin/plugin-conf.d/munin-node` for the placeholder token
       and print a `printf_yellow` warning naming the file when it is still
@@ -558,7 +558,7 @@ immediate discard; everything else rotates monthly OR at a size threshold
       `openssl x509` confirms a self-signed `CN=Casjays Developments` valid
       `2014-04-12` to `2024-04-09`, so it has been dead for over two years and
       `update-ca-trust` was silently importing an expired anchor on every
-      bootstrap. Grepped the whole tree: nothing in `casjay-base/centos`
+      bootstrap. Grepped the whole tree: nothing in `casjay-base/rhel`
       referenced it by name, so removing it breaks no config.
       No replacement is needed and none was added. The finding's "if a private
       CA is still needed" is already answered elsewhere in this tree:
@@ -730,7 +730,7 @@ immediate discard; everything else rotates monthly OR at a size threshold
       value) — a template, not a leaked credential, so
       `sensitive_data.md` is satisfied as-is and this repo needs no
       plaintext-credential exception. The 0600 concern is also already
-      handled outside this repo: `pkmgr/centos/scripts/min.sh:1283-1284`,
+      handled outside this repo: `pkmgr/rhel/scripts/min.sh:1283-1284`,
       `server.sh:1104-1105` and `scripts/template:366` all
       `chmod 600 /etc/certbot/dns.conf` at bootstrap, and min.sh:1026 /
       server.sh:891 drop the file from the overlay temp dir so a host's
@@ -746,7 +746,7 @@ immediate discard; everything else rotates monthly OR at a size threshold
   entry (`run-os-update`, `process-check.sh`, `clean-system`,
   `update-resolv.sh`, `root_certbot.sh`), all running as root. Unreviewed;
   this is where finding #9's actual downloaded payload lives.
-- `pkmgr/centos/scripts/min.sh` and `casjay-base/sync.sh` — not read for
+- `pkmgr/rhel/scripts/min.sh` and `casjay-base/sync.sh` — not read for
   this pass; `sync.sh` decides how every finding above gets rewritten for
   the other 6 distros, so a per-distro re-check is needed after fixes land.
 - File modes/ownership on deploy — this repo can't express them; several

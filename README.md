@@ -56,13 +56,13 @@ yum install -y git curl wget bash bash-completion glibc-all-langpacks
 ## Update the system
 
 ```shell
-bash -c "$(curl -q -LSsf "https://github.com/casjay-base/centos/raw/main/root/.local/bin/fetch-repo-file")" && reboot
+bash -c "$(curl -q -LSsf "https://github.com/casjay-base/rhel/raw/main/root/.local/bin/fetch-repo-file")" && reboot
 ```
 
 ## install kernel
 
 ```shell
-curl -q -LSsf "https://github.com/casjay-base/centos/raw/main/root/.local/bin/run-os-update" | bash -s -- --kernel-ml  && reboot
+curl -q -LSsf "https://github.com/casjay-base/rhel/raw/main/root/.local/bin/run-os-update" | bash -s -- --kernel-ml  && reboot
 
 ```
 
@@ -98,14 +98,14 @@ git clone -q "url_to_dotfiles" "$HOME/dotfiles_dir"
 ## Automated Install  
   
 ```shell
-sudo bash -c "$(curl -q -LSsf "https://github.com/pkmgr/centos/raw/main/scripts/min.sh")"
+sudo bash -c "$(curl -q -LSsf "https://github.com/pkmgr/rhel/raw/main/scripts/min.sh")"
 ```
 
   
 ## Automated Update  
 
 ```shell
-sudo bash -c "$(curl -q -LSsf "https://github.com/casjay-base/centos/raw/main/root/.local/bin/run-os-update")"
+sudo bash -c "$(curl -q -LSsf "https://github.com/casjay-base/rhel/raw/main/root/.local/bin/run-os-update")"
 ```
   
   
