@@ -93,7 +93,13 @@ RELEASE_TYPE="$(__release_type)"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Main application
 __save_remote_file "https://raw.githubusercontent.com/rpm-devel/casjay-release/main/RPM-GPG-KEY-casjay" "/etc/pki/rpm-gpg/RPM-GPG-KEY-casjay"
-if [ "$RELEASE_TYPE" = "centos" ] && [ "$(hostname -s)" != "pbx" ]; then
+if [ "$(hostname -s)" = "pbx" ]; then
+  SKIP_REPO_FILE="yes"
+  if [  -f "/etc/yum.repos.d/casjay.repo" ]; then
+    SKIP_REPO_FILE="no"
+  fi
+fi
+if [ "$RELEASE_TYPE" = "centos" ]; then
   printf '%b\n' "Updating yum repo info"
   yum clean all >/dev/null 2>&1
   if [ "$RELEASE_VER" -ge "9" ]; then
@@ -131,7 +137,7 @@ if [ "$RELEASE_TYPE" = "centos" ] && [ "$(hostname -s)" != "pbx" ]; then
   RELEASE_FILE=""
   [ -n "$RELEASE_FILE_NAME" ] && RELEASE_FILE="https://github.com/rpm-devel/casjay-release/raw/main/$RELEASE_FILE_NAME"
 else
-  if [ "$(hostname -s)" = "pbx" ]; then
+  if [ "$SKIP_REPO_FILE" = "yes" ]; then
     printf '%b\n' "Skipping repo swap: host is pbx (intentionally excluded)"
   else
     printf '%b\n' "Skipping repo swap: not a recognized RHEL-family release"
