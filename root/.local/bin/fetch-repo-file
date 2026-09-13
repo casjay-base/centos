@@ -131,7 +131,11 @@ if [ "$RELEASE_TYPE" = "centos" ] && [ "$(hostname -s)" != "pbx" ]; then
   RELEASE_FILE=""
   [ -n "$RELEASE_FILE_NAME" ] && RELEASE_FILE="https://github.com/rpm-devel/casjay-release/raw/main/$RELEASE_FILE_NAME"
 else
-  printf '%b\n' "No repos specified"
+  if [ "$(hostname -s)" = "pbx" ]; then
+    printf '%b\n' "Skipping repo swap: host is pbx (intentionally excluded)"
+  else
+    printf '%b\n' "Skipping repo swap: not a recognized RHEL-family release"
+  fi
   yum clean all >/dev/null 2>&1
   yum makecache -y >/dev/null 2>&1
   exit $?
