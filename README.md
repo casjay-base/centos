@@ -1,6 +1,7 @@
-# AlmaLinux  
+# RHEL family
   
-Setup a base almalinux server with my system scripts
+Setup a base RHEL family server (RHEL, CentOS Stream, AlmaLinux, Rocky,
+Oracle Linux) with my system scripts
 
 ## Enable swap if system has than 2 gigs of memory
 
