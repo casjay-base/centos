@@ -77,16 +77,16 @@ RELEASE_NAME="$(grep --no-filename -s -- '^NAME=' /etc/*-release |
 RELEASE_ID="$(grep --no-filename -s -- '^ID=' /etc/*-release | awk -F'=' '{print $2}' | sed 's|"||g' | tr '[:upper:]' '[:lower:]' | grep -- '^' | head -n1)"
 RELEASE_ID_LIKE="$(grep --no-filename -s -- '^ID_LIKE=' /etc/*-release | awk -F'=' '{print $2}' | sed 's|"||g' | tr '[:upper:]' '[:lower:]')"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-# RELEASE_TYPE is "centos" for any RHEL-family system: real RHEL, CentOS
+# RELEASE_TYPE is "rhel" for any RHEL-family system: real RHEL, CentOS
 # (Linux or Stream), Oracle Linux, AlmaLinux, Rocky Linux. ID_LIKE alone
 # misses real RHEL (unset) and can miss CentOS Stream/Oracle Linux
 # depending on release, so ID is checked first as the reliable signal.
 __release_type() {
   case "$RELEASE_ID" in
-  rhel | centos | ol) printf '%s' "centos" && return 0 ;;
+  rhel | centos | ol) printf '%s' "rhel" && return 0 ;;
   esac
   case " $RELEASE_ID_LIKE " in
-  *' rhel '* | *' centos '*) printf '%s' "centos" ;;
+  *' rhel '* | *' centos '*) printf '%s' "rhel" ;;
   esac
 }
 RELEASE_TYPE="$(__release_type)"
@@ -99,7 +99,7 @@ if [ "$(hostname -s)" = "pbx" ]; then
     SKIP_REPO_FILE="no"
   fi
 fi
-if [ "$RELEASE_TYPE" = "centos" ]; then
+if [ "$RELEASE_TYPE" = "rhel" ] && [ "$SKIP_REPO_FILE" != "yes" ]; then
   printf '%b\n' "Updating yum repo info"
   yum clean all >/dev/null 2>&1
   if [ "$RELEASE_VER" -ge "9" ]; then

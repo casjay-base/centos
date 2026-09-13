@@ -1,7 +1,7 @@
-# Security audit — centos/etc (source of truth)
+# Security audit — rhel/etc (source of truth)
 
 Read-only audit performed via `security-auditor` agent, 2026-08-31. Nothing
-fixed yet. Fix `centos/` first, then re-run `sync.sh` and re-check whether
+fixed yet. Fix `rhel/` first, then re-run `sync.sh` and re-check whether
 each finding also applies to the derived distros (fedora/debian/ubuntu/
 raspbian/arch/alpine) before considering this closed. `pkmgr/min.sh` and
 `sync.sh` themselves were NOT reviewed — do that as a follow-up pass.

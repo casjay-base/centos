@@ -8,7 +8,7 @@
 # @@Copyright        :  Copyright: (c) 2022 Jason Hempstead, Casjays Developments
 # @@Created          :  Thursday, Nov 10, 2022 14:36 EST
 # @@File             :  run-os-update
-# @@Description      :  Update centos config files
+# @@Description      :  Update rhel family config files
 # @@Changelog        :  newScript
 # @@TODO             :  Refactor code
 # @@Other            :
@@ -257,23 +257,23 @@ export RELEASE_NAME="$(grep --no-filename -s -- '^NAME=' /etc/*-release | awk -F
 export RELEASE_ID="$(grep --no-filename -s -- '^ID=' /etc/*-release | awk -F'=' '{print $2}' | sed 's|"||g' | tr '[:upper:]' '[:lower:]' | grep -- '^' | head -n1)"
 export RELEASE_ID_LIKE="$(grep --no-filename -s -- '^ID_LIKE=' /etc/*-release | awk -F'=' '{print $2}' | sed 's|"||g' | tr '[:upper:]' '[:lower:]')"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-# RELEASE_TYPE is "centos" for any RHEL-family system: real RHEL, CentOS
+# RELEASE_TYPE is "rhel" for any RHEL-family system: real RHEL, CentOS
 # (Linux or Stream), Oracle Linux, AlmaLinux, Rocky Linux. ID_LIKE alone
 # misses real RHEL (unset) and can miss CentOS Stream/Oracle Linux
 # depending on release, so ID is checked first as the reliable signal.
 __release_type() {
   case "$RELEASE_ID" in
-  rhel | centos | ol) printf '%s' "centos" && return 0 ;;
+  rhel | centos | ol) printf '%s' "rhel" && return 0 ;;
   esac
   case " $RELEASE_ID_LIKE " in
-  *' rhel '* | *' centos '*) printf '%s' "centos" ;;
+  *' rhel '* | *' centos '*) printf '%s' "rhel" ;;
   esac
 }
 export RELEASE_TYPE="$(__release_type)"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # CASJAY_BASE_REPO maps this host's distro to its casjay-base repo name.
 # Every RHEL-family variant (real RHEL, CentOS, Oracle Linux, AlmaLinux,
-# Rocky) shares the single "centos" repo; every other distro's repo is
+# Rocky) shares the single "rhel" repo; every other distro's repo is
 # named identically to its own /etc/os-release ID.
 export CASJAY_BASE_REPO="${RELEASE_TYPE:-$RELEASE_ID}"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -285,7 +285,7 @@ export REMOTE_VERSION="$(curl -q -LSsf "https://github.com/casjay-base/$CASJAY_B
 # an unrecognized RELEASE_ID.
 __pkg_mgr() {
   case "$RELEASE_TYPE" in
-  centos) command -v dnf >/dev/null 2>&1 && printf '%s' "dnf" || printf '%s' "yum" && return 0 ;;
+  rhel) command -v dnf >/dev/null 2>&1 && printf '%s' "dnf" || printf '%s' "yum" && return 0 ;;
   esac
   case "$RELEASE_ID" in
   fedora) printf '%s' "dnf" ;;
