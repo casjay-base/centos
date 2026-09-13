@@ -29,9 +29,6 @@ companion commit)
       `exit 0`/`1`/`"$?"`
 - [ ] Add a `--color` flag to the argument parser
 - [ ] Check the `NO_COLOR` env var
-- [ ] Missing semicolon at line 1037 —
-      `if [ -d "/tmp/dotfiles-personal-$USER" ] then` should be
-      `if [ -d "/tmp/dotfiles-personal-$USER" ]; then`
 - [ ] Inline comments at lines 221–230 (color definitions) — move above
       the line each describes
 
